@@ -1,85 +1,10 @@
-{
- "cells": [
-  {
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-    "# \ud83e\udde0 AetherMind: AI Startup Mentor (Llama-3 Edition) \ud83d\ude80\n",
-    "\n",
-    "### Instructions:\n",
-    "1. Go to **Runtime -> Change runtime type -> T4 GPU**\n",
-    "2. Click **Runtime -> Run all**\n",
-    "3. Wait ~5 minutes. A public link will appear at the very bottom.\n",
-    "4. Paste that link into your Claude UI!\n",
-    "\n",
-    "---"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "# ============================================================\n",
-    "# STEP 1: Install Dependencies\n",
-    "# ============================================================\n",
-    "!pip install \"unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git\"\n",
-    "!pip install --no-deps xformers trl peft accelerate bitsandbytes\n",
-    "!pip install datasets gradio"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "# ============================================================\n",
-    "# STEP 2: Load Llama-3 8B (4-bit quantized, fits on free T4)\n",
-    "# ============================================================\n",
-    "import os\n",
-    "import torch\n",
-    "from unsloth import FastLanguageModel\n",
-    "\n",
-    "model, tokenizer = FastLanguageModel.from_pretrained(\n",
-    "    model_name = \"unsloth/llama-3-8b-Instruct-bnb-4bit\",\n",
-    "    max_seq_length = 2048,\n",
-    "    load_in_4bit = True,\n",
-    "    dtype = None,\n",
-    ")\n",
-    "print(\"Model loaded successfully!\")"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "# ============================================================\n",
-    "# STEP 3: Setup LoRA for efficient fine-tuning\n",
-    "# ============================================================\n",
-    "model = FastLanguageModel.get_peft_model(\n",
-    "    model,\n",
-    "    r = 16,\n",
-    "    target_modules = [\"q_proj\", \"k_proj\", \"v_proj\", \"o_proj\",\n",
-    "                      \"gate_proj\", \"up_proj\", \"down_proj\"],\n",
-    "    lora_alpha = 16,\n",
-    "    lora_dropout = 0,\n",
-    "    bias = \"none\",\n",
-    "    use_gradient_checkpointing = \"unsloth\",\n",
-    "    random_state = 3407,\n",
-    ")\n",
-    "print(\"LoRA adapter attached!\")"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "metadata": {},
-   "outputs": [],
-   "source": [
+import json
+
+path = 'AetherMind_Llama3.ipynb' # We will use the original one and overwrite it as V2
+with open(path, 'r', encoding='utf-8') as f:
+    nb = json.load(f)
+
+source = [
     "# ============================================================\n",
     "# STEP 4: Load the AetherMind Startup Mentoring Dataset\n",
     "# ============================================================\n",
@@ -95,7 +20,7 @@
     "  {\n",
     "    \"instruction\": \"I have an idea for a hyperlocal delivery service for organic vegetables in Tier 2 Indian cities. How do I validate this?\",\n",
     "    \"input\": \"\",\n",
-    "    \"output\": \"To validate your hyperlocal organic veg delivery idea in Tier 2 cities, follow these steps: 1. **Identify the pain point**: Talk to 20-30 households to see if they actually care about 'organic' or if they just want 'fresh' and 'cheap'. 2. **MVP (Minimum Viable Product)**: Don't build an app yet. Start a WhatsApp group for a specific apartment complex or neighborhood. 3. **Manual Sourcing**: Buy the produce yourself from a local organic farmer or mandi and deliver it. 4. **Retention Check**: See if the same customers order again next week. In India, trust is bigger than tech\u2014building that trust manually first is key.\"\n",
+    "    \"output\": \"To validate your hyperlocal organic veg delivery idea in Tier 2 cities, follow these steps: 1. **Identify the pain point**: Talk to 20-30 households to see if they actually care about 'organic' or if they just want 'fresh' and 'cheap'. 2. **MVP (Minimum Viable Product)**: Don't build an app yet. Start a WhatsApp group for a specific apartment complex or neighborhood. 3. **Manual Sourcing**: Buy the produce yourself from a local organic farmer or mandi and deliver it. 4. **Retention Check**: See if the same customers order again next week. In India, trust is bigger than tech—building that trust manually first is key.\"\n",
     "  },\n",
     "  {\n",
     "    \"instruction\": \"Explain the difference between a Private Limited company and an LLP for an Indian startup.\",\n",
@@ -155,7 +80,7 @@
     "  {\n",
     "    \"instruction\": \"Hi\",\n",
     "    \"input\": \"\",\n",
-    "    \"output\": \"Hi there! I'm AetherMind, your AI startup mentor. I'm here to help you with anything related to building a startup in India \u2014 from validating ideas and choosing legal structures to crafting pitch decks and understanding VC term sheets. What would you like to know?\"\n",
+    "    \"output\": \"Hi there! I'm AetherMind, your AI startup mentor. I'm here to help you with anything related to building a startup in India — from validating ideas and choosing legal structures to crafting pitch decks and understanding VC term sheets. What would you like to know?\"\n",
     "  },\n",
     "  {\n",
     "    \"instruction\": \"What is a cloud?\",\n",
@@ -198,79 +123,11 @@
     "dataset = Dataset.from_list(aethermind_data)\n",
     "dataset = dataset.map(format_prompts, batched=True)\n",
     "print(f\"Dataset ready! {len(dataset)} training samples.\")"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "# ============================================================\n",
-    "# STEP 5: Train the model!\n",
-    "# ============================================================\n",
-    "from trl import SFTTrainer\n",
-    "from transformers import TrainingArguments\n",
-    "from unsloth import is_bfloat16_supported\n",
-    "\n",
-    "trainer = SFTTrainer(\n",
-    "    model = model,\n",
-    "    tokenizer = tokenizer,\n",
-    "    train_dataset = dataset,\n",
-    "    dataset_text_field = \"text\",\n",
-    "    max_seq_length = 2048,\n",
-    "    dataset_num_proc = 2,\n",
-    "    packing = False,\n",
-    "    args = TrainingArguments(\n",
-    "        per_device_train_batch_size = 2,\n",
-    "        gradient_accumulation_steps = 4,\n",
-    "        warmup_steps = 5,\n",
-    "        max_steps = 60,\n",
-    "        learning_rate = 2e-4,\n",
-    "        fp16 = not is_bfloat16_supported(),\n",
-    "        bf16 = is_bfloat16_supported(),\n",
-    "        logging_steps = 1,\n",
-    "        optim = \"adamw_8bit\",\n",
-    "        weight_decay = 0.01,\n",
-    "        lr_scheduler_type = \"linear\",\n",
-    "        seed = 3407,\n",
-    "        output_dir = \"outputs\",\n",
-    "    ),\n",
-    ")\n",
-    "\n",
-    "print(\"Starting training...\")\n",
-    "trainer_stats = trainer.train()\n",
-    "print(\"Training completed!\")"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "# ============================================================\n",
-    "# STEP 6: Quick test!\n",
-    "# ============================================================\n",
-    "FastLanguageModel.for_inference(model)\n",
-    "\n",
-    "messages = [{\"role\": \"user\", \"content\": \"Hi, who are you?\"}]\n",
-    "inputs = tokenizer.apply_chat_template(\n",
-    "    messages, tokenize=True, add_generation_prompt=True,\n",
-    "    return_dict=True, return_tensors=\"pt\"\n",
-    ").to(\"cuda\")\n",
-    "\n",
-    "outputs = model.generate(**inputs, max_new_tokens=256, use_cache=True)\n",
-    "response = tokenizer.decode(outputs[0][inputs[\"input_ids\"].shape[1]:], skip_special_tokens=True)\n",
-    "print(\"AI says:\", response)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "metadata": {},
-   "outputs": [],
-   "source": [
+]
+
+nb['cells'][4]['source'] = source
+
+inf_source = [
     "# ============================================================\n",
     "# STEP 7: Launch the Gradio server (copy the link!)\n",
     "# ============================================================\n",
@@ -297,19 +154,11 @@
     "\n",
     "demo = gr.Interface(fn=chat, inputs=\"text\", outputs=\"text\", title=\"AetherMind AI\")\n",
     "demo.launch(share=True, debug=True)"
-   ]
-  }
- ],
- "metadata": {
-  "kernelspec": {
-   "display_name": "Python 3 (ipykernel)",
-   "language": "python",
-   "name": "python3"
-  },
-  "language_info": {
-   "name": "python"
-  }
- },
- "nbformat": 4,
- "nbformat_minor": 2
-}
+]
+
+nb['cells'][7]['source'] = inf_source
+
+with open('AetherMind_Llama3_V2.ipynb', 'w', encoding='utf-8') as f:
+    json.dump(nb, f, indent=1)
+
+print("Notebook fixed with correct hardcoded source arrays!")
