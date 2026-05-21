@@ -1,0 +1,102 @@
+[
+  {
+    "instruction": "I have an idea for a hyperlocal delivery service for organic vegetables in Tier 2 Indian cities. How do I validate this?",
+    "input": "",
+    "output": "To validate your hyperlocal organic veg delivery idea in Tier 2 cities, follow these steps: 1. **Identify the pain point**: Talk to 20-30 households to see if they actually care about 'organic' or if they just want 'fresh' and 'cheap'. 2. **MVP (Minimum Viable Product)**: Don't build an app yet. Start a WhatsApp group for a specific apartment complex or neighborhood. 3. **Manual Sourcing**: Buy the produce yourself from a local organic farmer or mandi and deliver it. 4. **Retention Check**: See if the same customers order again next week. In India, trust is bigger than tech—building that trust manually first is key."
+  },
+  {
+    "instruction": "Explain the difference between a Private Limited company and an LLP for an Indian startup.",
+    "input": "",
+    "output": "A Private Limited (Pvt Ltd) company is the gold standard for startups looking to raise venture capital. It allows for equity dilution and ESOPs. An LLP (Limited Liability Partnership) is better for bootstrapped businesses or service agencies as it has fewer compliance requirements and no Dividend Distribution Tax, but it's very difficult to raise VC funding for an LLP because investors cannot easily hold shares."
+  },
+  {
+    "instruction": "What should be included in a pre-seed investor pitch deck?",
+    "input": "",
+    "output": "A standard pre-seed deck should have 10-12 slides: 1. **Problem**: What specific pain are you solving? 2. **Solution**: How does your product fix it? 3. **Market Size (TAM/SAM/SOM)**: Use Indian market data (e.g., '100M smartphone users'). 4. **Business Model**: How will you make money? 5. **Traction**: Any early signs of interest? 6. **Team**: Why are you the right founders? 7. **The Ask**: How much money do you need and what will you do with it?"
+  },
+  {
+    "instruction": "How can I apply for the Startup India DPIIT recognition?",
+    "input": "",
+    "output": "To get DPIIT recognition: 1. Register your business as a Pvt Ltd or LLP. 2. Go to the Startup India portal (startupindia.gov.in). 3. Fill the 'Recognition Application'. 4. Provide a write-up on how your startup is innovative or has scalability potential. 5. Once recognized, you can apply for tax exemptions (80-IAC) and easier public procurement norms."
+  },
+  {
+    "instruction": "Write a cold email to a seed-stage VC in India.",
+    "input": "My startup is 'QuickDukaan', a Shopify for rural artisans.",
+    "output": "Subject: QuickDukaan: Solving e-commerce for 5M rural artisans\n\nHi [Investor Name],\n\nI'm [Your Name], founder of QuickDukaan. We've built a mobile-first platform that lets rural artisans set up online stores in 30 seconds via WhatsApp.\n\nIn the last 3 months, we've onboarded 500 artisans from Rajasthan and processed \u20b910L in GMV with zero marketing spend.\n\nI saw your investment in [Similar Portfolio Company] and thought our focus on the 'Next Billion Users' would interest you. Would you be open to a 15-minute chat next Tuesday?\n\nBest,\n[Your Name]"
+  },
+  {
+    "instruction": "What are the common terms in an Indian Angel Network (IAN) term sheet?",
+    "input": "",
+    "output": "Common terms include: 1. **Valuation**: Pre-money vs Post-money. 2. **Liquidation Preference**: Usually 1x non-participating. 3. **Anti-Dilution**: Usually Broad-based Weighted Average. 4. **Board Seats**: Investors usually want one board observer or director seat. 5. **Founder Vesting**: Typically 4 years with a 1-year cliff. 6. **Rights of First Refusal (ROFR)**: Investors get first dibs on buying shares being sold by others."
+  },
+  {
+    "instruction": "How do I handle a conflict with my co-founder regarding equity split?",
+    "input": "",
+    "output": "Equity split conflicts are best handled early. 1. **Value-based Split**: Use a framework like 'Founders' Pie' which weighs roles, ideas, and initial capital. 2. **Vesting is Mandatory**: Ensure all founders have a 4-year vesting schedule. This protects the company if someone leaves early. 3. **Transparent Conversation**: Sit down and list each person's long-term commitment. If it's not 50/50, explain why based on contribution, not just who 'came up with the idea'."
+  },
+  {
+    "instruction": "Explain GST for a new software-as-a-service (SaaS) startup in India.",
+    "input": "",
+    "output": "For SaaS: 1. GST registration is mandatory if turnover exceeds \u20b920 Lakhs (or \u20b910 Lakhs in some states). 2. Export of services (selling to US/Europe) is 'Zero-rated' under GST, provided you file a Letter of Undertaking (LUT). 3. You must issue GST-compliant invoices. 4. Input Tax Credit (ITC) allows you to set off the GST you pay on expenses (like cloud servers or laptops) against the GST you collect from customers."
+  },
+  {
+    "instruction": "What is the 'The Mom Test' approach to customer interviews?",
+    "input": "",
+    "output": "The Mom Test means talking to customers in a way that even your mom can't lie to you. 1. Talk about their life, not your idea. 2. Ask about specific things that happened in the past, not opinions about the future. 3. Talk less and listen more. Instead of 'Would you buy this?', ask 'Tell me about the last time you faced this problem and how you solved it.'"
+  },
+  {
+    "instruction": "How do I set up an ESOP pool for my first 5 employees?",
+    "input": "",
+    "output": "1. **Reserve the Pool**: Usually 10% of equity is set aside for the ESOP pool. 2. **Define the Policy**: Set a vesting period (e.g., 4 years) and a cliff (1 year). 3. **Grant Letters**: Issue formal letters stating the number of options and exercise price. 4. **Exercise Price**: Keep it low (often face value like \u20b910) to make it a real benefit. Consult a CS to ensure the board resolution and filings are done correctly."
+  },
+  {
+    "instruction": "Give me a 30-second elevator pitch for a fintech startup.",
+    "input": "We make credit cards for college students.",
+    "output": "Hi, we're building [Startup Name]. Most of India's 40 million college students have no credit history and can't get a credit card, even for basic needs. We've built a mobile-first credit line that uses UPI data and academic performance to offer instant \u20b95,000 limits. We've seen 20% month-on-month growth and our default rate is under 2%. We're looking for [Your Ask] to scale to 10 more campuses."
+  },
+  {
+    "instruction": "What is a 'Safe' note and is it used in India?",
+    "input": "",
+    "output": "A SAFE (Simple Agreement for Future Equity) is popular in the US (YC style). In India, because of FEMA and RBI regulations, we use **iSAFE** (India Simple Agreement for Future Equity). It is technically a Compulsorily Convertible Preference Share (CCPS) that converts into equity during the next funding round. It is faster and cheaper than a full-blown priced round."
+  },
+  {
+    "instruction": "How do I find a technical co-founder as a non-tech founder?",
+    "input": "",
+    "output": "1. **Build a No-Code MVP**: Show you can sell before you have a product. 2. **Hang out where they are**: GitHub, Discord, local tech meetups (like eChai or local hackathons). 3. **Sell the Vision**: Good devs want to solve hard problems, not just 'build an app'. 4. **Be willing to give equity**: A co-founder is not an employee; 50/50 or close to it is the norm for early-stage partners."
+  },
+  {
+    "instruction": "What are the common pitfalls of Indian startups scaling too fast?",
+    "input": "",
+    "output": "1. **Burn without Unit Economics**: Spending \u20b92 to earn \u20b91. 2. **Hiring for the sake of hiring**: Bloated teams lead to culture decay. 3. **Ignoring Compliance**: Skipping GST or PF filings can lead to massive fines later. 4. **Losing focus on Core Product**: Trying to do 5 things at once instead of mastering one niche first."
+  },
+  {
+    "instruction": "What are the benefits of the MSME Udyam registration?",
+    "input": "",
+    "output": "1. **Collateral Free Loans**: Access to credit under the CGTMSE scheme. 2. **Protection against Delayed Payments**: Buyers must pay MSMEs within 45 days. 3. **Subsidy on Patent/ISO Certification**: Get reimbursed for innovation costs. 4. **Electricity Bill Concessions**: Many states offer lower rates for MSMEs. 5. **Easier Tenders**: Preference in government procurement."
+  },
+  {
+    "instruction": "How do I calculate Burn Rate and Runway?",
+    "input": "",
+    "output": "**Burn Rate** = Total Monthly Expenses - Total Monthly Revenue. \n**Runway** = Total Cash in Bank / Monthly Burn Rate. \nExample: If you have \u20b950 Lakhs in the bank and you lose \u20b95 Lakhs a month, your runway is 10 months. You should start fundraising when you have 6 months of runway left."
+  },
+  {
+    "instruction": "What is 'Product-Market Fit' (PMF) and how do I know if I have it?",
+    "input": "",
+    "output": "PMF is when you have built a product that a specific group of people is desperate to use. You know you have it when: 1. Customers are complaining when the site goes down. 2. You don't have to 'push' the product; the market is 'pulling' it. 3. Word-of-mouth becomes your primary growth driver. 4. Retention rates are high and stable."
+  },
+  {
+    "instruction": "How to structure a GTM strategy for a B2B SaaS startup targeting Indian SMEs?",
+    "input": "",
+    "output": "1. **Inside Sales**: Use LinkedIn and cold calls; Indian SMEs often need a 'human' touch. 2. **Freemium with Local Pricing**: Price in INR and offer a free tier to build trust. 3. **Partnerships**: Partner with local CAs or business consultants who already have the trust of SMEs. 4. **WhatsApp Marketing**: Use WhatsApp Business API for updates and support; it's where Indian business happens."
+  },
+  {
+    "instruction": "Explain 'Pre-money' vs 'Post-money' valuation.",
+    "input": "",
+    "output": "Pre-money is the value of your company *before* the investment. Post-money is Pre-money + Investment amount. \nExample: If your Pre-money valuation is \u20b98 Crores and an investor puts in \u20b92 Crores, your Post-money valuation is \u20b910 Crores. The investor now owns 20% of the company (\u20b92 Cr / \u20b910 Cr)."
+  },
+  {
+    "instruction": "How should I prepare for a demo day pitch?",
+    "input": "",
+    "output": "1. **The Hook**: Start with a shocking stat or a relatable story. 2. **Focus on Traction**: Demos are about progress; show growth charts. 3. **Simple Language**: Avoid jargon; explain it like you're talking to a 10-year-old. 4. **Practice the Q&A**: Anticipate the 'How will you compete with Google/Reliance?' question. 5. **Strong Call to Action**: Be clear about what you want (e.g., 'We are raising \u20b91Cr to reach 10k users')."
+  }
+]

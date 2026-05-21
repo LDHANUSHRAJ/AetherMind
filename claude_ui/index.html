@@ -155,7 +155,19 @@
                 <label>Gradio Server URL</label>
                 <input type="text" id="gradioUrl" placeholder="https://xxxxx.gradio.live">
                 <p class="hint">Paste the public URL from your Google Colab notebook.</p>
-                <button class="primary-btn" id="connectBtn">Connect</button>
+                
+                <label style="margin-top:12px;">Tavily Search API Key (Optional)</label>
+                <input type="text" id="searchApiKey" placeholder="tvly-xxxxxxxx">
+                <p class="hint">For real-time market data & competitor scanning.</p>
+                
+                <label style="margin-top:12px;">Supabase URL (Optional)</label>
+                <input type="text" id="supabaseUrl" placeholder="https://xxxxx.supabase.co">
+                
+                <label style="margin-top:12px;">Supabase Anon Key (Optional)</label>
+                <input type="password" id="supabaseKey" placeholder="eyJh...">
+                <p class="hint">For cloud sync and pitch sharing.</p>
+
+                <button class="primary-btn" id="connectBtn" style="margin-top:16px;">Save & Connect</button>
                 <div class="modal-status" id="modalStatus"></div>
             </div>
         </div>
@@ -165,7 +177,7 @@
     <div class="modal-overlay" id="exportModal">
         <div class="modal">
             <div class="modal-header">
-                <h3>Export Conversation</h3>
+                <h3>Export & Share</h3>
                 <button class="icon-btn" id="closeExportModal">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
                 </button>
@@ -178,6 +190,10 @@
                 <button class="export-option" id="exportDocBtn">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.34a2 2 0 0 0-.6-1.43l-4.44-4.34A2 2 0 0 0 13.56 2H6a2 2 0 0 0-2 2z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
                     <span>Export as DOC</span>
+                </button>
+                <button class="export-option" id="shareCloudBtn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                    <span>Share via Cloud Link</span>
                 </button>
             </div>
         </div>

@@ -6,6 +6,9 @@ const state = {
     conversations: JSON.parse(localStorage.getItem('am_convs') || '[]'),
     activeId: null,
     gradioUrl: localStorage.getItem('am_url') || '',
+    searchApiKey: localStorage.getItem('am_search_key') || '',
+    supabaseUrl: localStorage.getItem('am_supabase_url') || '',
+    supabaseKey: localStorage.getItem('am_supabase_key') || '',
     generating: false,
 };
 
@@ -33,6 +36,9 @@ const settingsBtn = $('#settingsBtn');
 const settingsModal = $('#settingsModal');
 const closeModal = $('#closeModal');
 const gradioUrlInput = $('#gradioUrl');
+const searchApiInput = $('#searchApiKey');
+const supabaseUrlInput = $('#supabaseUrl');
+const supabaseKeyInput = $('#supabaseKey');
 const connectBtn = $('#connectBtn');
 const modalStatus = $('#modalStatus');
 const connDot = $('#connDot');
@@ -41,6 +47,7 @@ const exportModal = $('#exportModal');
 const exportPdfBtn = $('#exportPdfBtn');
 const exportPdfBtn2 = $('#exportPdfBtn2');
 const exportDocBtn = $('#exportDocBtn');
+const shareCloudBtn = $('#shareCloudBtn');
 const closeExportModal = $('#closeExportModal');
 
 // ===== INIT =====
@@ -72,6 +79,22 @@ function setupMarkdown() {
             },
             breaks: true, gfm: true,
         });
+        
+        // Custom renderer for checkboxes
+        const renderer = new marked.Renderer();
+        const originalListitem = renderer.listitem.bind(renderer);
+        renderer.listitem = function(text, task, checked) {
+            if (task) {
+                return `<li class="task-list-item" style="list-style-type: none; margin-left: -20px; margin-bottom: 8px;">
+                    <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" style="margin-top: 4px;" ${checked ? 'checked' : ''}>
+                        <span>${text.replace(/<input.*?>/, '')}</span>
+                    </label>
+                </li>`;
+            }
+            return originalListitem(text, task, checked);
+        };
+        marked.use({ renderer });
     }
 }
 
@@ -101,12 +124,13 @@ function bind() {
     menuToggle?.addEventListener('click', () => sidebar.classList.toggle('open'));
     $('#sidebarCollapseBtn')?.addEventListener('click', () => sidebar.classList.remove('open'));
 
-    // Export
+    // Export & Share
     exportPdfBtn2?.addEventListener('click', () => exportModal.classList.add('visible'));
     closeExportModal?.addEventListener('click', () => exportModal.classList.remove('visible'));
     exportModal?.addEventListener('click', e => { if (e.target === exportModal) exportModal.classList.remove('visible'); });
     exportPdfBtn?.addEventListener('click', () => { toPdf(); exportModal.classList.remove('visible'); });
     exportDocBtn?.addEventListener('click', () => { toDoc(); exportModal.classList.remove('visible'); });
+    shareCloudBtn?.addEventListener('click', () => { shareToCloud(); exportModal.classList.remove('visible'); });
 
     $$('.suggestion').forEach(s => s.addEventListener('click', () => {
         msgInput.value = s.dataset.prompt;
@@ -246,7 +270,17 @@ async function send() {
     showTyping();
 
     try {
-        const res = await callAPI(text);
+        let contextText = text;
+        
+        // Frontend RAG: If search API is enabled and query asks for search
+        if (state.searchApiKey && /search|find|latest|news|competitor|trend|market/i.test(text)) {
+            const searchData = await performWebSearch(text);
+            if (searchData) {
+                contextText = `User Query: ${text}\n\n[Real-time Web Search Results]:\n${searchData}\n\nPlease use the above real-time web context to answer the user's query comprehensively.`;
+            }
+        }
+
+        const res = await callAPI(contextText);
         hideTyping();
         c.messages.push({ role: 'assistant', content: res });
         save(); addMsg('assistant', res);
@@ -266,10 +300,21 @@ function loadUrl() {
         connDot.classList.add('connected');
         connDot.title = 'Connected';
     }
+    if (state.searchApiKey) searchApiInput.value = state.searchApiKey;
+    if (state.supabaseUrl) supabaseUrlInput.value = state.supabaseUrl;
+    if (state.supabaseKey) supabaseKeyInput.value = state.supabaseKey;
 }
 
 async function doConnect() {
     const url = gradioUrlInput.value.trim().replace(/\/$/, '');
+    state.searchApiKey = searchApiInput.value.trim();
+    state.supabaseUrl = supabaseUrlInput.value.trim();
+    state.supabaseKey = supabaseKeyInput.value.trim();
+    
+    localStorage.setItem('am_search_key', state.searchApiKey);
+    localStorage.setItem('am_supabase_url', state.supabaseUrl);
+    localStorage.setItem('am_supabase_key', state.supabaseKey);
+
     if (!url) return;
     state.gradioUrl = url;
     localStorage.setItem('am_url', url);
@@ -380,3 +425,61 @@ window.loadConv = loadConv;
 window.delConv = delConv;
 
 document.addEventListener('DOMContentLoaded', init);
+
+// ===== CLOUD FEATURES =====
+async function performWebSearch(query) {
+    if (!state.searchApiKey) return null;
+    try {
+        const response = await fetch('https://api.tavily.com/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                api_key: state.searchApiKey,
+                query: query,
+                search_depth: 'basic',
+                include_answer: true,
+                max_results: 3
+            })
+        });
+        if (response.ok) {
+            const data = await response.json();
+            let context = `Web Answer: ${data.answer || 'N/A'}\n\nSources:\n`;
+            data.results?.forEach(r => { context += `- ${r.title}: ${r.content}\n`; });
+            return context;
+        }
+    } catch (e) {
+        console.error('Search failed:', e);
+    }
+    return null;
+}
+
+async function shareToCloud() {
+    const c = active();
+    if (!c || !c.messages.length) return alert('No messages to share!');
+    if (!state.supabaseUrl || !state.supabaseKey) return alert('Please configure your Supabase URL and Anon Key in Settings to enable Cloud Sharing.');
+    
+    const pitchId = 'pitch_' + Date.now() + Math.random().toString(36).substring(2, 7);
+    try {
+        modalStatus.textContent = 'Uploading to cloud...';
+        const response = await fetch(`${state.supabaseUrl}/rest/v1/pitches`, {
+            method: 'POST',
+            headers: {
+                'apikey': state.supabaseKey,
+                'Authorization': `Bearer ${state.supabaseKey}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=representation'
+            },
+            body: JSON.stringify({ id: pitchId, title: c.title, content: JSON.stringify(c.messages), created_at: new Date().toISOString() })
+        });
+        
+        if (response.ok) {
+            const shareUrl = `${window.location.origin}/?pitch=${pitchId}`;
+            prompt('Pitch shared successfully! Copy this link:', shareUrl);
+        } else {
+            const err = await response.text();
+            alert('Failed to share. Have you created the "pitches" table in Supabase? ' + err);
+        }
+    } catch (e) {
+        alert('Failed to share: ' + e.message);
+    }
+}
