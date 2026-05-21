@@ -448,14 +448,12 @@ button { cursor: pointer; font-family: var(--font); }
     display: flex;
     gap: 8px;
     margin-top: 10px;
-    opacity: 0;
-    transform: translateY(4px);
-    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 0.6;
+    transition: opacity 0.15s ease;
 }
 
 .msg:hover .msg-actions {
     opacity: 1;
-    transform: translateY(0);
 }
 
 .msg-action-btn {
