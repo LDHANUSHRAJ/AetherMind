@@ -10,6 +10,7 @@ const state = {
     supabaseUrl: localStorage.getItem('am_supabase_url') || '',
     supabaseKey: localStorage.getItem('am_supabase_key') || '',
     generating: false,
+    attachedFile: null,
 };
 
 const $ = s => document.querySelector(s);
@@ -50,6 +51,13 @@ const exportDocBtn = $('#exportDocBtn');
 const shareCloudBtn = $('#shareCloudBtn');
 const closeExportModal = $('#closeExportModal');
 
+// Collapsible Sidebar & File Attachment DOM Elements
+const sidebarToggleBtn = $('#sidebarToggleBtn');
+const sidebarCollapseBtn = $('#sidebarCollapseBtn');
+const fileInput = $('#fileInput');
+const attachBtn = $('#attachBtn');
+const filePreviewContainer = $('#filePreviewContainer');
+
 // ===== INIT =====
 function init() {
     setGreeting();
@@ -58,6 +66,13 @@ function init() {
     renderSidebar();
     bind();
     autoGrow(msgInput);
+    
+    // Restore sidebar collapse state
+    if (localStorage.getItem('am_sidebar_collapsed') === 'true') {
+        const appEl = $('.app');
+        if (appEl) appEl.classList.add('sidebar-collapsed');
+    }
+    
     if (state.conversations.length > 0) loadConv(state.conversations[0].id);
 }
 
@@ -103,7 +118,7 @@ function bind() {
     newChatBtn.addEventListener('click', newChat);
     sendBtn.addEventListener('click', send);
     msgInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
-    msgInput.addEventListener('input', () => { sendBtn.disabled = !msgInput.value.trim(); autoGrow(msgInput); });
+    msgInput.addEventListener('input', () => { updateSendButtonState(); autoGrow(msgInput); });
 
     searchToggle.addEventListener('click', () => {
         const v = sidebarSearch.style.display === 'none';
@@ -121,8 +136,24 @@ function bind() {
     settingsModal.addEventListener('click', e => { if (e.target === settingsModal) settingsModal.classList.remove('visible'); });
     connectBtn.addEventListener('click', doConnect);
 
+    // Collapsible Sidebar Events (Desktop & Mobile)
     menuToggle?.addEventListener('click', () => sidebar.classList.toggle('open'));
-    $('#sidebarCollapseBtn')?.addEventListener('click', () => sidebar.classList.remove('open'));
+    sidebarCollapseBtn?.addEventListener('click', () => {
+        if (window.innerWidth <= 768) {
+            sidebar.classList.remove('open');
+        } else {
+            $('.app')?.classList.add('sidebar-collapsed');
+            localStorage.setItem('am_sidebar_collapsed', 'true');
+        }
+    });
+    sidebarToggleBtn?.addEventListener('click', () => {
+        $('.app')?.classList.remove('sidebar-collapsed');
+        localStorage.setItem('am_sidebar_collapsed', 'false');
+    });
+
+    // File Attachment Events
+    attachBtn?.addEventListener('click', () => fileInput?.click());
+    fileInput?.addEventListener('change', handleFileSelect);
 
     // Export & Share
     exportPdfBtn2?.addEventListener('click', () => exportModal.classList.add('visible'));
@@ -134,10 +165,208 @@ function bind() {
 
     $$('.suggestion').forEach(s => s.addEventListener('click', () => {
         msgInput.value = s.dataset.prompt;
-        sendBtn.disabled = false;
+        updateSendButtonState();
         autoGrow(msgInput);
         send();
     }));
+}
+// ===== FILE ATTACHMENT LOGIC =====
+function updateSendButtonState() {
+    const hasText = msgInput.value.trim().length > 0;
+    const hasFile = !!state.attachedFile;
+    const fileLoading = state.attachedFile ? state.attachedFile.loading : false;
+    
+    sendBtn.disabled = (!hasText && !hasFile) || fileLoading || state.generating;
+}
+
+function checkStartupRelevance(text) {
+    if (!text) return false;
+    const keywords = [
+        'startup', 'entrepreneur', 'founder', 'co-founder', 'pitch', 'deck', 'equity', 'funding', 'investor',
+        'venture', 'capital', 'esop', 'cap table', 'dilution', 'compliance', 'legal', 'gst', 'roc', 'llp',
+        'pvt ltd', 'private limited', 'business', 'revenue', 'model', 'canvas', 'bmc', 'customer', 'market',
+        'tam', 'sam', 'som', 'cac', 'ltv', 'churn', 'product', 'market fit', 'pmf', 'bootstrap', 'angel',
+        'seed', 'pre-seed', 'series a', 'series b', 'valuation', 'incubator', 'accelerator', 'traction',
+        'pitching', 'investing', 'monetization', 'forecast', 'projections', 'finance', 'roi', 'burn rate',
+        'runway', 'scaling', 'pivot', 'disrupt', 'innovation', 'ideation', 'mvp', 'minimum viable product',
+        'incubation', 'mentorship', 'advisor', 'nda', 'term sheet', 'safe note', 'convertible note'
+    ];
+    const lower = text.toLowerCase();
+    for (const kw of keywords) {
+        const regex = new RegExp('\\b' + kw.replace(' ', '\\s+') + '\\b', 'i');
+        if (regex.test(lower)) return true;
+    }
+    return false;
+}
+
+function resizeImageToDataUrl(file, callback) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            const max_size = 400;
+            
+            if (width > height) {
+                if (width > max_size) {
+                    height *= max_size / width;
+                    width = max_size;
+                }
+            } else {
+                if (height > max_size) {
+                    width *= max_size / height;
+                    height = max_size;
+                }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            callback(canvas.toDataURL('image/jpeg', 0.75));
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeAttachedFile() {
+    state.attachedFile = null;
+    fileInput.value = '';
+    filePreviewContainer.innerHTML = '';
+    filePreviewContainer.style.display = 'none';
+    updateSendButtonState();
+}
+
+function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    filePreviewContainer.innerHTML = '';
+    filePreviewContainer.style.display = 'flex';
+
+    const isImage = file.type.startsWith('image/');
+    
+    state.attachedFile = {
+        name: file.name,
+        type: file.type,
+        text: '',
+        isImage: isImage,
+        dataUrl: null,
+        loading: true,
+        isStartupRelated: false
+    };
+    updateSendButtonState();
+
+    if (isImage) {
+        const tempUrl = URL.createObjectURL(file);
+        filePreviewContainer.innerHTML = `
+            <div class="file-preview-image-wrap">
+                <img src="${tempUrl}" class="file-preview-thumbnail">
+                <div class="file-preview-loading-overlay">
+                    <svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
+                        <path d="M12 2a10 10 0 0 1 10 10"/>
+                    </svg>
+                </div>
+                <button class="file-preview-remove" id="removeFileBtn">&times;</button>
+            </div>
+        `;
+        
+        $('#removeFileBtn')?.addEventListener('click', removeAttachedFile);
+
+        resizeImageToDataUrl(file, function(dataUrl) {
+            if (state.attachedFile) {
+                state.attachedFile.dataUrl = dataUrl;
+            }
+        });
+
+        if (typeof Tesseract !== 'undefined') {
+            Tesseract.recognize(file, 'eng')
+                .then(({ data: { text } }) => {
+                    if (!state.attachedFile) return;
+                    state.attachedFile.text = text;
+                    state.attachedFile.loading = false;
+                    state.attachedFile.isStartupRelated = checkStartupRelevance(text);
+                    
+                    const overlay = $('.file-preview-loading-overlay');
+                    if (overlay) overlay.remove();
+                    
+                    if (!state.attachedFile.isStartupRelated) {
+                        const wrap = $('.file-preview-image-wrap');
+                        if (wrap) {
+                            const badge = document.createElement('div');
+                            badge.className = 'file-preview-warning-badge';
+                            badge.style.position = 'absolute';
+                            badge.style.bottom = '2px';
+                            badge.style.left = '2px';
+                            badge.title = 'Content might not be startup-related';
+                            badge.innerHTML = '⚠️ Unrelated';
+                            wrap.appendChild(badge);
+                        }
+                    }
+                    updateSendButtonState();
+                })
+                .catch(err => {
+                    console.error("OCR Error:", err);
+                    if (!state.attachedFile) return;
+                    state.attachedFile.loading = false;
+                    const overlay = $('.file-preview-loading-overlay');
+                    if (overlay) overlay.remove();
+                    updateSendButtonState();
+                });
+        } else {
+            state.attachedFile.loading = false;
+            const overlay = $('.file-preview-loading-overlay');
+            if (overlay) overlay.remove();
+            updateSendButtonState();
+        }
+    } else {
+        filePreviewContainer.innerHTML = `
+            <div class="file-preview-chip">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                <span>${file.name}</span>
+                <span class="file-loader-spin" style="margin-left: 4px;">
+                    <svg class="spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2a10 10 0 0 1 10 10"/>
+                    </svg>
+                </span>
+                <button class="file-preview-remove" id="removeFileBtn">&times;</button>
+            </div>
+        `;
+        $('#removeFileBtn')?.addEventListener('click', removeAttachedFile);
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            if (!state.attachedFile) return;
+            const text = e.target.result;
+            state.attachedFile.text = text;
+            state.attachedFile.loading = false;
+            state.attachedFile.isStartupRelated = checkStartupRelevance(text);
+            
+            $('.file-loader-spin')?.remove();
+            
+            if (!state.attachedFile.isStartupRelated) {
+                const chip = $('.file-preview-chip');
+                if (chip) {
+                    const badge = document.createElement('span');
+                    badge.className = 'file-preview-warning-badge';
+                    badge.innerHTML = '⚠️ Unrelated';
+                    badge.style.marginLeft = '6px';
+                    chip.insertBefore(badge, $('#removeFileBtn'));
+                }
+            }
+            updateSendButtonState();
+        };
+        reader.onerror = function() {
+            if (!state.attachedFile) return;
+            state.attachedFile.loading = false;
+            $('.file-loader-spin')?.remove();
+            updateSendButtonState();
+        };
+        reader.readAsText(file);
+    }
 }
 
 // ===== CONVERSATIONS =====
@@ -166,7 +395,35 @@ function delConv(id, e) {
 }
 
 function active() { return state.conversations.find(c => c.id === state.activeId); }
-function save() { localStorage.setItem('am_convs', JSON.stringify(state.conversations)); }
+function save() {
+    try {
+        localStorage.setItem('am_convs', JSON.stringify(state.conversations));
+    } catch (e) {
+        console.warn('Local storage quota exceeded. Cleaning old dataUrl attachments to save space...');
+        let cleared = false;
+        for (let i = state.conversations.length - 1; i >= 0; i--) {
+            const conv = state.conversations[i];
+            for (let j = 0; j < conv.messages.length; j++) {
+                const msg = conv.messages[j];
+                if (msg.attachment && msg.attachment.dataUrl) {
+                    msg.attachment.dataUrl = null;
+                    cleared = true;
+                    try {
+                        localStorage.setItem('am_convs', JSON.stringify(state.conversations));
+                        console.log('Successfully saved after clearing an old attachment.');
+                        break;
+                    } catch (e2) {}
+                }
+            }
+            if (cleared) break;
+        }
+        try {
+            localStorage.setItem('am_convs', JSON.stringify(state.conversations));
+        } catch (err) {
+            console.error('Failed to save to localStorage even after cleanup:', err);
+        }
+    }
+}
 
 // ===== RENDER =====
 function renderSidebar(filter = '') {
@@ -201,11 +458,11 @@ function renderMsgs() {
     welcomeScreen.style.display = 'none';
     suggestionRow.style.display = 'none';
     messagesArea.innerHTML = '';
-    c.messages.forEach(m => addMsg(m.role, m.content, false));
+    c.messages.forEach(m => addMsg(m.role, m.content, false, m.attachment));
     scrollEnd();
 }
 
-function addMsg(role, content, anim = true) {
+function addMsg(role, content, anim = true, attachment = null) {
     welcomeScreen.style.display = 'none';
     suggestionRow.style.display = 'none';
 
@@ -232,6 +489,26 @@ function addMsg(role, content, anim = true) {
         body = esc(content).replace(/\n/g, '<br>');
     }
 
+    // Render attachment preview if present
+    let attachmentHtml = '';
+    if (attachment) {
+        if (attachment.isImage && attachment.dataUrl) {
+            attachmentHtml = `
+                <div class="msg-attachment-preview" style="margin-top: 8px;">
+                    <img src="${attachment.dataUrl}" style="max-width: 240px; max-height: 180px; border-radius: 8px; border: 1px solid var(--border); display: block; margin-bottom: 4px; cursor: zoom-in;" onclick="window.open('${attachment.dataUrl}', '_blank')" title="View full image">
+                    <span style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 8px;">Attached image: ${esc(attachment.name)}</span>
+                </div>
+            `;
+        } else {
+            attachmentHtml = `
+                <div class="msg-attachment-chip" style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; color: var(--text-secondary); margin-top: 8px; margin-bottom: 8px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                    <span>${esc(attachment.name)}</span>
+                </div>
+            `;
+        }
+    }
+
     // Action buttons for assistant messages
     const actions = role === 'assistant' ? `
         <div class="msg-actions">
@@ -249,6 +526,7 @@ function addMsg(role, content, anim = true) {
         <div class="msg-avatar">${avatar}</div>
         <div class="msg-content">
             <div class="msg-sender">${name}</div>
+            ${attachmentHtml}
             <div class="msg-body">${body}</div>
             ${actions}
         </div>
@@ -292,28 +570,64 @@ function hideTyping() { document.getElementById('typingEl')?.remove(); }
 // ===== SEND =====
 async function send() {
     const text = msgInput.value.trim();
-    if (!text || state.generating) return;
+    if ((!text && !state.attachedFile) || state.generating) return;
     if (!state.activeId) newChat();
     const c = active();
     if (!c) return;
 
-    c.messages.push({ role: 'user', content: text });
-    if (c.messages.length === 1) { c.title = text.substring(0, 45) + (text.length > 45 ? '...' : ''); renderSidebar(); }
-    save();
-    addMsg('user', text);
+    const attached = state.attachedFile;
+    const msgObj = {
+        role: 'user',
+        content: text || (attached ? `Uploaded file: ${attached.name}` : ''),
+        attachment: attached ? {
+            name: attached.name,
+            type: attached.type,
+            isImage: attached.isImage,
+            dataUrl: attached.dataUrl
+        } : null
+    };
 
-    msgInput.value = ''; sendBtn.disabled = true; autoGrow(msgInput);
+    c.messages.push(msgObj);
+    if (c.messages.length === 1) {
+        const titleText = text || (attached ? `File: ${attached.name}` : 'New Conversation');
+        c.title = titleText.substring(0, 45) + (titleText.length > 45 ? '...' : '');
+        renderSidebar();
+    }
+    save();
+    addMsg('user', msgObj.content, true, msgObj.attachment);
+
+    msgInput.value = '';
+    removeAttachedFile();
+    sendBtn.disabled = true;
+    autoGrow(msgInput);
     state.generating = true;
     showTyping();
 
     try {
         let contextText = text;
-        
+        if (attached) {
+            const userMsg = text || "Please analyze this uploaded file.";
+            const isRelated = attached.isStartupRelated ? "YES" : "NO";
+            contextText = `[Attached File: ${attached.name}]
+[Detected File Text]:
+"""
+${attached.text || "[No readable text content found]"}
+"""
+
+[Startup Relevance Check]: ${isRelated}
+
+User Query: ${userMsg}
+
+[System Instruction]: The user has attached a file/image. 
+1. If [Startup Relevance Check] is YES, perform a detailed startup mentor analysis on the detected text/content and answer the user's query.
+2. If [Startup Relevance Check] is NO, politely inform the user that AetherMind only mentors on entrepreneurship and startups. State briefly what was detected from the file, and guide them to upload startup-related content.`;
+        }
+
         // Frontend RAG: If search API is enabled and query asks for search
-        if (state.searchApiKey && /search|find|latest|news|competitor|trend|market/i.test(text)) {
+        if (state.searchApiKey && text && /search|find|latest|news|competitor|trend|market/i.test(text)) {
             const searchData = await performWebSearch(text);
             if (searchData) {
-                contextText = `User Query: ${text}\n\n[Real-time Web Search Results]:\n${searchData}\n\nPlease use the above real-time web context to answer the user's query comprehensively.`;
+                contextText = `User Query: ${text}\n\n[Real-time Web Search Results]:\n${searchData}\n\nPlease use the above real-time web context to answer the user's query comprehensively.` + (attached ? `\n\nAlso consider the attached file:\n${contextText}` : '');
             }
         }
 
@@ -328,6 +642,7 @@ async function send() {
         save(); addMsg('assistant', e);
     }
     state.generating = false;
+    updateSendButtonState();
 }
 
 // ===== GRADIO API (v5.x + v4.x + fallbacks) =====
