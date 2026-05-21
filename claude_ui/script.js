@@ -222,13 +222,30 @@ function addMsg(role, content, anim = true) {
         body = esc(content).replace(/\n/g, '<br>');
     }
 
+    // Action buttons for assistant messages
+    const actions = role === 'assistant' ? `
+        <div class="msg-actions">
+            <button class="msg-action-btn" onclick="copyMsgText(this)" title="Copy text">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <span>Copy</span>
+            </button>
+            <button class="msg-action-btn" onclick="downloadMsgPdf(this)" title="Download as PDF">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+                <span>PDF</span>
+            </button>
+        </div>` : '';
+
     d.innerHTML = `<div class="msg-inner">
         <div class="msg-avatar">${avatar}</div>
         <div class="msg-content">
             <div class="msg-sender">${name}</div>
             <div class="msg-body">${body}</div>
+            ${actions}
         </div>
     </div>`;
+
+    // Store raw markdown on the element for PDF/copy
+    if (role === 'assistant') d.dataset.raw = content;
 
     messagesArea.appendChild(d);
     if (typeof hljs !== 'undefined') d.querySelectorAll('pre code').forEach(b => hljs.highlightElement(b));
@@ -416,6 +433,113 @@ function toDoc() {
     a.click();
 }
 
+// ===== MESSAGE ACTIONS =====
+function copyMsgText(btn) {
+    const msgEl = btn.closest('.msg');
+    if (!msgEl) return;
+    const rawText = msgEl.dataset.raw || msgEl.querySelector('.msg-body').textContent;
+    navigator.clipboard.writeText(rawText).then(() => {
+        const span = btn.querySelector('span');
+        const origText = span.textContent;
+        span.textContent = 'Copied!';
+        btn.style.borderColor = '#10b981';
+        btn.style.color = '#10b981';
+        setTimeout(() => {
+            span.textContent = origText;
+            btn.style.borderColor = '';
+            btn.style.color = '';
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy text: ', err);
+        alert('Failed to copy text. Please try again.');
+    });
+}
+
+function downloadMsgPdf(btn) {
+    const msgEl = btn.closest('.msg');
+    if (!msgEl) return;
+    
+    const bodyEl = msgEl.querySelector('.msg-body');
+    if (!bodyEl) return;
+    
+    const span = btn.querySelector('span');
+    const origText = span.textContent;
+    span.textContent = 'Generating...';
+    btn.disabled = true;
+    
+    const div = document.createElement('div');
+    div.style.cssText = 'padding: 40px; font-family: "Inter", -apple-system, sans-serif; color: #1a1714; max-width: 800px; background: #ffffff; line-height: 1.6;';
+    
+    const headerHtml = `
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4f1ea; padding-bottom: 15px; margin-bottom: 30px;">
+            <div>
+                <h1 style="margin: 0; font-size: 22px; font-weight: 700; color: #c96442; font-family: 'Inter', sans-serif; letter-spacing: -0.5px;">AetherMind</h1>
+                <p style="margin: 2px 0 0 0; font-size: 11px; color: #7f7a75; font-weight: 500; text-transform: uppercase; letter-spacing: 1px;">AI Startup Mentor for Indian Entrepreneurs</p>
+            </div>
+            <div style="text-align: right;">
+                <span style="font-size: 11px; color: #9c958f; font-weight: 500;">DOCUMENT GENERATED</span>
+                <p style="margin: 2px 0 0 0; font-size: 12px; color: #4e4a46; font-weight: 600;">${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+            </div>
+        </div>
+    `;
+    
+    const stylesHtml = `
+        <style>
+            .pdf-content { font-size: 13.5px; color: #2d2a26; }
+            .pdf-content p { margin: 0 0 12px 0; }
+            .pdf-content h1, .pdf-content h2, .pdf-content h3, .pdf-content h4 { color: #1a1714; font-weight: 600; margin-top: 20px; margin-bottom: 10px; }
+            .pdf-content h1 { font-size: 18px; border-bottom: 1px solid #f4f1ea; padding-bottom: 4px; }
+            .pdf-content h2 { font-size: 16px; }
+            .pdf-content h3 { font-size: 14.5px; }
+            .pdf-content ul, .pdf-content ol { margin: 0 0 15px 20px; padding: 0; }
+            .pdf-content li { margin-bottom: 6px; }
+            .pdf-content strong { color: #c96442; font-weight: 600; }
+            .pdf-content blockquote { border-left: 3px solid #c96442; padding-left: 14px; margin: 15px 0; color: #7f7a75; font-style: italic; }
+            .pdf-content code { background: #f5f2eb; padding: 2px 5px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+            .pdf-content pre { background: #1e1e2e; color: #cdd6f4; border-radius: 8px; padding: 14px; overflow-x: auto; margin: 15px 0; }
+            .pdf-content pre code { background: none; padding: 0; font-size: 11px; }
+            .pdf-content table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+            .pdf-content th, .pdf-content td { border: 1px solid #e6e2da; padding: 8px 12px; text-align: left; font-size: 12.5px; }
+            .pdf-content th { background-color: #fcfbfa; font-weight: 600; }
+            .pdf-content input[type="checkbox"] { margin-right: 8px; transform: scale(1.1); vertical-align: middle; }
+        </style>
+    `;
+    
+    const footerHtml = `
+        <div style="margin-top: 40px; border-top: 1px solid #f4f1ea; padding-top: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: #9c958f;">
+            <span>AetherMind mentor report. All rights reserved.</span>
+            <span>https://aethermind.in</span>
+        </div>
+    `;
+    
+    div.innerHTML = stylesHtml + headerHtml + `<div class="pdf-content">${bodyEl.innerHTML}</div>` + footerHtml;
+    
+    const activeConv = active();
+    const titleSnippet = activeConv ? activeConv.title.replace(/[^a-z0-9]/gi, '_').substring(0, 20) : 'Response';
+    const filename = `AetherMind_Mentor_${titleSnippet}_${Date.now().toString().substring(8)}.pdf`;
+    
+    const options = {
+        margin: [0.5, 0.5, 0.5, 0.5],
+        filename: filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+    
+    html2pdf().set(options).from(div).save().then(() => {
+        span.textContent = 'Downloaded!';
+        setTimeout(() => {
+            span.textContent = origText;
+            btn.disabled = false;
+        }, 2000);
+    }).catch(err => {
+        console.error('PDF generation error:', err);
+        span.textContent = origText;
+        btn.disabled = false;
+        alert('Failed to generate PDF. Please try again.');
+    });
+}
+
 // ===== UTILS =====
 function scrollEnd() { requestAnimationFrame(() => { messagesScroll.scrollTop = messagesScroll.scrollHeight; }); }
 function autoGrow(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 150) + 'px'; }
@@ -423,6 +547,8 @@ function esc(s) { const d = document.createElement('div'); d.textContent = s; re
 
 window.loadConv = loadConv;
 window.delConv = delConv;
+window.copyMsgText = copyMsgText;
+window.downloadMsgPdf = downloadMsgPdf;
 
 document.addEventListener('DOMContentLoaded', init);
 

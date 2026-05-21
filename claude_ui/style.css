@@ -443,6 +443,61 @@ button { cursor: pointer; font-family: var(--font); }
 
 .msg-body a { color: var(--accent); }
 
+/* Message Actions */
+.msg-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.msg:hover .msg-actions {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.msg-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    font-family: var(--font);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.msg-action-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text);
+    border-color: var(--accent);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.msg-action-btn svg {
+    color: var(--text-muted);
+    transition: color 0.15s ease;
+}
+
+.msg-action-btn:hover svg {
+    color: var(--accent);
+}
+
+/* Touch fallback: always show actions on mobile */
+@media (max-width: 768px) {
+    .msg-actions {
+        opacity: 0.7;
+        transform: translateY(0);
+    }
+}
+
 /* Typing */
 .typing { display: flex; gap: 4px; padding: 4px 0; }
 .typing-dot {
