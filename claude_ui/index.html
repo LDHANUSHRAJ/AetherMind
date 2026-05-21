@@ -58,6 +58,35 @@
                 <div id="recentsList"></div>
             </div>
 
+            <!-- Workspace Tools -->
+            <div class="sidebar-tools">
+                <div class="conv-section-label">Mentor Tools</div>
+                <button class="nav-item tool-btn" onclick="openArtifact('startup_scorecard')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    <span>Health Scorecard</span>
+                </button>
+                <button class="nav-item tool-btn" onclick="openArtifact('compliance_calendar')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span>Compliance Dates</span>
+                </button>
+                <button class="nav-item tool-btn" onclick="openArtifact('dilution_sandbox')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                    <span>Cap Table Dilution</span>
+                </button>
+                <button class="nav-item tool-btn" onclick="openArtifact('investor_matcher')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                    <span>Investor Matcher</span>
+                </button>
+                <button class="nav-item tool-btn" onclick="openArtifact('canvas_builder')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
+                    <span>Model Canvas (BMC)</span>
+                </button>
+                <button class="nav-item tool-btn" onclick="openArtifact('pitch_evaluator')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+                    <span>Pitch Practice</span>
+                </button>
+            </div>
+
             <!-- User Profile -->
             <div class="sidebar-user">
                 <div class="user-avatar">D</div>
@@ -140,6 +169,26 @@
                 </div>
             </div>
         </main>
+
+        <!-- ===== ARTIFACT WORKSPACE PANE ===== -->
+        <aside class="artifact-pane" id="artifactPane">
+            <div class="art-header">
+                <div class="art-header-left">
+                    <h3 id="artTitle">Workspace Tool</h3>
+                </div>
+                <div class="art-header-right">
+                    <button class="icon-btn" id="artExportBtn" title="Export this report as PDF" onclick="exportArtPdf()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+                    </button>
+                    <button class="icon-btn" id="artCloseBtn" title="Close Workspace" onclick="closeArtifact()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="art-body" id="artBody">
+                <!-- Dynamically injected dashboards / timelines / calculators go here -->
+            </div>
+        </aside>
     </div>
 
     <!-- ===== SETTINGS MODAL ===== -->
