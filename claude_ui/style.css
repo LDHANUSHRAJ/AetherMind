@@ -926,3 +926,15 @@ button { cursor: pointer; font-family: var(--font); }
     gap: 2px;
 }
 
+.file-preview-status-badge {
+    background: #10b981;
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+

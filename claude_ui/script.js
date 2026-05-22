@@ -293,7 +293,19 @@ function handleFileSelect(e) {
                     const overlay = $('.file-preview-loading-overlay');
                     if (overlay) overlay.remove();
                     
-                    if (!state.attachedFile.isStartupRelated) {
+                    if (state.attachedFile.isStartupRelated) {
+                        const wrap = $('.file-preview-image-wrap');
+                        if (wrap) {
+                            const badge = document.createElement('div');
+                            badge.className = 'file-preview-status-badge';
+                            badge.style.position = 'absolute';
+                            badge.style.bottom = '2px';
+                            badge.style.left = '2px';
+                            badge.title = 'Startup related content detected!';
+                            badge.innerHTML = '🚀 Startup';
+                            wrap.appendChild(badge);
+                        }
+                    } else {
                         const wrap = $('.file-preview-image-wrap');
                         if (wrap) {
                             const badge = document.createElement('div');
@@ -347,7 +359,16 @@ function handleFileSelect(e) {
             
             $('.file-loader-spin')?.remove();
             
-            if (!state.attachedFile.isStartupRelated) {
+            if (state.attachedFile.isStartupRelated) {
+                const chip = $('.file-preview-chip');
+                if (chip) {
+                    const badge = document.createElement('span');
+                    badge.className = 'file-preview-status-badge';
+                    badge.innerHTML = '🚀 Startup';
+                    badge.style.marginLeft = '6px';
+                    chip.insertBefore(badge, $('#removeFileBtn'));
+                }
+            } else {
                 const chip = $('.file-preview-chip');
                 if (chip) {
                     const badge = document.createElement('span');
@@ -606,21 +627,18 @@ async function send() {
     try {
         let contextText = text;
         if (attached) {
-            const userMsg = text || "Please analyze this uploaded file.";
-            const isRelated = attached.isStartupRelated ? "YES" : "NO";
-            contextText = `[Attached File: ${attached.name}]
-[Detected File Text]:
+            const userMsg = text || "Please analyze this uploaded file and tell me what you see, and how it relates to building a startup or product.";
+            contextText = `Attached File Name: ${attached.name}
+Extracted Text/Content from this file:
 """
-${attached.text || "[No readable text content found]"}
+${attached.text || "[No readable text content extracted. The file is primarily visual or has an un-scannable layout]"}
 """
 
-[Startup Relevance Check]: ${isRelated}
+User Message: ${userMsg}
 
-User Query: ${userMsg}
-
-[System Instruction]: The user has attached a file/image. 
-1. If [Startup Relevance Check] is YES, perform a detailed startup mentor analysis on the detected text/content and answer the user's query.
-2. If [Startup Relevance Check] is NO, politely inform the user that AetherMind only mentors on entrepreneurship and startups. State briefly what was detected from the file, and guide them to upload startup-related content.`;
+[Incubator Mentor Instructions]:
+1. If the extracted content or user message is related to entrepreneurship, business strategy, coding, tech startups, product MVPs, design wireframes, marketing, fundraising, or corporate setups, perform a comprehensive, high-fidelity startup advisory response analyzing the file's content and answering the user's message.
+2. If the file is completely out of scope and unrelated to building a business or product (e.g. general memes, recipes, or casual chat), politely advise them that AetherMind is focused on startup incubation and mentoring. Briefly explain what you detected from the file, and guide them on what kind of business-relevant material would be useful to analyze.`;
         }
 
         // Frontend RAG: If search API is enabled and query asks for search
