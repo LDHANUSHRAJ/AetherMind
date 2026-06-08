@@ -45,20 +45,21 @@ def predict(message, history):
 # UI Design
 with gr.Blocks(theme=gr.themes.Soft()) as demo:
     gr.Markdown("""
-    # 🧠 AetherMind: AI Startup Mentor
-    ### Empowering Indian Entrepreneurs with Local AI
-    *Ask about business validation, legal setups, investor pitches, and more.*
+    # 🧠 AetherMind: Computational AI Assistant
+    ### Specialized in Mathematics, Statistics, CS, Coding, Cybersecurity, & Web Dev
+    *Ask about linear algebra, statistics, algorithm complexity, coding logic, and secure protocols.*
     """)
     
     chatbot = gr.ChatInterface(
         fn=predict,
         title="Chat with AetherMind",
-        description="A specialized AI mentor for founders, running 100% locally.",
+        description="A precise computational AI assistant specializing in Math, Stats, CS, and Coding, running 100% locally.",
         examples=[
-            "How do I validate my startup idea?",
-            "Explain the Indian legal setup for a Pvt Ltd company.",
-            "Write a cold email to a seed investor.",
-            "What should be in my pre-seed pitch deck?"
+            "Find the derivative of f(x) = x^2 * sin(x)",
+            "Calculate the mean, variance, and standard deviation of [4, 8, 6, 2, 10]",
+            "Explain the Master Theorem in complexity analysis with an example.",
+            "Implement a binary search algorithm in Python.",
+            "Explain SQL Injection (SQLi) vulnerabilities."
         ]
     )
 

@@ -10,7 +10,7 @@ from unsloth import is_bfloat16_supported
 # Choose between:
 # - "unsloth/gemma-2-2b-it-bnb-4bit" (Lightweight, fast, uses ~1.6 GB disk / 5GB VRAM)
 # - "unsloth/gemma-2-7b-it-bnb-4bit" (Standard high quality, uses ~5.5 GB disk / 12GB VRAM)
-# - Or point to your local downloaded folder, e.g., r"C:\Users\Dhanu\foundermind\model\base"
+# - Or point to your local downloaded folder, e.g., r"C:\Users\Dhanu\aethermind\model\base"
 model_name = "unsloth/gemma-2-2b-it-bnb-4bit" 
 max_seq_length = 2048
 dataset_path = "../data/aethermind_dataset.json"
@@ -64,11 +64,11 @@ trainer = SFTTrainer(
     dataset_num_proc = 2,
     packing = False, # Can make training 5x faster for short sequences.
     args = TrainingArguments(
-        per_device_train_batch_size = 2,
-        gradient_accumulation_steps = 4,
+        per_device_train_batch_size = 1,
+        gradient_accumulation_steps = 8,
         warmup_steps = 5,
-        max_steps = 60, # Small number for demonstration; increase for full dataset
-        learning_rate = 2e-4,
+        max_steps = 25, # Small number for demonstration; increase for full dataset
+        learning_rate = 5e-5,
         fp16 = not is_bfloat16_supported(),
         bf16 = is_bfloat16_supported(),
         logging_steps = 1,

@@ -1,9 +1,13 @@
-/* ============================================================
-   AetherMind — Script (Gradio 5.x compatible)
-   ============================================================ */
+/* ═══════════════════════════════════════════════════════════════════
+   AetherMind v2 — Elite Computational AI Assistant
+   Full-featured script: Gradio, Math rendering, Tools, Exports
+   ═══════════════════════════════════════════════════════════════════ */
 
+'use strict';
+
+/* ── State ── */
 const state = {
-    conversations: JSON.parse(localStorage.getItem('am_convs') || '[]'),
+    conversations: JSON.parse(localStorage.getItem('am_convs_v2') || '[]'),
     activeId: null,
     gradioUrl: localStorage.getItem('am_url') || '',
     searchApiKey: localStorage.getItem('am_search_key') || '',
@@ -11,399 +15,465 @@ const state = {
     supabaseKey: localStorage.getItem('am_supabase_key') || '',
     generating: false,
     attachedFile: null,
+    theme: localStorage.getItem('am_theme') || 'dark',
 };
 
+/* ── DOM Helpers ── */
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 
-// DOM
-const sidebar = $('#sidebar');
-const newChatBtn = $('#newChatBtn');
-const searchToggle = $('#searchToggle');
-const chatsToggle = $('#chatsToggle');
-const sidebarSearch = $('#sidebarSearch');
-const searchInput = $('#searchInput');
-const sidebarConversations = $('#sidebarConversations');
-const starredList = $('#starredList');
-const recentsList = $('#recentsList');
-const welcomeScreen = $('#welcomeScreen');
-const welcomeHeading = $('#welcomeHeading');
-const messagesArea = $('#messagesArea');
-const messagesScroll = $('#messagesScroll');
-const msgInput = $('#msgInput');
-const sendBtn = $('#sendBtn');
-const suggestionRow = $('#suggestionRow');
-const settingsBtn = $('#settingsBtn');
-const settingsModal = $('#settingsModal');
-const closeModal = $('#closeModal');
-const gradioUrlInput = $('#gradioUrl');
-const searchApiInput = $('#searchApiKey');
-const supabaseUrlInput = $('#supabaseUrl');
-const supabaseKeyInput = $('#supabaseKey');
-const connectBtn = $('#connectBtn');
-const modalStatus = $('#modalStatus');
-const connDot = $('#connDot');
-const menuToggle = $('#menuToggle');
-const exportModal = $('#exportModal');
-const exportPdfBtn = $('#exportPdfBtn');
-const exportPdfBtn2 = $('#exportPdfBtn2');
-const exportDocBtn = $('#exportDocBtn');
-const shareCloudBtn = $('#shareCloudBtn');
-const closeExportModal = $('#closeExportModal');
-
-// Collapsible Sidebar & File Attachment DOM Elements
-const sidebarToggleBtn = $('#sidebarToggleBtn');
-const sidebarCollapseBtn = $('#sidebarCollapseBtn');
-const fileInput = $('#fileInput');
-const attachBtn = $('#attachBtn');
-const filePreviewContainer = $('#filePreviewContainer');
-
-// ===== INIT =====
-function init() {
-    setGreeting();
-    setupMarkdown();
-    loadUrl();
-    renderSidebar();
-    bind();
-    autoGrow(msgInput);
-    
-    // Restore sidebar collapse state
-    if (localStorage.getItem('am_sidebar_collapsed') === 'true') {
-        const appEl = $('.app');
-        if (appEl) appEl.classList.add('sidebar-collapsed');
+/* ── KaTeX Math Rendering ── */
+function renderMathInDocument() {
+    // Auto-render on global document if KaTeX is available
+    if (typeof renderMathInElement !== 'undefined') {
+        try {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    { left: '$$', right: '$$', display: true },
+                    { left: '$', right: '$', display: false },
+                    { left: '\\[', right: '\\]', display: true },
+                    { left: '\\(', right: '\\)', display: false },
+                ],
+                throwOnError: false,
+            });
+        } catch (e) { console.warn('KaTeX render error:', e); }
     }
-    
-    if (state.conversations.length > 0) loadConv(state.conversations[0].id);
 }
 
+function renderMathInElement_safe(el) {
+    if (typeof renderMathInElement !== 'undefined') {
+        try {
+            renderMathInElement(el, {
+                delimiters: [
+                    { left: '$$', right: '$$', display: true },
+                    { left: '$', right: '$', display: false },
+                    { left: '\\[', right: '\\]', display: true },
+                    { left: '\\(', right: '\\)', display: false },
+                ],
+                throwOnError: false,
+                output: 'html',
+            });
+        } catch (e) { console.warn('KaTeX element render error:', e); }
+    }
+}
+
+/* ── Particle Background ── */
+function initParticles() {
+    const canvas = $('#particleCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const particles = Array.from({ length: 55 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.35,
+        vy: (Math.random() - 0.5) * 0.35,
+        size: Math.random() * 1.8 + 0.4,
+        opacity: Math.random() * 0.4 + 0.05,
+    }));
+
+    function drawParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        const baseColor = isLight ? '80, 60, 180' : '160, 140, 255';
+
+        particles.forEach(p => {
+            p.x += p.vx; p.y += p.vy;
+            if (p.x < 0) p.x = canvas.width;
+            if (p.x > canvas.width) p.x = 0;
+            if (p.y < 0) p.y = canvas.height;
+            if (p.y > canvas.height) p.y = 0;
+
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${baseColor}, ${p.opacity})`;
+            ctx.fill();
+        });
+
+        // Draw connection lines
+        particles.forEach((p1, i) => {
+            particles.slice(i + 1).forEach(p2 => {
+                const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+                if (dist < 110) {
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.strokeStyle = `rgba(${baseColor}, ${0.06 * (1 - dist / 110)})`;
+                    ctx.lineWidth = 0.7;
+                    ctx.stroke();
+                }
+            });
+        });
+
+        requestAnimationFrame(drawParticles);
+    }
+
+    drawParticles();
+    window.addEventListener('resize', () => {
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
+    });
+}
+
+/* ── Marked.js Setup ── */
+function setupMarkdown() {
+    if (typeof marked === 'undefined') return;
+
+    const renderer = new marked.Renderer();
+
+    // Custom code block with copy button
+    renderer.code = function(code, lang) {
+        const langLabel = lang ? lang.toUpperCase() : 'CODE';
+        const escapedCode = code
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+
+        // Highlight if hljs available
+        let highlighted = escapedCode;
+        if (typeof hljs !== 'undefined' && lang && hljs.getLanguage(lang)) {
+            try {
+                highlighted = hljs.highlight(code, { language: lang }).value;
+            } catch { /* use plain */ }
+        }
+
+        const uniqueId = 'code_' + Math.random().toString(36).substr(2, 8);
+        return `
+        <div class="code-block-wrapper">
+            <div class="code-block-header">
+                <span class="code-lang-badge">${langLabel}</span>
+                <button class="code-copy-btn" onclick="copyCodeBlock(this, '${uniqueId}')">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2"/>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    </svg>
+                    Copy
+                </button>
+            </div>
+            <pre><code id="${uniqueId}" class="hljs language-${lang || ''}">${highlighted}</code></pre>
+        </div>`;
+    };
+
+    // Custom heading with anchor
+    renderer.heading = function(text, level) {
+        const anchor = text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+        return `<h${level} id="${anchor}">${text}</h${level}>`;
+    };
+
+    marked.setOptions({ breaks: true, gfm: true });
+    marked.use({ renderer });
+}
+
+function copyCodeBlock(btn, id) {
+    const codeEl = document.getElementById(id);
+    if (!codeEl) return;
+    const text = codeEl.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copied!`;
+        btn.style.color = '#10b981';
+        setTimeout(() => {
+            btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy`;
+            btn.style.color = '';
+        }, 2000);
+    });
+}
+window.copyCodeBlock = copyCodeBlock;
+
+/* ── Toast Notification ── */
+function toast(msg, type = 'default', duration = 2500) {
+    const container = $('#toastContainer');
+    if (!container) return;
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    const icons = { success: '✓', error: '✕', default: '●' };
+    el.innerHTML = `<span style="color:${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : 'var(--accent-mid)'}">${icons[type] || icons.default}</span> ${msg}`;
+    container.appendChild(el);
+    setTimeout(() => {
+        el.style.animation = 'toastOut 0.3s ease forwards';
+        setTimeout(() => el.remove(), 300);
+    }, duration);
+}
+
+/* ── Theme ── */
+function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    state.theme = t;
+    localStorage.setItem('am_theme', t);
+    const icon = $('#themeIcon');
+    const label = $('#themeLabel');
+    if (t === 'dark') {
+        if (icon) icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+        if (label) label.textContent = 'Light Mode';
+    } else {
+        if (icon) icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+        if (label) label.textContent = 'Dark Mode';
+    }
+}
+
+/* ── Greeting ── */
 function setGreeting() {
     const h = new Date().getHours();
-    let g = 'Good morning';
-    if (h >= 12 && h < 17) g = 'Good afternoon';
-    else if (h >= 17) g = 'Good evening';
-    welcomeHeading.textContent = `${g}, Dhanush`;
+    let g = h >= 5 && h < 12 ? 'Good morning' :
+            h >= 12 && h < 17 ? 'Good afternoon' :
+            h >= 17 && h < 22 ? 'Good evening' :
+            'Good night';
+    const el = $('#welcomeHeading');
+    if (el) el.textContent = `${g}, Dhanush`;
 }
 
-function setupMarkdown() {
-    if (typeof marked !== 'undefined') {
-        marked.setOptions({
-            highlight: (code, lang) => {
-                if (typeof hljs !== 'undefined' && lang && hljs.getLanguage(lang))
-                    return hljs.highlight(code, { language: lang }).value;
-                return code;
-            },
-            breaks: true, gfm: true,
-        });
-        
-        // Custom renderer for checkboxes
-        const renderer = new marked.Renderer();
-        const originalListitem = renderer.listitem.bind(renderer);
-        renderer.listitem = function(text, task, checked) {
-            if (task) {
-                return `<li class="task-list-item" style="list-style-type: none; margin-left: -20px; margin-bottom: 8px;">
-                    <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" style="margin-top: 4px;" ${checked ? 'checked' : ''}>
-                        <span>${text.replace(/<input.*?>/, '')}</span>
-                    </label>
-                </li>`;
-            }
-            return originalListitem(text, task, checked);
-        };
-        marked.use({ renderer });
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+function init() {
+    applyTheme(state.theme);
+    setGreeting();
+    setupMarkdown();
+    initParticles();
+    loadSettings();
+    renderSidebar();
+    bindEvents();
+    autoGrow($('#msgInput'));
+
+    // Restore sidebar collapse
+    if (localStorage.getItem('am_sidebar_collapsed') === 'true') {
+        $('#app')?.classList.add('sidebar-collapsed');
+    }
+
+    // Load last conversation if exists
+    if (state.conversations.length > 0) {
+        loadConv(state.conversations[0].id);
     }
 }
 
-// ===== EVENTS =====
-function bind() {
-    newChatBtn.addEventListener('click', newChat);
-    sendBtn.addEventListener('click', send);
-    msgInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
-    msgInput.addEventListener('input', () => { updateSendButtonState(); autoGrow(msgInput); });
+document.addEventListener('DOMContentLoaded', init);
 
-    searchToggle.addEventListener('click', () => {
-        const v = sidebarSearch.style.display === 'none';
-        sidebarSearch.style.display = v ? 'block' : 'none';
-        if (v) searchInput.focus();
+/* ══════════════════════════════════════
+   EVENT BINDING
+══════════════════════════════════════ */
+function bindEvents() {
+    // Chat
+    $('#newChatBtn')?.addEventListener('click', newChat);
+    $('#sendBtn')?.addEventListener('click', send);
+    $('#msgInput')?.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
     });
-    searchInput.addEventListener('input', () => renderSidebar(searchInput.value.trim().toLowerCase()));
-
-    chatsToggle.addEventListener('click', () => {
-        sidebarConversations.style.display = sidebarConversations.style.display === 'none' ? 'block' : 'block';
+    $('#msgInput')?.addEventListener('input', () => {
+        updateSendBtn();
+        autoGrow($('#msgInput'));
     });
 
-    settingsBtn.addEventListener('click', () => settingsModal.classList.add('visible'));
-    closeModal.addEventListener('click', () => settingsModal.classList.remove('visible'));
-    settingsModal.addEventListener('click', e => { if (e.target === settingsModal) settingsModal.classList.remove('visible'); });
-    connectBtn.addEventListener('click', doConnect);
+    // Sidebar
+    $('#searchToggle')?.addEventListener('click', () => {
+        const s = $('#sidebarSearch');
+        s?.classList.toggle('visible');
+        if (s?.classList.contains('visible')) $('#searchInput')?.focus();
+    });
+    $('#searchInput')?.addEventListener('input', e => renderSidebar(e.target.value.trim().toLowerCase()));
 
-    // Collapsible Sidebar Events (Desktop & Mobile)
-    menuToggle?.addEventListener('click', () => sidebar.classList.toggle('open'));
-    sidebarCollapseBtn?.addEventListener('click', () => {
+    $('#sidebarCollapseBtn')?.addEventListener('click', () => {
         if (window.innerWidth <= 768) {
-            sidebar.classList.remove('open');
+            $('#sidebar')?.classList.remove('open');
         } else {
-            $('.app')?.classList.add('sidebar-collapsed');
+            $('#app')?.classList.add('sidebar-collapsed');
             localStorage.setItem('am_sidebar_collapsed', 'true');
         }
     });
-    sidebarToggleBtn?.addEventListener('click', () => {
-        $('.app')?.classList.remove('sidebar-collapsed');
+    $('#sidebarToggleBtn')?.addEventListener('click', () => {
+        $('#app')?.classList.remove('sidebar-collapsed');
         localStorage.setItem('am_sidebar_collapsed', 'false');
     });
+    $('#menuToggle')?.addEventListener('click', () => $('#sidebar')?.classList.toggle('open'));
 
-    // File Attachment Events
-    attachBtn?.addEventListener('click', () => fileInput?.click());
-    fileInput?.addEventListener('change', handleFileSelect);
+    // Theme
+    $('#themeToggleBtn')?.addEventListener('click', () => {
+        applyTheme(state.theme === 'dark' ? 'light' : 'dark');
+    });
 
-    // Export & Share
-    exportPdfBtn2?.addEventListener('click', () => exportModal.classList.add('visible'));
-    closeExportModal?.addEventListener('click', () => exportModal.classList.remove('visible'));
-    exportModal?.addEventListener('click', e => { if (e.target === exportModal) exportModal.classList.remove('visible'); });
-    exportPdfBtn?.addEventListener('click', () => { toPdf(); exportModal.classList.remove('visible'); });
-    exportDocBtn?.addEventListener('click', () => { toDoc(); exportModal.classList.remove('visible'); });
-    shareCloudBtn?.addEventListener('click', () => { shareToCloud(); exportModal.classList.remove('visible'); });
+    // Settings Modal
+    $('#settingsBtn')?.addEventListener('click', () => $('#settingsModal')?.classList.add('visible'));
+    $('#closeModal')?.addEventListener('click', () => $('#settingsModal')?.classList.remove('visible'));
+    $('#settingsModal')?.addEventListener('click', e => {
+        if (e.target === $('#settingsModal')) $('#settingsModal')?.classList.remove('visible');
+    });
+    $('#connectBtn')?.addEventListener('click', doConnect);
 
-    $$('.suggestion').forEach(s => s.addEventListener('click', () => {
-        msgInput.value = s.dataset.prompt;
-        updateSendButtonState();
-        autoGrow(msgInput);
-        send();
-    }));
-}
-// ===== FILE ATTACHMENT LOGIC =====
-function updateSendButtonState() {
-    const hasText = msgInput.value.trim().length > 0;
-    const hasFile = !!state.attachedFile;
-    const fileLoading = state.attachedFile ? state.attachedFile.loading : false;
-    
-    sendBtn.disabled = (!hasText && !hasFile) || fileLoading || state.generating;
-}
+    // Export Modal
+    $('#exportMsgBtn')?.addEventListener('click', () => $('#exportModal')?.classList.add('visible'));
+    $('#mobileExportBtn')?.addEventListener('click', () => $('#exportModal')?.classList.add('visible'));
+    $('#closeExportModal')?.addEventListener('click', () => $('#exportModal')?.classList.remove('visible'));
+    $('#exportModal')?.addEventListener('click', e => {
+        if (e.target === $('#exportModal')) $('#exportModal')?.classList.remove('visible');
+    });
+    $('#exportPdfBtn')?.addEventListener('click', () => { toPdf(); $('#exportModal')?.classList.remove('visible'); });
+    $('#exportDocBtn')?.addEventListener('click', () => { toDoc(); $('#exportModal')?.classList.remove('visible'); });
+    $('#exportMdBtn')?.addEventListener('click', () => { toMarkdown(); $('#exportModal')?.classList.remove('visible'); });
+    $('#shareCloudBtn')?.addEventListener('click', () => { shareToCloud(); $('#exportModal')?.classList.remove('visible'); });
 
-function checkStartupRelevance(text) {
-    if (!text) return false;
-    const keywords = [
-        'startup', 'entrepreneur', 'founder', 'co-founder', 'pitch', 'deck', 'equity', 'funding', 'investor',
-        'venture', 'capital', 'esop', 'cap table', 'dilution', 'compliance', 'legal', 'gst', 'roc', 'llp',
-        'pvt ltd', 'private limited', 'business', 'revenue', 'model', 'canvas', 'bmc', 'customer', 'market',
-        'tam', 'sam', 'som', 'cac', 'ltv', 'churn', 'product', 'market fit', 'pmf', 'bootstrap', 'angel',
-        'seed', 'pre-seed', 'series a', 'series b', 'valuation', 'incubator', 'accelerator', 'traction',
-        'pitching', 'investing', 'monetization', 'forecast', 'projections', 'finance', 'roi', 'burn rate',
-        'runway', 'scaling', 'pivot', 'disrupt', 'innovation', 'ideation', 'mvp', 'minimum viable product',
-        'incubation', 'mentorship', 'advisor', 'nda', 'term sheet', 'safe note', 'convertible note'
-    ];
-    const lower = text.toLowerCase();
-    for (const kw of keywords) {
-        const regex = new RegExp('\\b' + kw.replace(' ', '\\s+') + '\\b', 'i');
-        if (regex.test(lower)) return true;
-    }
-    return false;
-}
+    // File Attachment
+    $('#attachBtn')?.addEventListener('click', () => $('#fileInput')?.click());
+    $('#fileInput')?.addEventListener('change', handleFileSelect);
 
-function resizeImageToDataUrl(file, callback) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
-            const canvas = document.createElement('canvas');
-            let width = img.width;
-            let height = img.height;
-            const max_size = 400;
-            
-            if (width > height) {
-                if (width > max_size) {
-                    height *= max_size / width;
-                    width = max_size;
-                }
-            } else {
-                if (height > max_size) {
-                    width *= max_size / height;
-                    height = max_size;
-                }
+    // Suggestion Cards
+    $$('.suggestion-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const prompt = card.dataset.prompt;
+            if (!prompt) return;
+            const inp = $('#msgInput');
+            if (inp) {
+                inp.value = prompt;
+                updateSendBtn();
+                autoGrow(inp);
             }
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
-            callback(canvas.toDataURL('image/jpeg', 0.75));
-        };
-        img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
+            send();
+        });
+    });
+
+    // Mobile sidebar overlay close
+    document.addEventListener('click', e => {
+        const sidebar = $('#sidebar');
+        if (window.innerWidth <= 768 && sidebar?.classList.contains('open')) {
+            if (!sidebar.contains(e.target) && e.target !== $('#menuToggle')) {
+                sidebar.classList.remove('open');
+            }
+        }
+    });
+}
+
+/* ══════════════════════════════════════
+   FILE ATTACHMENT
+══════════════════════════════════════ */
+function updateSendBtn() {
+    const hasText  = ($('#msgInput')?.value.trim().length || 0) > 0;
+    const hasFile  = !!state.attachedFile;
+    const loading  = state.attachedFile?.loading ?? false;
+    const sendBtn  = $('#sendBtn');
+    if (sendBtn) sendBtn.disabled = (!hasText && !hasFile) || loading || state.generating;
 }
 
 function removeAttachedFile() {
     state.attachedFile = null;
-    fileInput.value = '';
-    filePreviewContainer.innerHTML = '';
-    filePreviewContainer.style.display = 'none';
-    updateSendButtonState();
+    const fi = $('#fileInput');
+    if (fi) fi.value = '';
+    const fc = $('#filePreviewContainer');
+    if (fc) { fc.innerHTML = ''; fc.style.display = 'none'; }
+    updateSendBtn();
+}
+
+function checkRelevance(text) {
+    if (!text) return false;
+    const kws = ['math', 'calculus', 'derivative', 'integral', 'matrix', 'eigen', 'determinant', 'probability',
+        'statistics', 'variance', 'distribution', 'hypothesis', 'regression', 'bayesian', 'algorithm', 'sort',
+        'binary', 'recursion', 'complexity', 'big o', 'graph', 'tree', 'network', 'tcp', 'http', 'sql',
+        'database', 'cryptography', 'aes', 'rsa', 'hash', 'xss', 'injection', 'security', 'html', 'css',
+        'javascript', 'python', 'java', 'code', 'function', 'class', 'array', 'string', 'pointer'];
+    const lower = text.toLowerCase();
+    return kws.some(k => lower.includes(k));
 }
 
 function handleFileSelect(e) {
     const file = e.target.files[0];
     if (!file) return;
 
-    filePreviewContainer.innerHTML = '';
-    filePreviewContainer.style.display = 'flex';
+    const fc = $('#filePreviewContainer');
+    if (fc) { fc.innerHTML = ''; fc.style.display = 'flex'; }
 
     const isImage = file.type.startsWith('image/');
-    
-    state.attachedFile = {
-        name: file.name,
-        type: file.type,
-        text: '',
-        isImage: isImage,
-        dataUrl: null,
-        loading: true,
-        isStartupRelated: false
-    };
-    updateSendButtonState();
+    state.attachedFile = { name: file.name, type: file.type, text: '', isImage, dataUrl: null, loading: true };
+    updateSendBtn();
 
     if (isImage) {
-        const tempUrl = URL.createObjectURL(file);
-        filePreviewContainer.innerHTML = `
+        const tmpUrl = URL.createObjectURL(file);
+        if (fc) fc.innerHTML = `
             <div class="file-preview-image-wrap">
-                <img src="${tempUrl}" class="file-preview-thumbnail">
-                <div class="file-preview-loading-overlay">
-                    <svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
-                        <path d="M12 2a10 10 0 0 1 10 10"/>
-                    </svg>
+                <img src="${tmpUrl}" class="file-preview-thumbnail">
+                <div class="fp-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);border-radius:6px;">
+                    <svg class="spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2a10 10 0 0 1 10 10"/></svg>
                 </div>
-                <button class="file-preview-remove" id="removeFileBtn">&times;</button>
-            </div>
-        `;
-        
-        $('#removeFileBtn')?.addEventListener('click', removeAttachedFile);
+                <button class="file-preview-remove" onclick="removeAttachedFile()">×</button>
+            </div>`;
 
-        resizeImageToDataUrl(file, function(dataUrl) {
-            if (state.attachedFile) {
-                state.attachedFile.dataUrl = dataUrl;
-            }
-        });
+        // Resize & store data URL
+        const reader = new FileReader();
+        reader.onload = ev => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let [w, h] = [img.width, img.height];
+                const max = 420;
+                if (w > max) { h = h * max / w; w = max; }
+                else if (h > max) { w = w * max / h; h = max; }
+                canvas.width = w; canvas.height = h;
+                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                if (state.attachedFile) state.attachedFile.dataUrl = canvas.toDataURL('image/jpeg', 0.78);
+            };
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
 
+        // OCR
         if (typeof Tesseract !== 'undefined') {
-            Tesseract.recognize(file, 'eng')
-                .then(({ data: { text } }) => {
-                    if (!state.attachedFile) return;
-                    state.attachedFile.text = text;
-                    state.attachedFile.loading = false;
-                    state.attachedFile.isStartupRelated = checkStartupRelevance(text);
-                    
-                    const overlay = $('.file-preview-loading-overlay');
-                    if (overlay) overlay.remove();
-                    
-                    if (state.attachedFile.isStartupRelated) {
-                        const wrap = $('.file-preview-image-wrap');
-                        if (wrap) {
-                            const badge = document.createElement('div');
-                            badge.className = 'file-preview-status-badge';
-                            badge.style.position = 'absolute';
-                            badge.style.bottom = '2px';
-                            badge.style.left = '2px';
-                            badge.title = 'Startup related content detected!';
-                            badge.innerHTML = '🚀 Startup';
-                            wrap.appendChild(badge);
-                        }
-                    } else {
-                        const wrap = $('.file-preview-image-wrap');
-                        if (wrap) {
-                            const badge = document.createElement('div');
-                            badge.className = 'file-preview-warning-badge';
-                            badge.style.position = 'absolute';
-                            badge.style.bottom = '2px';
-                            badge.style.left = '2px';
-                            badge.title = 'Content might not be startup-related';
-                            badge.innerHTML = '⚠️ Unrelated';
-                            wrap.appendChild(badge);
-                        }
-                    }
-                    updateSendButtonState();
-                })
-                .catch(err => {
-                    console.error("OCR Error:", err);
-                    if (!state.attachedFile) return;
-                    state.attachedFile.loading = false;
-                    const overlay = $('.file-preview-loading-overlay');
-                    if (overlay) overlay.remove();
-                    updateSendButtonState();
-                });
+            Tesseract.recognize(file, 'eng').then(({ data: { text } }) => {
+                if (!state.attachedFile) return;
+                state.attachedFile.text = text;
+                state.attachedFile.loading = false;
+                $('.fp-loading')?.remove();
+                updateSendBtn();
+            }).catch(() => {
+                if (state.attachedFile) state.attachedFile.loading = false;
+                $('.fp-loading')?.remove();
+                updateSendBtn();
+            });
         } else {
             state.attachedFile.loading = false;
-            const overlay = $('.file-preview-loading-overlay');
-            if (overlay) overlay.remove();
-            updateSendButtonState();
+            $('.fp-loading')?.remove();
+            updateSendBtn();
         }
     } else {
-        filePreviewContainer.innerHTML = `
+        if (fc) fc.innerHTML = `
             <div class="file-preview-chip">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-                <span>${file.name}</span>
-                <span class="file-loader-spin" style="margin-left: 4px;">
-                    <svg class="spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 2a10 10 0 0 1 10 10"/>
-                    </svg>
-                </span>
-                <button class="file-preview-remove" id="removeFileBtn">&times;</button>
-            </div>
-        `;
-        $('#removeFileBtn')?.addEventListener('click', removeAttachedFile);
-
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                ${esc(file.name)}
+                <svg class="spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+                <button style="background:none;border:none;color:#ef4444;margin-left:4px;cursor:pointer;" onclick="removeAttachedFile()">×</button>
+            </div>`;
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = ev => {
             if (!state.attachedFile) return;
-            const text = e.target.result;
-            state.attachedFile.text = text;
+            state.attachedFile.text = ev.target.result;
             state.attachedFile.loading = false;
-            state.attachedFile.isStartupRelated = checkStartupRelevance(text);
-            
-            $('.file-loader-spin')?.remove();
-            
-            if (state.attachedFile.isStartupRelated) {
-                const chip = $('.file-preview-chip');
-                if (chip) {
-                    const badge = document.createElement('span');
-                    badge.className = 'file-preview-status-badge';
-                    badge.innerHTML = '🚀 Startup';
-                    badge.style.marginLeft = '6px';
-                    chip.insertBefore(badge, $('#removeFileBtn'));
-                }
-            } else {
-                const chip = $('.file-preview-chip');
-                if (chip) {
-                    const badge = document.createElement('span');
-                    badge.className = 'file-preview-warning-badge';
-                    badge.innerHTML = '⚠️ Unrelated';
-                    badge.style.marginLeft = '6px';
-                    chip.insertBefore(badge, $('#removeFileBtn'));
-                }
-            }
-            updateSendButtonState();
-        };
-        reader.onerror = function() {
-            if (!state.attachedFile) return;
-            state.attachedFile.loading = false;
-            $('.file-loader-spin')?.remove();
-            updateSendButtonState();
+            const spin = fc?.querySelector('.spin');
+            if (spin) spin.remove();
+            updateSendBtn();
         };
         reader.readAsText(file);
     }
 }
 
-// ===== CONVERSATIONS =====
+/* ══════════════════════════════════════
+   CONVERSATIONS
+══════════════════════════════════════ */
 function newChat() {
-    const c = { id: Date.now().toString(), title: 'New Conversation', messages: [], createdAt: new Date().toISOString() };
+    const c = {
+        id: Date.now().toString(),
+        title: 'New Conversation',
+        messages: [],
+        createdAt: new Date().toISOString(),
+    };
     state.conversations.unshift(c);
     state.activeId = c.id;
     save(); renderSidebar(); renderMsgs();
-    msgInput.focus();
-    sidebar.classList.remove('open');
+    $('#msgInput')?.focus();
+    $('#sidebar')?.classList.remove('open');
 }
 
 function loadConv(id) {
     state.activeId = id;
     renderSidebar(); renderMsgs();
-    sidebar.classList.remove('open');
+    $('#sidebar')?.classList.remove('open');
 }
 
 function delConv(id, e) {
@@ -416,310 +486,333 @@ function delConv(id, e) {
 }
 
 function active() { return state.conversations.find(c => c.id === state.activeId); }
+
 function save() {
     try {
-        localStorage.setItem('am_convs', JSON.stringify(state.conversations));
-    } catch (e) {
-        console.warn('Local storage quota exceeded. Cleaning old dataUrl attachments to save space...');
-        let cleared = false;
-        for (let i = state.conversations.length - 1; i >= 0; i--) {
-            const conv = state.conversations[i];
-            for (let j = 0; j < conv.messages.length; j++) {
-                const msg = conv.messages[j];
-                if (msg.attachment && msg.attachment.dataUrl) {
-                    msg.attachment.dataUrl = null;
-                    cleared = true;
-                    try {
-                        localStorage.setItem('am_convs', JSON.stringify(state.conversations));
-                        console.log('Successfully saved after clearing an old attachment.');
-                        break;
-                    } catch (e2) {}
-                }
+        localStorage.setItem('am_convs_v2', JSON.stringify(state.conversations));
+    } catch {
+        // Clear old images to free space
+        for (const conv of state.conversations) {
+            for (const msg of conv.messages) {
+                if (msg.attachment?.dataUrl) { msg.attachment.dataUrl = null; }
             }
-            if (cleared) break;
         }
-        try {
-            localStorage.setItem('am_convs', JSON.stringify(state.conversations));
-        } catch (err) {
-            console.error('Failed to save to localStorage even after cleanup:', err);
-        }
+        try { localStorage.setItem('am_convs_v2', JSON.stringify(state.conversations)); } catch { /* skip */ }
     }
 }
 
-// ===== RENDER =====
+/* ── Render Sidebar ── */
 function renderSidebar(filter = '') {
     let convs = state.conversations;
     if (filter) convs = convs.filter(c => c.title.toLowerCase().includes(filter));
-
-    // Split starred (first 3) and recents
-    const starred = convs.slice(0, 3);
+    const pinned = convs.slice(0, 3);
     const recents = convs.slice(3);
 
-    starredList.innerHTML = starred.length ? starred.map(c => convHtml(c)).join('') : '<div class="conv-empty">No starred chats</div>';
-    recentsList.innerHTML = recents.length ? recents.map(c => convHtml(c)).join('') : (starred.length ? '' : '<div class="conv-empty">No conversations yet</div>');
+    const starredEl = $('#starredList');
+    const recentEl  = $('#recentsList');
+    if (starredEl) starredEl.innerHTML = pinned.length
+        ? pinned.map(convHtml).join('')
+        : '<div class="conv-empty">No pinned chats yet</div>';
+    if (recentEl)  recentEl.innerHTML  = recents.length
+        ? recents.map(convHtml).join('')
+        : '<div class="conv-empty">No recent chats</div>';
 }
 
 function convHtml(c) {
     return `<div class="conv-item ${c.id === state.activeId ? 'active' : ''}" onclick="loadConv('${c.id}')">
         ${esc(c.title)}
-        <button class="del-btn" onclick="delConv('${c.id}',event)" title="Delete">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-        </button>
+        <button class="del-btn" onclick="delConv('${c.id}',event)" title="Delete">×</button>
     </div>`;
 }
 
+/* ── Render Messages ── */
 function renderMsgs() {
     const c = active();
+    const welcome  = $('#welcomeScreen');
+    const msgArea  = $('#messagesArea');
+    const inputSec = $('#inputSection');
+
     if (!c || !c.messages.length) {
-        welcomeScreen.style.display = 'flex';
-        messagesArea.innerHTML = '';
-        suggestionRow.style.display = 'flex';
+        if (welcome)  welcome.style.display  = 'flex';
+        if (msgArea)  msgArea.innerHTML       = '';
         return;
     }
-    welcomeScreen.style.display = 'none';
-    suggestionRow.style.display = 'none';
-    messagesArea.innerHTML = '';
+    if (welcome)  welcome.style.display = 'none';
+    if (msgArea)  msgArea.innerHTML      = '';
+
     c.messages.forEach(m => addMsg(m.role, m.content, false, m.attachment));
     scrollEnd();
 }
 
+/* ── Add a Message ── */
 function addMsg(role, content, anim = true, attachment = null) {
-    welcomeScreen.style.display = 'none';
-    suggestionRow.style.display = 'none';
+    const welcome = $('#welcomeScreen');
+    if (welcome) welcome.style.display = 'none';
 
-    // Auto-trigger and clean artifact keywords
+    // Check for artifact trigger
     let triggerModule = null;
     if (role === 'assistant') {
         const match = content.match(/\[ARTIFACT:\s*([a-z_]+)\]/i);
         if (match) {
             triggerModule = match[1];
-            content = content.replace(/\[ARTIFACT:\s*[a-z_]+\]/gi, '');
+            content = content.replace(/\[ARTIFACT:\s*[a-z_]+\]/gi, '').trim();
         }
     }
 
-    const d = document.createElement('div');
-    d.className = `msg ${role}`;
-    if (!anim) d.style.animation = 'none';
+    const el = document.createElement('div');
+    el.className = `msg ${role}`;
+    if (!anim) el.style.animation = 'none';
 
     const avatar = role === 'user' ? 'D' : '✺';
-    const name = role === 'user' ? 'You' : 'AetherMind';
+    const name   = role === 'user' ? 'You' : 'AetherMind';
+
     let body = content;
     if (typeof marked !== 'undefined' && role === 'assistant') {
-        try { body = marked.parse(content); } catch { body = content.replace(/\n/g, '<br>'); }
+        try { body = marked.parse(content); } catch { body = esc(content).replace(/\n/g, '<br>'); }
     } else {
         body = esc(content).replace(/\n/g, '<br>');
     }
 
-    // Render attachment preview if present
-    let attachmentHtml = '';
+    // Attachment HTML
+    let attachHtml = '';
     if (attachment) {
         if (attachment.isImage && attachment.dataUrl) {
-            attachmentHtml = `
-                <div class="msg-attachment-preview" style="margin-top: 8px;">
-                    <img src="${attachment.dataUrl}" style="max-width: 240px; max-height: 180px; border-radius: 8px; border: 1px solid var(--border); display: block; margin-bottom: 4px; cursor: zoom-in;" onclick="window.open('${attachment.dataUrl}', '_blank')" title="View full image">
-                    <span style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 8px;">Attached image: ${esc(attachment.name)}</span>
-                </div>
-            `;
-        } else {
-            attachmentHtml = `
-                <div class="msg-attachment-chip" style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; color: var(--text-secondary); margin-top: 8px; margin-bottom: 8px;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-                    <span>${esc(attachment.name)}</span>
-                </div>
-            `;
+            attachHtml = `<div style="margin-bottom:10px;">
+                <img src="${attachment.dataUrl}" style="max-width:280px;max-height:200px;border-radius:10px;border:1px solid var(--border);cursor:zoom-in;" onclick="window.open('${attachment.dataUrl}','_blank')">
+                <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${esc(attachment.name)}</div>
+            </div>`;
+        } else if (attachment.name) {
+            attachHtml = `<div style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg-hover);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text-secondary);margin-bottom:10px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                ${esc(attachment.name)}
+            </div>`;
         }
     }
 
-    // Action buttons for assistant messages
+    // Action buttons for assistant
     const actions = role === 'assistant' ? `
-        <div class="msg-actions">
-            <button class="msg-action-btn" onclick="copyMsgText(this)" title="Copy text">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                <span>Copy</span>
-            </button>
-            <button class="msg-action-btn" onclick="downloadMsgPdf(this)" title="Download as PDF">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
-                <span>PDF</span>
-            </button>
-        </div>` : '';
+    <div class="msg-actions">
+        <button class="msg-action-btn" onclick="copyMsgRaw(this)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span>Copy</span>
+        </button>
+        <button class="msg-action-btn" onclick="downloadMsgPdf(this)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+            <span>PDF</span>
+        </button>
+        <button class="msg-action-btn" onclick="regenMsg(this)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.18"/></svg>
+            <span>Retry</span>
+        </button>
+    </div>` : '';
 
-    d.innerHTML = `<div class="msg-inner">
+    el.innerHTML = `<div class="msg-inner">
         <div class="msg-avatar">${avatar}</div>
         <div class="msg-content">
             <div class="msg-sender">${name}</div>
-            ${attachmentHtml}
+            ${attachHtml}
             <div class="msg-body">${body}</div>
             ${actions}
         </div>
     </div>`;
 
-    // Store raw markdown on the element for PDF/copy
-    if (role === 'assistant') d.dataset.raw = content;
+    if (role === 'assistant') el.dataset.raw = content;
 
-    messagesArea.appendChild(d);
-    if (typeof hljs !== 'undefined') d.querySelectorAll('pre code').forEach(b => hljs.highlightElement(b));
+    $('#messagesArea')?.appendChild(el);
+
+    // Syntax highlight & math render
+    el.querySelectorAll('pre code').forEach(block => {
+        if (typeof hljs !== 'undefined') hljs.highlightElement(block);
+    });
+    renderMathInElement_safe(el.querySelector('.msg-body'));
+
     scrollEnd();
 
-    // Auto-open artifact pane if detected
+    // Trigger workspace tool if detected
     if (triggerModule) {
-        setTimeout(() => {
-            if (typeof openArtifact === 'function') {
-                openArtifact(triggerModule);
-            }
-        }, 300);
+        setTimeout(() => openArtifact(triggerModule), 400);
     }
 
-    return d;
+    return el;
 }
 
+/* ── Typing indicator ── */
 function showTyping() {
-    const d = document.createElement('div');
-    d.className = 'msg assistant'; d.id = 'typingEl';
-    d.innerHTML = `<div class="msg-inner">
+    const el = document.createElement('div');
+    el.className = 'msg assistant'; el.id = 'typingEl';
+    el.innerHTML = `<div class="msg-inner">
         <div class="msg-avatar">✺</div>
         <div class="msg-content">
             <div class="msg-sender">AetherMind</div>
             <div class="msg-body"><div class="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>
         </div>
     </div>`;
-    messagesArea.appendChild(d);
+    $('#messagesArea')?.appendChild(el);
     scrollEnd();
 }
+function hideTyping() { $('#typingEl')?.remove(); }
 
-function hideTyping() { document.getElementById('typingEl')?.remove(); }
-
-// ===== SEND =====
+/* ══════════════════════════════════════
+   SEND MESSAGE
+══════════════════════════════════════ */
 async function send() {
-    const text = msgInput.value.trim();
-    if ((!text && !state.attachedFile) || state.generating) return;
+    const text = $('#msgInput')?.value.trim() || '';
+    const attached = state.attachedFile;
+    if ((!text && !attached) || state.generating) return;
     if (!state.activeId) newChat();
     const c = active();
     if (!c) return;
 
-    const attached = state.attachedFile;
+    const msgContent = text || (attached ? `Analyzing: ${attached.name}` : '');
     const msgObj = {
         role: 'user',
-        content: text || (attached ? `Uploaded file: ${attached.name}` : ''),
-        attachment: attached ? {
-            name: attached.name,
-            type: attached.type,
-            isImage: attached.isImage,
-            dataUrl: attached.dataUrl
-        } : null
+        content: msgContent,
+        attachment: attached ? { name: attached.name, type: attached.type, isImage: attached.isImage, dataUrl: attached.dataUrl } : null,
     };
 
     c.messages.push(msgObj);
     if (c.messages.length === 1) {
-        const titleText = text || (attached ? `File: ${attached.name}` : 'New Conversation');
-        c.title = titleText.substring(0, 45) + (titleText.length > 45 ? '...' : '');
+        c.title = msgContent.substring(0, 50) + (msgContent.length > 50 ? '…' : '');
         renderSidebar();
     }
     save();
     addMsg('user', msgObj.content, true, msgObj.attachment);
 
-    msgInput.value = '';
+    // Clear input
+    const inp = $('#msgInput');
+    if (inp) { inp.value = ''; autoGrow(inp); }
     removeAttachedFile();
-    sendBtn.disabled = true;
-    autoGrow(msgInput);
+    const sendBtn = $('#sendBtn');
+    if (sendBtn) sendBtn.disabled = true;
+
     state.generating = true;
     showTyping();
 
     try {
-        let contextText = text;
-        if (attached) {
-            const userMsg = text || "Please analyze this uploaded file and tell me what you see, and how it relates to building a startup or product.";
-            contextText = `Attached File Name: ${attached.name}
-Extracted Text/Content from this file:
-"""
-${attached.text || "[No readable text content extracted. The file is primarily visual or has an un-scannable layout]"}
-"""
+        // Build context with system prompt
+        let contextText = buildSystemPrompt(text, attached);
 
-User Message: ${userMsg}
-
-[Incubator Mentor Instructions]:
-1. If the extracted content or user message is related to entrepreneurship, business strategy, coding, tech startups, product MVPs, design wireframes, marketing, fundraising, or corporate setups, perform a comprehensive, high-fidelity startup advisory response analyzing the file's content and answering the user's message.
-2. If the file is completely out of scope and unrelated to building a business or product (e.g. general memes, recipes, or casual chat), politely advise them that AetherMind is focused on startup incubation and mentoring. Briefly explain what you detected from the file, and guide them on what kind of business-relevant material would be useful to analyze.`;
-        }
-
-        // Frontend RAG: If search API is enabled and query asks for search
-        if (state.searchApiKey && text && /search|find|latest|news|competitor|trend|market/i.test(text)) {
+        // Tavily web search if query matches keywords
+        if (state.searchApiKey && text && /search|latest|news|trend|market|competitor|find out/i.test(text)) {
             const searchData = await performWebSearch(text);
             if (searchData) {
-                contextText = `User Query: ${text}\n\n[Real-time Web Search Results]:\n${searchData}\n\nPlease use the above real-time web context to answer the user's query comprehensively.` + (attached ? `\n\nAlso consider the attached file:\n${contextText}` : '');
+                contextText = `User Query: ${text}\n\n[Live Web Search Results]:\n${searchData}\n\nUsing the above real-time context, answer comprehensively.\n\n${contextText}`;
             }
         }
 
-        const res = await callAPI(contextText);
+        const reply = await callAPI(contextText);
         hideTyping();
-        c.messages.push({ role: 'assistant', content: res });
-        save(); addMsg('assistant', res);
+        c.messages.push({ role: 'assistant', content: reply });
+        save();
+        addMsg('assistant', reply);
     } catch (err) {
         hideTyping();
-        const e = `Could not reach AetherMind.\n\n${err.message}`;
-        c.messages.push({ role: 'assistant', content: e });
-        save(); addMsg('assistant', e);
+        const errorMsg = `**Connection Error**\n\n${err.message}\n\n_Ensure your Gradio server is running and the URL is configured in Settings._`;
+        c.messages.push({ role: 'assistant', content: errorMsg });
+        save();
+        addMsg('assistant', errorMsg);
     }
+
     state.generating = false;
-    updateSendButtonState();
+    updateSendBtn();
 }
 
-// ===== GRADIO API (v5.x + v4.x + fallbacks) =====
-function loadUrl() {
+function buildSystemPrompt(userText, attached) {
+    const systemPrompt = `You are AetherMind, an elite computational AI assistant with deep mastery in Mathematics, Statistics, Probability, Computer Science, Coding, Cybersecurity, and Web Development.
+
+RESPONSE QUALITY STANDARDS:
+1. Structure every response with proper headers (## Section Name) and sections.
+2. For mathematical content: always show equations using LaTeX notation ($..$ for inline, $$...$$ for display).
+3. For code: always use fenced code blocks with language tags (\`\`\`python).
+4. For web development: always generate complete, production-quality HTML/CSS/JS.
+5. Show full step-by-step working — never skip steps.
+6. State time/space complexity with proofs for algorithm questions.
+7. For statistics: show formula → define variables → substitute → compute.
+8. Never approximate when exact computation is possible.
+9. Bold key terms. Use clean, scannable structure.
+10. For cybersecurity: explain mechanism, show safe demo, state defense, cite OWASP/CVE.
+11. NEVER refuse questions in your domain — answer completely and precisely.`;
+
+    if (!attached) return `${systemPrompt}\n\nUser: ${userText}`;
+
+    return `${systemPrompt}
+
+Attached File: ${attached.name} (${attached.type})
+Extracted Content:
+"""
+${attached.text || '[Binary/visual file — no extractable text]'}
+"""
+
+User Message: ${userText || 'Please analyze the attached file and explain how it relates to your expertise domains.'}`;
+}
+
+/* ══════════════════════════════════════
+   API CALLS
+══════════════════════════════════════ */
+function loadSettings() {
+    const gu = $('#gradioUrl');
+    const sa = $('#searchApiKey');
+    const su = $('#supabaseUrl');
+    const sk = $('#supabaseKey');
+    if (gu) gu.value = state.gradioUrl;
+    if (sa) sa.value = state.searchApiKey;
+    if (su) su.value = state.supabaseUrl;
+    if (sk) sk.value = state.supabaseKey;
+
     if (state.gradioUrl) {
-        gradioUrlInput.value = state.gradioUrl;
-        connDot.classList.add('connected');
-        connDot.title = 'Connected';
+        const dot = $('#connDot');
+        const lbl = $('#connLabel');
+        if (dot) { dot.className = 'conn-dot connected'; }
+        if (lbl) lbl.textContent = 'Connected';
     }
-    if (state.searchApiKey) searchApiInput.value = state.searchApiKey;
-    if (state.supabaseUrl) supabaseUrlInput.value = state.supabaseUrl;
-    if (state.supabaseKey) supabaseKeyInput.value = state.supabaseKey;
 }
 
 async function doConnect() {
-    const url = gradioUrlInput.value.trim().replace(/\/$/, '');
-    state.searchApiKey = searchApiInput.value.trim();
-    state.supabaseUrl = supabaseUrlInput.value.trim();
-    state.supabaseKey = supabaseKeyInput.value.trim();
-    
-    localStorage.setItem('am_search_key', state.searchApiKey);
-    localStorage.setItem('am_supabase_url', state.supabaseUrl);
-    localStorage.setItem('am_supabase_key', state.supabaseKey);
+    const url  = $('#gradioUrl')?.value.trim().replace(/\/$/, '');
+    const sKey = $('#searchApiKey')?.value.trim();
+    const sUrl = $('#supabaseUrl')?.value.trim();
+    const sKeyV = $('#supabaseKey')?.value.trim();
 
-    if (!url) return;
+    state.searchApiKey = sKey;
+    state.supabaseUrl  = sUrl;
+    state.supabaseKey  = sKeyV;
+    localStorage.setItem('am_search_key',   sKey);
+    localStorage.setItem('am_supabase_url', sUrl);
+    localStorage.setItem('am_supabase_key', sKeyV);
+
+    if (!url) { toast('Please enter a Gradio URL', 'error'); return; }
     state.gradioUrl = url;
     localStorage.setItem('am_url', url);
-    connDot.classList.remove('connected'); connDot.classList.add('connecting');
-    modalStatus.textContent = 'Testing connection...';
+
+    const dot = $('#connDot');
+    const lbl = $('#connLabel');
+    const status = $('#modalStatus');
+
+    if (dot) { dot.className = 'conn-dot connecting'; }
+    if (lbl) lbl.textContent = 'Connecting…';
+    if (status) status.textContent = 'Testing connection…';
 
     try {
-        // Quick test
         await fetch(url, { mode: 'no-cors', signal: AbortSignal.timeout(5000) });
-        connDot.classList.remove('connecting'); connDot.classList.add('connected');
-        connDot.title = 'Connected';
-        modalStatus.textContent = '✓ Connected successfully!';
-        modalStatus.style.color = '#16a34a';
-        setTimeout(() => settingsModal.classList.remove('visible'), 800);
-    } catch {
-        connDot.classList.remove('connecting'); connDot.classList.add('connected');
-        connDot.title = 'Connected';
-        modalStatus.textContent = '✓ URL saved. Will connect on first message.';
-        modalStatus.style.color = '#16a34a';
-        setTimeout(() => settingsModal.classList.remove('visible'), 800);
-    }
+    } catch { /* no-cors fetch always "fails" but that's fine */ }
+
+    if (dot) { dot.className = 'conn-dot connected'; }
+    if (lbl) lbl.textContent = 'Connected';
+    if (status) { status.textContent = '✓ Connected!'; status.style.color = '#10b981'; }
+    toast('Connected to Gradio server!', 'success');
+    setTimeout(() => $('#settingsModal')?.classList.remove('visible'), 900);
 }
 
 async function callAPI(message) {
-    const url = state.gradioUrl;
-    if (!url) throw new Error('No Gradio URL set. Click Settings in the sidebar to configure it.');
+    if (!state.gradioUrl) throw new Error('No Gradio URL configured. Click Settings to set it up.');
 
-    // Gradio 5.x uses /gradio_api/ prefix with SSE v3 protocol
     const prefixes = ['/gradio_api', ''];
-    const names = ['predict', 'chat'];
+    const names    = ['predict', 'chat'];
 
     for (const prefix of prefixes) {
         for (const name of names) {
             try {
-                const r = await fetch(`${url}${prefix}/call/${name}`, {
+                const r = await fetch(`${state.gradioUrl}${prefix}/call/${name}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ data: [message] }),
@@ -728,19 +821,20 @@ async function callAPI(message) {
                 if (r.ok) {
                     const j = await r.json();
                     if (j.event_id) {
-                        const sr = await fetch(`${url}${prefix}/call/${name}/${j.event_id}`, { signal: AbortSignal.timeout(120000) });
+                        const sr = await fetch(`${state.gradioUrl}${prefix}/call/${name}/${j.event_id}`, {
+                            signal: AbortSignal.timeout(180000),
+                        });
                         if (sr.ok) {
                             const txt = await sr.text();
-                            const result = parseSSE(txt);
-                            if (result) return result;
+                            const res = parseSSE(txt);
+                            if (res) return res;
                         }
                     }
                 }
-            } catch (e) { console.log(`${prefix}/call/${name} failed:`, e.message); }
+            } catch (e) { /* try next combination */ }
         }
     }
-
-    throw new Error('Could not connect. Ensure your Colab is running and the Gradio link is active.');
+    throw new Error('Could not reach the model. Ensure your Colab/Gradio server is active.');
 }
 
 function parseSSE(text) {
@@ -752,7 +846,7 @@ function parseSSE(text) {
             const d = l.substring(5).trim();
             try {
                 const p = JSON.parse(d);
-                if (Array.isArray(p) && p[0]) last = p[0];
+                if (Array.isArray(p) && p[0] != null) last = String(p[0]);
             } catch {
                 if (d && d !== '[null]') last = d;
             }
@@ -761,1282 +855,1030 @@ function parseSSE(text) {
     return last;
 }
 
-// ===== EXPORT =====
-function toPdf() {
-    const c = active();
-    if (!c?.messages.length) return alert('No messages to export!');
-    const div = document.createElement('div');
-    div.style.cssText = 'padding:24px;font-family:Inter,Arial,sans-serif;color:#1a1714;max-width:700px;';
-    div.innerHTML = `<div style="text-align:center;margin-bottom:20px"><h1 style="font-size:20px;color:#c96442">AetherMind</h1><p style="color:#999;font-size:10px">AI Startup Mentor</p><hr style="border:1px solid #e5e2dd;margin-top:10px"></div>` +
-        c.messages.map(m => `<div style="margin-bottom:12px"><p style="font-size:11px;font-weight:600;color:${m.role==='user'?'#6366f1':'#c96442'};margin-bottom:2px">${m.role==='user'?'You':'AetherMind'}</p><div style="font-size:12px;line-height:1.7;color:#333;padding-left:8px;border-left:3px solid ${m.role==='user'?'#6366f1':'#c96442'}">${typeof marked!=='undefined'?marked.parse(m.content):m.content.replace(/\n/g,'<br>')}</div></div>`).join('') +
-        `<div style="text-align:center;margin-top:16px;border-top:1px solid #e5e2dd;padding-top:8px"><p style="font-size:9px;color:#aaa">AetherMind — ${new Date().toLocaleString()}</p></div>`;
-    html2pdf().set({ margin: 0.5, filename: `AetherMind_${c.title.replace(/[^a-z0-9]/gi,'_').substring(0,25)}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4' } }).from(div).save();
+async function performWebSearch(query) {
+    if (!state.searchApiKey) return null;
+    try {
+        const r = await fetch('https://api.tavily.com/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ api_key: state.searchApiKey, query, max_results: 5, search_depth: 'basic' }),
+            signal: AbortSignal.timeout(8000),
+        });
+        if (!r.ok) return null;
+        const data = await r.json();
+        return data.results?.map(r => `Title: ${r.title}\nURL: ${r.url}\nSnippet: ${r.content}`).join('\n\n') || null;
+    } catch { return null; }
 }
 
-function toDoc() {
-    const c = active();
-    if (!c?.messages.length) return alert('No messages to export!');
-    const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style>body{font-family:Calibri,sans-serif;padding:24px;color:#222;line-height:1.7}h1{color:#c96442;font-size:20px;text-align:center}.s{font-weight:bold;font-size:11px}.u{color:#6366f1}.a{color:#c96442}.c{font-size:12px;padding-left:10px;border-left:3px solid #ddd}</style></head><body><h1>AetherMind</h1><hr>` +
-        c.messages.map(m => `<p class="s ${m.role==='user'?'u':'a'}">${m.role==='user'?'You':'AetherMind'}</p><div class="c">${typeof marked!=='undefined'?marked.parse(m.content):m.content.replace(/\n/g,'<br>')}</div><br>`).join('') +
-        `<hr><p style="text-align:center;color:#aaa;font-size:9px">AetherMind — ${new Date().toLocaleString()}</p></body></html>`;
-    const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `AetherMind_${c.title.replace(/[^a-z0-9]/gi,'_').substring(0,25)}.doc`;
-    a.click();
-}
-
-// ===== MESSAGE ACTIONS =====
-function copyMsgText(btn) {
+/* ══════════════════════════════════════
+   MESSAGE ACTIONS
+══════════════════════════════════════ */
+function copyMsgRaw(btn) {
     const msgEl = btn.closest('.msg');
     if (!msgEl) return;
-    const rawText = msgEl.dataset.raw || msgEl.querySelector('.msg-body').textContent;
-    navigator.clipboard.writeText(rawText).then(() => {
+    const text = msgEl.dataset.raw || msgEl.querySelector('.msg-body')?.textContent || '';
+    navigator.clipboard.writeText(text).then(() => {
         const span = btn.querySelector('span');
-        const origText = span.textContent;
-        span.textContent = 'Copied!';
+        if (span) { const orig = span.textContent; span.textContent = 'Copied!'; setTimeout(() => span.textContent = orig, 2000); }
         btn.style.borderColor = '#10b981';
-        btn.style.color = '#10b981';
-        setTimeout(() => {
-            span.textContent = origText;
-            btn.style.borderColor = '';
-            btn.style.color = '';
-        }, 2000);
-    }).catch(err => {
-        console.error('Failed to copy text: ', err);
-        alert('Failed to copy text. Please try again.');
+        setTimeout(() => btn.style.borderColor = '', 2000);
+        toast('Copied to clipboard', 'success', 1800);
     });
 }
+window.copyMsgRaw = copyMsgRaw;
+
+function regenMsg(btn) {
+    const c = active();
+    if (!c || !c.messages.length || state.generating) return;
+    const lastUser = [...c.messages].reverse().find(m => m.role === 'user');
+    if (!lastUser) return;
+    // Remove last assistant message
+    const lastIdx = c.messages.map(m => m.role).lastIndexOf('assistant');
+    if (lastIdx > -1) c.messages.splice(lastIdx, 1);
+    save(); renderMsgs();
+    const inp = $('#msgInput');
+    if (inp) { inp.value = lastUser.content; updateSendBtn(); autoGrow(inp); }
+    send();
+}
+window.regenMsg = regenMsg;
 
 function downloadMsgPdf(btn) {
     const msgEl = btn.closest('.msg');
     if (!msgEl) return;
-    
     const bodyEl = msgEl.querySelector('.msg-body');
     if (!bodyEl) return;
-    
     const span = btn.querySelector('span');
-    const origText = span.textContent;
-    span.textContent = 'Generating...';
+    if (span) span.textContent = 'Generating…';
     btn.disabled = true;
-    
+
     const div = document.createElement('div');
-    div.style.cssText = 'padding: 40px; font-family: "Inter", -apple-system, sans-serif; color: #1a1714; max-width: 800px; background: #ffffff; line-height: 1.6;';
-    
-    const headerHtml = `
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4f1ea; padding-bottom: 15px; margin-bottom: 30px;">
+    div.style.cssText = 'padding:40px;font-family:Inter,Arial,sans-serif;color:#0f0f1a;max-width:760px;background:#fff;line-height:1.7;';
+    div.innerHTML = `
+        <div style="display:flex;align-items:center;gap:10px;border-bottom:2px solid #e5e7eb;padding-bottom:14px;margin-bottom:24px;">
+            <div style="width:32px;height:32px;background:linear-gradient(135deg,#7c3aed,#4f7ef7);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;">✺</div>
             <div>
-                <h1 style="margin: 0; font-size: 22px; font-weight: 700; color: #c96442; font-family: 'Inter', sans-serif; letter-spacing: -0.5px;">AetherMind</h1>
-                <p style="margin: 2px 0 0 0; font-size: 11px; color: #7f7a75; font-weight: 500; text-transform: uppercase; letter-spacing: 1px;">AI Startup Mentor for Indian Entrepreneurs</p>
-            </div>
-            <div style="text-align: right;">
-                <span style="font-size: 11px; color: #9c958f; font-weight: 500;">DOCUMENT GENERATED</span>
-                <p style="margin: 2px 0 0 0; font-size: 12px; color: #4e4a46; font-weight: 600;">${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+                <div style="font-size:18px;font-weight:800;color:#7c3aed;letter-spacing:-0.5px;">AetherMind</div>
+                <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:1px;">Computational AI — ${new Date().toLocaleDateString()}</div>
             </div>
         </div>
-    `;
-    
-    const stylesHtml = `
         <style>
-            .pdf-content { font-size: 13.5px; color: #2d2a26; }
-            .pdf-content p { margin: 0 0 12px 0; }
-            .pdf-content h1, .pdf-content h2, .pdf-content h3, .pdf-content h4 { color: #1a1714; font-weight: 600; margin-top: 20px; margin-bottom: 10px; }
-            .pdf-content h1 { font-size: 18px; border-bottom: 1px solid #f4f1ea; padding-bottom: 4px; }
-            .pdf-content h2 { font-size: 16px; }
-            .pdf-content h3 { font-size: 14.5px; }
-            .pdf-content ul, .pdf-content ol { margin: 0 0 15px 20px; padding: 0; }
-            .pdf-content li { margin-bottom: 6px; }
-            .pdf-content strong { color: #c96442; font-weight: 600; }
-            .pdf-content blockquote { border-left: 3px solid #c96442; padding-left: 14px; margin: 15px 0; color: #7f7a75; font-style: italic; }
-            .pdf-content code { background: #f5f2eb; padding: 2px 5px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
-            .pdf-content pre { background: #1e1e2e; color: #cdd6f4; border-radius: 8px; padding: 14px; overflow-x: auto; margin: 15px 0; }
-            .pdf-content pre code { background: none; padding: 0; font-size: 11px; }
-            .pdf-content table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-            .pdf-content th, .pdf-content td { border: 1px solid #e6e2da; padding: 8px 12px; text-align: left; font-size: 12.5px; }
-            .pdf-content th { background-color: #fcfbfa; font-weight: 600; }
-            .pdf-content input[type="checkbox"] { margin-right: 8px; transform: scale(1.1); vertical-align: middle; }
+            h1,h2,h3{color:#111;font-weight:700;margin:16px 0 8px}
+            h1{font-size:18px;border-bottom:1px solid #e5e7eb;padding-bottom:4px}
+            h2{font-size:15px} h3{font-size:13.5px}
+            p{margin-bottom:12px} ul,ol{margin:0 0 12px 20px}
+            code{background:#f3f4f6;padding:2px 5px;border-radius:4px;font-size:12px;font-family:monospace}
+            pre{background:#1a1b2e;color:#e2e8f0;border-radius:8px;padding:14px;overflow-x:auto;margin:12px 0}
+            pre code{background:none;padding:0}
+            table{width:100%;border-collapse:collapse;margin:12px 0}
+            th,td{border:1px solid #e5e7eb;padding:8px 12px;font-size:12.5px}
+            th{background:#f9fafb;font-weight:600}
+            blockquote{border-left:3px solid #7c3aed;padding-left:14px;color:#4b5563;margin:12px 0}
+            strong{color:#7c3aed;font-weight:700}
         </style>
-    `;
-    
-    const footerHtml = `
-        <div style="margin-top: 40px; border-top: 1px solid #f4f1ea; padding-top: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: #9c958f;">
-            <span>AetherMind mentor report. All rights reserved.</span>
-            <span>https://aethermind.in</span>
-        </div>
-    `;
-    
-    div.innerHTML = stylesHtml + headerHtml + `<div class="pdf-content">${bodyEl.innerHTML}</div>` + footerHtml;
-    
-    const activeConv = active();
-    const titleSnippet = activeConv ? activeConv.title.replace(/[^a-z0-9]/gi, '_').substring(0, 20) : 'Response';
-    const filename = `AetherMind_Mentor_${titleSnippet}_${Date.now().toString().substring(8)}.pdf`;
-    
-    const options = {
+        <div>${bodyEl.innerHTML}</div>
+        <div style="margin-top:32px;border-top:1px solid #e5e7eb;padding-top:10px;text-align:center;font-size:10px;color:#9ca3af;">
+            Generated by AetherMind — aethermind.ai · ${new Date().toLocaleString()}
+        </div>`;
+
+    html2pdf().set({
         margin: [0.5, 0.5, 0.5, 0.5],
-        filename: filename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-    };
-    
-    html2pdf().set(options).from(div).save().then(() => {
-        span.textContent = 'Downloaded!';
-        setTimeout(() => {
-            span.textContent = origText;
-            btn.disabled = false;
-        }, 2000);
-    }).catch(err => {
-        console.error('PDF generation error:', err);
-        span.textContent = origText;
+        filename: `AetherMind_${Date.now().toString().slice(-6)}.pdf`,
+        image: { type: 'jpeg', quality: 0.97 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+    }).from(div).save().then(() => {
+        if (span) span.textContent = 'Downloaded!';
+        toast('PDF saved!', 'success');
+        setTimeout(() => { if (span) span.textContent = 'PDF'; btn.disabled = false; }, 2200);
+    }).catch(() => {
+        if (span) span.textContent = 'PDF';
         btn.disabled = false;
-        alert('Failed to generate PDF. Please try again.');
+        toast('PDF failed', 'error');
     });
 }
-
-// ===== UTILS =====
-function scrollEnd() { requestAnimationFrame(() => { messagesScroll.scrollTop = messagesScroll.scrollHeight; }); }
-function autoGrow(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 150) + 'px'; }
-function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-
-window.loadConv = loadConv;
-window.delConv = delConv;
-window.copyMsgText = copyMsgText;
 window.downloadMsgPdf = downloadMsgPdf;
 
-// ===== PREMIUM WORKSPACE STATE & ROUTER =====
-const artState = {
-    activeModule: null,
-    scorecard: JSON.parse(localStorage.getItem('am_scorecard') || '{"pmf":false,"tam":false,"team":false,"compliance":false,"funding":false}'),
-    compliance: JSON.parse(localStorage.getItem('am_compliance') || '{"gst":false,"tds":false,"epfo":false,"roc":false,"itr":false}'),
-    capTable: {
-        esop: 10,
-        preSeed: 15,
-        seed: 20
-    },
-    bmc: JSON.parse(localStorage.getItem('am_bmc') || '{"partners":"","activities":"","resources":"","value_prop":"","relations":"","channels":"","segments":"","costs":"","revenues":""}'),
-    pitch: {
-        recording: false,
-        timer: 0,
-        interval: null,
-        stream: null,
-        audioContext: null,
-        analyser: null,
-        animationFrame: null,
-        secondsElapsed: 0
+/* ══════════════════════════════════════
+   EXPORT FULL CONVERSATION
+══════════════════════════════════════ */
+function toPdf() {
+    const c = active();
+    if (!c?.messages.length) { toast('No messages to export', 'error'); return; }
+    const div = document.createElement('div');
+    div.style.cssText = 'padding:32px;font-family:Inter,sans-serif;color:#111;max-width:720px;background:#fff;';
+    div.innerHTML = `<div style="text-align:center;border-bottom:2px solid #7c3aed;padding-bottom:14px;margin-bottom:24px;"><h1 style="color:#7c3aed;font-size:22px;margin-bottom:4px;">✺ AetherMind</h1><p style="color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:1px;">${esc(c.title)} · ${new Date().toLocaleDateString()}</p></div>` +
+        c.messages.map(m => `<div style="margin-bottom:16px;padding:14px 16px;border-radius:8px;background:${m.role==='user'?'#f3f4f6':'#faf5ff'};border-left:3px solid ${m.role==='user'?'#4f7ef7':'#7c3aed'}">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:${m.role==='user'?'#4f7ef7':'#7c3aed'};margin-bottom:6px;">${m.role==='user'?'You':'AetherMind'}</div>
+        <div style="font-size:13px;line-height:1.7;">${typeof marked!=='undefined'?marked.parse(m.content):m.content.replace(/\n/g,'<br>')}</div>
+    </div>`).join('') + `<div style="text-align:center;margin-top:24px;font-size:10px;color:#9ca3af;">AetherMind · ${new Date().toLocaleString()}</div>`;
+
+    html2pdf().set({
+        margin: 0.5, filename: `AetherMind_${c.title.replace(/[^a-z0-9]/gi,'_').slice(0,22)}.pdf`,
+        html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4' },
+    }).from(div).save();
+    toast('PDF exported!', 'success');
+}
+
+function toDoc() {
+    const c = active();
+    if (!c?.messages.length) { toast('No messages', 'error'); return; }
+    const html = `<html xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>body{font-family:Calibri,sans-serif;line-height:1.7;color:#111}h1{color:#7c3aed}code{background:#f3f4f6;padding:1px 4px;font-family:monospace}</style></head><body><h1>✺ AetherMind — ${esc(c.title)}</h1><hr>` +
+        c.messages.map(m => `<p style="font-weight:bold;color:${m.role==='user'?'#4f7ef7':'#7c3aed'}">${m.role==='user'?'You':'AetherMind'}</p><div style="padding-left:12px;border-left:2px solid #e5e7eb">${typeof marked!=='undefined'?marked.parse(m.content):m.content.replace(/\n/g,'<br>')}</div><br>`).join('') +
+        `<hr><p style="font-size:10px;color:#9ca3af;text-align:center">AetherMind · ${new Date().toLocaleString()}</p></body></html>`;
+    const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `AetherMind_${c.title.replace(/[^a-z0-9]/gi,'_').slice(0,25)}.doc`;
+    a.click();
+    toast('DOC exported!', 'success');
+}
+
+function toMarkdown() {
+    const c = active();
+    if (!c?.messages.length) { toast('No messages', 'error'); return; }
+    const md = `# AetherMind — ${c.title}\n_${new Date().toLocaleString()}_\n\n---\n\n` +
+        c.messages.map(m => `**${m.role === 'user' ? 'You' : 'AetherMind'}**\n\n${m.content}\n\n---\n`).join('\n');
+    const blob = new Blob([md], { type: 'text/markdown' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `AetherMind_${c.title.replace(/[^a-z0-9]/gi,'_').slice(0,25)}.md`;
+    a.click();
+    toast('Markdown exported!', 'success');
+}
+
+function shareToCloud() {
+    if (!state.supabaseUrl) {
+        toast('Configure Supabase in Settings first', 'error');
+        return;
     }
+    toast('Cloud share coming soon — configure Supabase in Settings', 'default', 3000);
+}
+
+function exportArtPdf() {
+    const body = $('#artBody');
+    if (!body) return;
+    const div = document.createElement('div');
+    div.style.cssText = 'padding:32px;font-family:Inter,sans-serif;color:#111;background:#fff;max-width:700px;';
+    div.innerHTML = `<h1 style="color:#7c3aed;margin-bottom:16px;">AetherMind Workspace</h1>` + body.innerHTML;
+    html2pdf().set({ margin: 0.5, filename: 'AetherMind_Workspace.pdf', html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4' } }).from(div).save();
+}
+window.exportArtPdf = exportArtPdf;
+
+/* ══════════════════════════════════════
+   UTILITIES
+══════════════════════════════════════ */
+function scrollEnd() { requestAnimationFrame(() => { const s = $('#messagesScroll'); if (s) s.scrollTop = s.scrollHeight; }); }
+function autoGrow(el) { if (!el) return; el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 160) + 'px'; }
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// Expose globals for HTML onclick handlers
+window.loadConv = loadConv;
+window.delConv  = delConv;
+window.openArtifact = openArtifact;
+window.closeArtifact = closeArtifact;
+window.renderMathInDocument = renderMathInDocument;
+
+/* ══════════════════════════════════════════════════════════════════
+   ██████████  WORKSPACE TOOLS  ██████████
+══════════════════════════════════════════════════════════════════ */
+const artState = {
+    module: null,
+    matrix: {
+        dim: 3,
+        a: [[2,1,0],[1,3,1],[0,1,2]],
+        b: [[1,0,-1],[2,1,0],[-1,1,3]],
+        op: 'multiply',
+    },
+    stats: {
+        raw: '4, 8, 6, 5, 10, 12, 7, 9, 15, 3',
+        data: [],
+        chart: null,
+    },
+    algo: {
+        type: 'bubble',
+        array: [],
+        states: [],
+        step: 0,
+        timer: null,
+        speed: 300,
+        running: false,
+        comparing: [],
+        swapping: [],
+        sorted: [],
+    },
+    crypto: {
+        type: 'caesar',
+        plain: 'AetherMind Cryptography',
+        key: '3',
+    },
+    plotter: {
+        expr: 'sin(x)',
+        zoom: 40,
+        offsetX: 0,
+        offsetY: 0,
+        drag: null,
+    },
+    webdev: {
+        tab: 'html',
+        html: `<!-- AetherMind WebDev Sandbox -->
+<div class="card">
+  <div class="badge">AetherMind</div>
+  <h1>Web Dev Live</h1>
+  <p>Edit the HTML, CSS, and JS tabs to see instant preview!</p>
+  <button id="magicBtn">✺ Magic</button>
+  <div id="counter" class="counter">Clicks: 0</div>
+</div>`,
+        css: `* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: linear-gradient(135deg, #080810 0%, #1a0533 50%, #0a1628 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.card {
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 32px 40px;
+  text-align: center;
+  max-width: 340px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(124,58,237,0.2);
+}
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: linear-gradient(135deg, #7c3aed, #06b6d4);
+  color: white;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+h1 { color: #fff; font-size: 24px; font-weight: 800; margin-bottom: 10px; }
+p { color: rgba(255,255,255,0.6); font-size: 14px; line-height: 1.5; margin-bottom: 22px; }
+button {
+  background: linear-gradient(135deg, #7c3aed, #4f7ef7);
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(124,58,237,0.5);
+}
+button:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(124,58,237,0.6); }
+.counter { margin-top: 14px; color: #a78bfa; font-size: 13px; font-weight: 600; }`,
+        js: `let count = 0;
+const btn = document.getElementById('magicBtn');
+const counter = document.getElementById('counter');
+
+btn.addEventListener('click', () => {
+  count++;
+  counter.textContent = 'Clicks: ' + count;
+  
+  // Ripple effect
+  const ripple = document.createElement('div');
+  ripple.style.cssText = \`
+    position:fixed; border-radius:50%;
+    width:12px; height:12px;
+    background:rgba(124,58,237,0.6);
+    pointer-events:none;
+    left:\${event.clientX-6}px; top:\${event.clientY-6}px;
+    animation: ripple 0.6s ease-out forwards;
+  \`;
+  document.body.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 600);
+});
+
+const style = document.createElement('style');
+style.textContent = \`
+  @keyframes ripple {
+    to { transform:scale(20); opacity:0; }
+  }
+\`;
+document.head.appendChild(style);`
+    },
 };
 
 function openArtifact(moduleId) {
-    artState.activeModule = moduleId;
-    const pane = document.getElementById('artifactPane');
-    const titleEl = document.getElementById('artTitle');
-    const bodyEl = document.getElementById('artBody');
-    
-    if (!pane || !titleEl || !bodyEl) return;
-    
+    artState.module = moduleId;
+    const pane  = $('#artifactPane');
+    const title = $('#artTitle');
+    const icon  = $('#workspaceIcon');
+    const body  = $('#artBody');
+
+    if (!pane) return;
+    pane.classList.add('open');
     pane.style.display = 'flex';
-    
-    // Smooth transition
-    setTimeout(() => {
-        pane.classList.add('open');
-    }, 10);
-    
-    switch (moduleId) {
-        case 'startup_scorecard':
-            titleEl.textContent = 'Startup Health Scorecard';
-            renderStartupScorecard(bodyEl);
-            break;
-        case 'compliance_calendar':
-            titleEl.textContent = 'Indian Compliance Tracker';
-            renderComplianceCalendar(bodyEl);
-            break;
-        case 'dilution_sandbox':
-            titleEl.textContent = 'Cap Table & Dilution Sandbox';
-            renderDilutionSandbox(bodyEl);
-            break;
-        case 'investor_matcher':
-            titleEl.textContent = 'VC Investor Matchmaker';
-            renderInvestorMatcher(bodyEl);
-            break;
-        case 'canvas_builder':
-            titleEl.textContent = 'Business Model Canvas (BMC)';
-            renderCanvasBuilder(bodyEl);
-            break;
-        case 'pitch_evaluator':
-            titleEl.textContent = 'Voice Pitch Practice';
-            renderPitchEvaluator(bodyEl);
-            break;
-        default:
-            titleEl.textContent = 'Workspace Tool';
-            bodyEl.innerHTML = '<p>Select a tool from the sidebar to begin.</p>';
-    }
+
+    const modules = {
+        matrix_calculator: { title: 'Matrix Calculator',       icon: '⊞', fn: renderMatrix   },
+        stats_sandbox:     { title: 'Stats & Probability',     icon: 'σ',  fn: renderStats    },
+        algo_visualizer:   { title: 'Algorithm Visualizer',    icon: '◈',  fn: renderAlgo     },
+        crypto_sandbox:    { title: 'Crypto & Security',       icon: '🔐', fn: renderCrypto   },
+        plotter_2d:        { title: '2D Function Plotter',     icon: '∫',  fn: renderPlotter  },
+        webdev_sandbox:    { title: 'Live Web Dev Sandbox',    icon: '</>', fn: renderWebDev   },
+    };
+
+    const mod = modules[moduleId];
+    if (!mod) return;
+    if (title) title.textContent = mod.title;
+    if (icon)  icon.textContent  = mod.icon;
+    if (body)  mod.fn(body);
 }
 
 function closeArtifact() {
-    const pane = document.getElementById('artifactPane');
+    const pane = $('#artifactPane');
     if (!pane) return;
     pane.classList.remove('open');
-    setTimeout(() => {
-        if (!pane.classList.contains('open')) {
-            pane.style.display = 'none';
+    setTimeout(() => { if (!pane.classList.contains('open')) pane.style.display = 'none'; }, 300);
+    artState.module = null;
+    if (artState.algo.timer) { clearInterval(artState.algo.timer); artState.algo.timer = null; }
+    if (artState.stats.chart) { artState.stats.chart.destroy(); artState.stats.chart = null; }
+}
+
+/* ══════════════════════════════════════
+   TOOL 1 — MATRIX CALCULATOR
+══════════════════════════════════════ */
+function renderMatrix(container) {
+    const d = artState.matrix.dim;
+    container.innerHTML = `
+    <div class="workspace-section">
+        <div class="ws-card">
+            <div class="ws-card-title">⊞ Dimension</div>
+            <div style="display:flex;gap:8px;margin-bottom:4px;">
+                ${[2,3,4].map(n => `<button class="ws-btn ${d===n?'':'secondary'}" onclick="setMatDim(${n})" style="${d===n?'':'flex:1;'}">${n}×${n}</button>`).join('')}
+            </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+            <div class="ws-card">
+                <div class="ws-card-title">Matrix A</div>
+                <div class="matrix-grid" style="grid-template-columns:repeat(${d},1fr);" id="matA">
+                    ${gridCells('a', d)}
+                </div>
+            </div>
+            <div class="ws-card">
+                <div class="ws-card-title">Matrix B</div>
+                <div class="matrix-grid" style="grid-template-columns:repeat(${d},1fr);" id="matB">
+                    ${gridCells('b', d)}
+                </div>
+            </div>
+        </div>
+        <div class="ws-card">
+            <div class="ws-card-title">Operation</div>
+            <div class="matrix-op-grid">
+                ${[['add','A + B'],['subtract','A − B'],['multiply','A × B'],['det_a','det(A)'],['det_b','det(B)'],['inverse_a','A⁻¹'],['transpose_a','Aᵀ'],['trace_a','tr(A)'],['rank_a','rank(A)']].map(([k,l]) =>
+                  `<button class="matrix-op-btn ${artState.matrix.op===k?'active':''}" onclick="setMatOp('${k}')">${l}</button>`).join('')}
+            </div>
+        </div>
+        <div class="ws-card" id="matResult">
+            ${computeMatrix()}
+        </div>
+    </div>`;
+}
+
+function gridCells(m, d) {
+    let h = '';
+    for (let r = 0; r < d; r++)
+        for (let c = 0; c < d; c++) {
+            const v = (artState.matrix[m][r] && artState.matrix[m][r][c] !== undefined) ? artState.matrix[m][r][c] : 0;
+            h += `<input type="number" step="any" value="${v}" oninput="setMatVal('${m}',${r},${c},this.value)" style="width:100%;">`;
         }
-    }, 300);
-    artState.activeModule = null;
-    
-    if (artState.pitch.recording) {
-        stopPitchRecording();
+    return h;
+}
+
+function setMatDim(d) {
+    artState.matrix.dim = d;
+    for (const m of ['a','b']) {
+        const old = artState.matrix[m];
+        artState.matrix[m] = Array.from({length:d}, (_, r) => Array.from({length:d}, (_, c) => old[r]?.[c] ?? 0));
+    }
+    renderMatrix($('#artBody'));
+}
+window.setMatDim = setMatDim;
+
+function setMatVal(m, r, c, v) {
+    if (!artState.matrix[m][r]) artState.matrix[m][r] = [];
+    artState.matrix[m][r][c] = parseFloat(v) || 0;
+    $('#matResult').innerHTML = computeMatrix();
+}
+window.setMatVal = setMatVal;
+
+function setMatOp(op) {
+    artState.matrix.op = op;
+    $$('.matrix-op-btn').forEach(b => b.classList.remove('active'));
+    event?.target?.classList.add('active');
+    $('#matResult').innerHTML = computeMatrix();
+}
+window.setMatOp = setMatOp;
+
+function computeMatrix() {
+    const { a, b, op, dim: d } = artState.matrix;
+    const fmt = n => Number.isInteger(n) ? n : parseFloat(n.toFixed(5));
+
+    function matMul(A, B, n) {
+        const C = Array.from({length:n}, () => Array(n).fill(0));
+        for (let i=0;i<n;i++) for (let j=0;j<n;j++) for (let k=0;k<n;k++) C[i][j] += A[i][k]*B[k][j];
+        return C;
+    }
+    function det(M, n) {
+        if (n === 1) return M[0][0];
+        if (n === 2) return M[0][0]*M[1][1] - M[0][1]*M[1][0];
+        let d = 0;
+        for (let c=0; c<n; c++) {
+            const sub = M.slice(1).map(row => [...row.slice(0,c), ...row.slice(c+1)]);
+            d += (c%2===0?1:-1)*M[0][c]*det(sub, n-1);
+        }
+        return d;
+    }
+    function inv(M, n) {
+        const D = det(M, n);
+        if (Math.abs(D) < 1e-10) return null;
+        // Cofactor matrix
+        const adj = Array.from({length:n}, (_,i) => Array.from({length:n}, (_,j) => {
+            const sub = M.filter((_,r) => r!==j).map(row => row.filter((_,c) => c!==i));
+            return ((i+j)%2===0?1:-1)*det(sub, n-1);
+        }));
+        return adj.map(row => row.map(v => v/D));
+    }
+    function fmtMatrix(M, n) {
+        return M.map(row => row.map(v => fmt(v)).join('  ')).join('\n');
+    }
+
+    let result = '', title = '';
+    try {
+        if (op === 'add') {
+            const R = a.map((row,i) => row.map((v,j) => v + b[i][j]));
+            title = 'A + B'; result = fmtMatrix(R, d);
+        } else if (op === 'subtract') {
+            const R = a.map((row,i) => row.map((v,j) => v - b[i][j]));
+            title = 'A − B'; result = fmtMatrix(R, d);
+        } else if (op === 'multiply') {
+            title = 'A × B'; result = fmtMatrix(matMul(a, b, d), d);
+        } else if (op === 'det_a') {
+            title = 'det(A)'; result = fmt(det(a, d)).toString();
+        } else if (op === 'det_b') {
+            title = 'det(B)'; result = fmt(det(b, d)).toString();
+        } else if (op === 'inverse_a') {
+            const I = inv(a, d);
+            title = 'A⁻¹'; result = I ? fmtMatrix(I, d) : 'Matrix is singular (no inverse)';
+        } else if (op === 'transpose_a') {
+            title = 'Aᵀ';
+            result = fmtMatrix(a[0].map((_, c) => a.map(row => row[c])), d);
+        } else if (op === 'trace_a') {
+            title = 'tr(A)'; result = a.reduce((s,row,i) => s+row[i], 0).toString();
+        } else if (op === 'rank_a') {
+            title = 'rank(A)';
+            // Gaussian elimination for rank
+            const M = a.map(row => [...row]);
+            let rank = 0, rowN = 0;
+            for (let col=0; col<d && rowN<d; col++) {
+                let pivot = -1;
+                for (let r=rowN; r<d; r++) { if (Math.abs(M[r][col]) > 1e-9) { pivot = r; break; } }
+                if (pivot === -1) continue;
+                [M[rowN], M[pivot]] = [M[pivot], M[rowN]];
+                const div = M[rowN][col];
+                M[rowN] = M[rowN].map(v => v/div);
+                for (let r=0; r<d; r++) {
+                    if (r!==rowN) { const f=M[r][col]; M[r]=M[r].map((v,c)=>v-f*M[rowN][c]); }
+                }
+                rowN++; rank++;
+            }
+            result = rank.toString();
+        }
+    } catch (e) { result = 'Computation error: ' + e.message; }
+
+    return `<div class="ws-card-title">Result: ${title}</div><div class="ws-result-box">${esc(result)}</div>`;
+}
+
+/* ══════════════════════════════════════
+   TOOL 2 — STATS SANDBOX
+══════════════════════════════════════ */
+function renderStats(container) {
+    container.innerHTML = `
+    <div class="workspace-section">
+        <div class="ws-card">
+            <div class="ws-card-title">σ Enter Data (comma-separated)</div>
+            <textarea class="ws-input" id="statsInput" rows="3" placeholder="4, 8, 6, 5, 10, 12, 7, 9">${artState.stats.raw}</textarea>
+            <button class="ws-btn" onclick="computeStats()">Compute Statistics</button>
+        </div>
+        <div id="statsResults"></div>
+        <div class="ws-card" style="margin-top:10px;">
+            <div class="ws-card-title">Distribution Chart</div>
+            <canvas id="statsChart" style="max-height:200px;"></canvas>
+        </div>
+    </div>`;
+    computeStats();
+}
+
+function computeStats() {
+    const raw = $('#statsInput')?.value || artState.stats.raw;
+    artState.stats.raw = raw;
+    const data = raw.split(/[,\s]+/).map(Number).filter(n => !isNaN(n));
+    if (!data.length) return;
+    artState.stats.data = data;
+
+    const n   = data.length;
+    const sum = data.reduce((a,b) => a+b, 0);
+    const mu  = sum / n;
+    const variance = data.reduce((a,b) => a + (b-mu)**2, 0) / n;
+    const varSample = data.reduce((a,b) => a + (b-mu)**2, 0) / (n-1);
+    const std = Math.sqrt(variance);
+    const sorted = [...data].sort((a,b) => a-b);
+    const median = n%2 ? sorted[~~(n/2)] : (sorted[n/2-1]+sorted[n/2])/2;
+    const mode = Object.entries(data.reduce((m,v) => ({ ...m, [v]: (m[v]||0)+1 }), {})).sort((a,b) => b[1]-a[1])[0];
+    const min = sorted[0], max = sorted[n-1], range = max-min;
+    const q1 = sorted[~~(n/4)], q3 = sorted[~~(3*n/4)], iqr = q3-q1;
+    const skew = data.reduce((a,b) => a + ((b-mu)/std)**3, 0) / n;
+    const kurt = data.reduce((a,b) => a + ((b-mu)/std)**4, 0) / n - 3;
+
+    const f = v => typeof v === 'number' ? v.toFixed(4) : v;
+
+    const el = $('#statsResults');
+    if (el) el.innerHTML = `
+        <div class="ws-card">
+            <div class="ws-card-title">📊 Descriptive Statistics (n = ${n})</div>
+            ${[
+                ['Mean (μ)', f(mu)],
+                ['Median', f(median)],
+                ['Mode', `${mode[0]} (×${mode[1]})`],
+                ['Population Variance (σ²)', f(variance)],
+                ['Sample Variance (s²)', f(varSample)],
+                ['Std Dev (σ)', f(std)],
+                ['Min', min], ['Max', max], ['Range', range],
+                ['Q1', q1], ['Q3', q3], ['IQR', iqr],
+                ['Skewness', f(skew)],
+                ['Kurtosis (excess)', f(kurt)],
+                ['Sum', f(sum)],
+            ].map(([k,v]) => `<div class="ws-stat-row"><span class="ws-stat-label">${k}</span><span class="ws-stat-value">${v}</span></div>`).join('')}
+        </div>`;
+
+    // Build chart
+    if (artState.stats.chart) { artState.stats.chart.destroy(); artState.stats.chart = null; }
+    const ctx = $('#statsChart');
+    if (ctx && typeof Chart !== 'undefined') {
+        artState.stats.chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map((_, i) => `x${i+1}`),
+                datasets: [{
+                    label: 'Values',
+                    data,
+                    backgroundColor: data.map(v => v >= mu ? 'rgba(124,58,237,0.7)' : 'rgba(6,182,212,0.7)'),
+                    borderColor: data.map(v => v >= mu ? '#7c3aed' : '#06b6d4'),
+                    borderWidth: 1.5,
+                    borderRadius: 4,
+                }],
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ca3af' } },
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ca3af' } },
+                },
+                responsive: true,
+                maintainAspectRatio: true,
+            },
+        });
     }
 }
+window.computeStats = computeStats;
 
-// === 1. Health Scorecard ===
-function renderStartupScorecard(container) {
-    const checkedCount = Object.values(artState.scorecard).filter(Boolean).length;
-    const score = checkedCount * 20;
-    
+/* ══════════════════════════════════════
+   TOOL 3 — ALGORITHM VISUALIZER
+══════════════════════════════════════ */
+function renderAlgo(container) {
+    if (!artState.algo.array.length) generateAlgoArray();
     container.innerHTML = `
-        <div class="scorecard-summary">
-            <div class="scorecard-score-circle" id="scorecardCircle">${score}%</div>
-            <p style="text-align:center; font-size:14px; font-weight:600; color:var(--text); margin-bottom:4px;">Overall Startup Maturity Score</p>
-            <p style="text-align:center; font-size:12px; color:var(--text-secondary);">Audit your readiness across 5 key operational pillars.</p>
-        </div>
-        
-        <div class="scorecard-meters" style="margin-bottom: 24px;">
-            ${renderMeterRow('Product-Market Fit (PMF)', artState.scorecard.pmf ? 100 : 15)}
-            ${renderMeterRow('Market Size (TAM/SAM)', artState.scorecard.tam ? 100 : 15)}
-            ${renderMeterRow('Team Structure', artState.scorecard.team ? 100 : 15)}
-            ${renderMeterRow('Regulatory Compliance', artState.scorecard.compliance ? 100 : 15)}
-            ${renderMeterRow('Funding Readiness', artState.scorecard.funding ? 100 : 15)}
-        </div>
-        
-        <div style="background:var(--bg-white); border:1px solid var(--border); border-radius:var(--radius); padding:16px; display:flex; flex-direction:column; gap:12px;">
-            <h4 style="font-size:13.5px; font-weight:600; color:var(--text); border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:4px;">Diagnostic Checklist</h4>
-            
-            <label style="display:flex; align-items:flex-start; gap:10px; font-size:12.5px; line-height:1.4; color:var(--text-secondary); cursor:pointer;">
-                <input type="checkbox" style="margin-top:2px;" ${artState.scorecard.pmf ? 'checked' : ''} onchange="toggleScorecardCheckbox('pmf', this)">
-                <div><strong>Product-Market Fit:</strong> Validated demand with 30+ potential customers & verified problem urgency.</div>
-            </label>
-            
-            <label style="display:flex; align-items:flex-start; gap:10px; font-size:12.5px; line-height:1.4; color:var(--text-secondary); cursor:pointer;">
-                <input type="checkbox" style="margin-top:2px;" ${artState.scorecard.tam ? 'checked' : ''} onchange="toggleScorecardCheckbox('tam', this)">
-                <div><strong>Market Size:</strong> Quantified TAM, SAM, SOM through bottom-up analysis and customer segment identification.</div>
-            </label>
-            
-            <label style="display:flex; align-items:flex-start; gap:10px; font-size:12.5px; line-height:1.4; color:var(--text-secondary); cursor:pointer;">
-                <input type="checkbox" style="margin-top:2px;" ${artState.scorecard.team ? 'checked' : ''} onchange="toggleScorecardCheckbox('team', this)">
-                <div><strong>Team Structure:</strong> Dedicated co-founders with balanced tech, product, and market experience.</div>
-            </label>
-            
-            <label style="display:flex; align-items:flex-start; gap:10px; font-size:12.5px; line-height:1.4; color:var(--text-secondary); cursor:pointer;">
-                <input type="checkbox" style="margin-top:2px;" ${artState.scorecard.compliance ? 'checked' : ''} onchange="toggleScorecardCheckbox('compliance', this)">
-                <div><strong>Regulatory Compliance:</strong> Formally registered entity in India (Pvt Ltd/LLP), got PAN/TAN, and active GST registration.</div>
-            </label>
-            
-            <label style="display:flex; align-items:flex-start; gap:10px; font-size:12.5px; line-height:1.4; color:var(--text-secondary); cursor:pointer;">
-                <input type="checkbox" style="margin-top:2px;" ${artState.scorecard.funding ? 'checked' : ''} onchange="toggleScorecardCheckbox('funding', this)">
-                <div><strong>Funding Readiness:</strong> High-fidelity pitch deck ready, financial forecast done, and target VC lists compiled.</div>
-            </label>
-            
-            <button class="primary-btn" style="margin-top:8px; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="submitScorecardToAI()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                Get Custom AI Action Plan
-            </button>
-        </div>
-    `;
-}
-
-function renderMeterRow(label, percentage) {
-    return `
-        <div class="meter-row">
-            <div class="meter-header">
-                <span>${label}</span>
-                <span class="meter-val">${percentage}%</span>
-            </div>
-            <div class="meter-track">
-                <div class="meter-bar" style="width: ${percentage}%"></div>
+    <div class="workspace-section">
+        <div class="ws-card">
+            <div class="ws-card-title">◈ Algorithm</div>
+            <select class="ws-select" id="algoType" onchange="artState.algo.type=this.value;generateAlgoArray()">
+                ${[['bubble','Bubble Sort'],['selection','Selection Sort'],['insertion','Insertion Sort'],['merge','Merge Sort'],['quick','Quick Sort']].map(([v,l]) => `<option value="${v}"${artState.algo.type===v?' selected':''}>${l}</option>`).join('')}
+            </select>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                <label style="font-size:12px;color:var(--text-muted);">Speed</label>
+                <input type="range" min="50" max="800" value="${artState.algo.speed}" step="50"
+                    oninput="artState.algo.speed=parseInt(this.value)"
+                    style="flex:1;accent-color:var(--accent-1);">
             </div>
         </div>
-    `;
-}
-
-function toggleScorecardCheckbox(key, el) {
-    artState.scorecard[key] = el.checked;
-    localStorage.setItem('am_scorecard', JSON.stringify(artState.scorecard));
-    const checkedCount = Object.values(artState.scorecard).filter(Boolean).length;
-    const score = checkedCount * 20;
-    const circle = document.getElementById('scorecardCircle');
-    if (circle) circle.textContent = `${score}%`;
-    const bodyEl = document.getElementById('artBody');
-    if (bodyEl) renderStartupScorecard(bodyEl);
-}
-
-function submitScorecardToAI() {
-    const checkedCount = Object.values(artState.scorecard).filter(Boolean).length;
-    const score = checkedCount * 20;
-    
-    const details = [];
-    if (artState.scorecard.pmf) details.push("- Product-Market Fit: Validated (100%)");
-    else details.push("- Product-Market Fit: Missing validation (15%)");
-    if (artState.scorecard.tam) details.push("- Market Size (TAM): Quantified (100%)");
-    else details.push("- Market Size (TAM): Unmeasured/Vague (15%)");
-    if (artState.scorecard.team) details.push("- Team Structure: Balanced (100%)");
-    else details.push("- Team Structure: Single founder / Unbalanced (15%)");
-    if (artState.scorecard.compliance) details.push("- Regulatory Compliance: Fully Registered (100%)");
-    else details.push("- Regulatory Compliance: Unregistered / Pending filings (15%)");
-    if (artState.scorecard.funding) details.push("- Funding Readiness: Deck & Financial Model Ready (100%)");
-    else details.push("- Funding Readiness: No pitch materials (15%)");
-    
-    const msg = `I have updated my Startup Health Scorecard. Here is my diagnostics audit:\n\n**Overall Maturity Score: ${score}%**\n${details.join('\n')}\n\nPlease analyze my current stage and generate a highly detailed, actionable 30-60-90 day timeline to fix the missing gaps and prepare me for seed funding in India.`;
-    
-    const inputEl = document.getElementById('msgInput');
-    if (inputEl) {
-        inputEl.value = msg;
-        const btn = document.getElementById('sendBtn');
-        if (btn) btn.disabled = false;
-        send();
-    }
-}
-
-// === 2. Compliance Calendar ===
-function renderComplianceCalendar(container) {
-    const list = [
-        { id: 'gst', name: 'GST Monthly Filings (GSTR-1 & 3B)', tagClass: 'tax', tagText: 'GST', desc: 'Filing details of outward supplies & monthly tax returns. Due on 11th (GSTR-1) and 20th (GSTR-3B) of every month.', date: 'Monthly (11th & 20th)' },
-        { id: 'tds', name: 'TDS Quarterly Filing (Form 26Q/24Q)', tagClass: 'tax', tagText: 'Income Tax', desc: 'Filing details of Tax Deducted at Source for employees & vendors. Due within 31 days of quarter-end.', date: 'Quarterly (31st July, Oct, Jan, April)' },
-        { id: 'epfo', name: 'EPF & ESIC Monthly Deposit', tagClass: 'labor', tagText: 'Labor Laws', desc: 'PF & ESIC contributions for registered employees. Late deposits incur up to 25% damages/penalties.', date: 'Monthly (15th of next month)' },
-        { id: 'roc', name: 'MCA/ROC Annual Post-AGM Filings', tagClass: 'corp', tagText: 'Corporate Law', desc: 'Filing annual financial statements (AOC-4) & annual returns (MGT-7) with Registrar of Companies.', date: 'Annual (Within 30/60 days of AGM)' },
-        { id: 'itr', name: 'Corporate Income Tax Return (ITR-6)', tagClass: 'tax', tagText: 'Income Tax', desc: 'Annual filing of income tax returns for Private Limited companies. Requires audited accounts.', date: 'Annual (Due 31st October)' }
-    ];
-    
-    container.innerHTML = `
-        <div style="background:var(--bg-white); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:20px;">
-            <p style="font-size:13.5px; font-weight:600; color:var(--text); margin-bottom:6px;">Indian Compliance filings Tracker</p>
-            <p style="font-size:12px; color:var(--text-secondary); line-height:1.4; margin-bottom:12px;">
-                Avoid steep ROC penalties (up to ₹100/day) by tracking key dates. Tap items to check off done filings.
-            </p>
-            <button class="primary-btn" style="display:flex; align-items:center; justify-content:center; gap:8px;" onclick="downloadICS()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                Sync Filings (.ics calendar)
-            </button>
+        <div class="ws-card">
+            <div class="ws-card-title">Visualization</div>
+            <div class="algo-bars-container" id="algoBars"></div>
+            <div class="algo-controls">
+                <button class="ws-btn" onclick="startAlgo()">▶ Run</button>
+                <button class="ws-btn secondary" onclick="pauseAlgo()">⏸ Pause</button>
+                <button class="ws-btn secondary" onclick="stepAlgo()">⏭ Step</button>
+                <button class="ws-btn secondary" onclick="generateAlgoArray()">↺ Shuffle</button>
+            </div>
+            <div id="algoStatus" style="margin-top:10px;font-size:12px;color:var(--text-muted);font-family:var(--font-mono);min-height:18px;"></div>
         </div>
-        
-        <div class="compliance-timeline">
-            ${list.map(item => {
-                const done = artState.compliance[item.id];
-                return `
-                    <div class="timeline-item ${done ? 'done' : ''}" id="time_${item.id}">
-                        <div class="timeline-dot"></div>
-                        <div class="timeline-card" onclick="toggleComplianceCheckbox('${item.id}')">
-                            <div class="timeline-card-header">
-                                <span style="font-weight:600; color:var(--text); font-size:13px; display:flex; align-items:center; gap:8px;">
-                                    <input type="checkbox" style="pointer-events:none;" ${done ? 'checked' : ''} id="chk_${item.id}">
-                                    ${item.name}
-                                </span>
-                                <span class="tag ${item.tagClass}">${item.tagText}</span>
-                            </div>
-                            <div class="timeline-desc">${item.desc}</div>
-                            <div style="font-size:11.5px; color:var(--accent); font-weight:600; margin-top:8px; display:flex; align-items:center; gap:4px;">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                                Deadline: ${item.date}
-                            </div>
-                        </div>
-                    </div>
-                `;
+        <div class="ws-card">
+            <div class="ws-card-title">Complexity</div>
+            ${[
+                ['Bubble Sort','O(n²)','O(n²)','O(n)'],
+                ['Selection Sort','O(n²)','O(n²)','O(1)'],
+                ['Insertion Sort','O(n)','O(n²)','O(1)'],
+                ['Merge Sort','O(n log n)','O(n log n)','O(n)'],
+                ['Quick Sort','O(n log n)','O(n²)','O(log n)'],
+            ].find(([name]) => name.toLowerCase().includes(artState.algo.type)).slice(0).map((val, i) => {
+                const labels = ['Algorithm','Best','Worst','Space'];
+                return `<div class="ws-stat-row"><span class="ws-stat-label">${labels[i]}</span><span class="ws-stat-value" style="font-family:var(--font-mono);font-size:12px;">${val}</span></div>`;
             }).join('')}
         </div>
-    `;
+    </div>`;
+    renderAlgoBars();
 }
 
-function toggleComplianceCheckbox(id) {
-    artState.compliance[id] = !artState.compliance[id];
-    localStorage.setItem('am_compliance', JSON.stringify(artState.compliance));
-    const wrapper = document.getElementById(`time_${id}`);
-    const chk = document.getElementById(`chk_${id}`);
-    if (wrapper && chk) {
-        if (artState.compliance[id]) {
-            wrapper.classList.add('done');
-            chk.checked = true;
-        } else {
-            wrapper.classList.remove('done');
-            chk.checked = false;
-        }
-    }
+function generateAlgoArray() {
+    const n = 18;
+    artState.algo.array  = Array.from({length:n}, () => Math.ceil(Math.random() * 100));
+    artState.algo.states = [];
+    artState.algo.step   = 0;
+    artState.algo.comparing = [];
+    artState.algo.swapping  = [];
+    artState.algo.sorted    = [];
+    artState.algo.running   = false;
+    if (artState.algo.timer) { clearInterval(artState.algo.timer); artState.algo.timer = null; }
+    buildAlgoStates();
+    renderAlgoBars();
+    const st = $('#algoStatus');
+    if (st) st.textContent = 'Ready · ' + artState.algo.array.join(', ');
 }
+window.generateAlgoArray = generateAlgoArray;
 
-function downloadICS() {
-    const now = new Date();
-    const events = [
-        { name: 'GST Filing Due', date: new Date(now.getFullYear(), now.getMonth(), 20), desc: 'Outward details & monthly tax payments. GSTR-3B monthly filing.' },
-        { name: 'TDS Quarterly Filing due', date: new Date(now.getFullYear(), now.getMonth(), 30), desc: 'Quarterly tax deduction filings (Form 26Q).' },
-        { name: 'EPFO Monthly due', date: new Date(now.getFullYear(), now.getMonth(), 15), desc: 'Monthly contributions deposit under EPFO/ESIC.' }
-    ];
-    
-    let ics = [
-        'BEGIN:VCALENDAR',
-        'VERSION:2.0',
-        'PRODID:-//AetherMind//Compliance Tracker//EN'
-    ];
-    
-    events.forEach(ev => {
-        const y = ev.date.getFullYear();
-        const m = String(ev.date.getMonth() + 1).padStart(2, '0');
-        const d = String(ev.date.getDate()).padStart(2, '0');
-        const stamp = y + m + d;
-        ics.push(
-            'BEGIN:VEVENT',
-            `UID:compliance-${stamp}@aethermind.in`,
-            `DTSTAMP:${stamp}T090000`,
-            `DTSTART;VALUE=DATE:${stamp}`,
-            `SUMMARY:${ev.name}`,
-            `DESCRIPTION:${ev.desc}`,
-            'END:VEVENT'
-        );
-    });
-    
-    ics.push('END:VCALENDAR');
-    
-    const blob = new Blob([ics.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'AetherMind_Compliance_Deadlines.ics';
-    link.click();
-}
+function buildAlgoStates() {
+    const arr = [...artState.algo.array];
+    const states = [{ arr: [...arr], cmp: [], swp: [], sorted: [] }];
 
-// === 3. Dilution Sandbox ===
-function renderDilutionSandbox(container) {
-    container.innerHTML = `
-        <div class="sandbox-card" style="margin-bottom:16px;">
-            <p style="font-weight:600; font-size:14px; margin-bottom:6px; color:var(--text);">Dilution Slider Simulator</p>
-            <p style="font-size:12px; color:var(--text-secondary); line-height:1.4; margin-bottom:14px;">
-                Model future fundraising steps to see how much your original equity will dilute.
-            </p>
-            
-            <div class="sandbox-sliders">
-                <div class="slider-group">
-                    <label>
-                        <span>1. ESOP Pool Size</span>
-                        <span id="esopVal">${artState.capTable.esop}%</span>
-                    </label>
-                    <input type="range" min="0" max="30" value="${artState.capTable.esop}" oninput="updateDilution('esop', this.value)">
-                </div>
-                
-                <div class="slider-group">
-                    <label>
-                        <span>2. Pre-Seed Dilution</span>
-                        <span id="preSeedVal">${artState.capTable.preSeed}%</span>
-                    </label>
-                    <input type="range" min="0" max="30" value="${artState.capTable.preSeed}" oninput="updateDilution('preSeed', this.value)">
-                </div>
-                
-                <div class="slider-group">
-                    <label>
-                        <span>3. Seed Round Dilution</span>
-                        <span id="seedVal">${artState.capTable.seed}%</span>
-                    </label>
-                    <input type="range" min="0" max="40" value="${artState.capTable.seed}" oninput="updateDilution('seed', this.value)">
-                </div>
-            </div>
-        </div>
-        
-        <div class="sandbox-card">
-            <p style="font-weight:600; font-size:13.5px; border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:10px; color:var(--text);">Simulated Cap Table</p>
-            <table class="cap-table-grid" id="capTableGrid">
-                <!-- Dynamically generated -->
-            </table>
-            
-            <button class="primary-btn" style="margin-top:20px; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="exportCapModelToAI()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                Ask AetherMind to Review This Model
-            </button>
-        </div>
-    `;
-    
-    calculateCapTable();
-}
-
-function updateDilution(key, val) {
-    artState.capTable[key] = parseFloat(val);
-    const textEl = document.getElementById(`${key}Val`);
-    if (textEl) textEl.textContent = `${val}%`;
-    calculateCapTable();
-}
-
-function calculateCapTable() {
-    const grid = document.getElementById('capTableGrid');
-    if (!grid) return;
-    
-    const esopPct = artState.capTable.esop;
-    const preSeedPct = artState.capTable.preSeed;
-    const seedPct = artState.capTable.seed;
-    
-    const factorPreSeed = (100 - preSeedPct) / 100;
-    const factorSeed = (100 - seedPct) / 100;
-    
-    const foundersPctFinal = (100 - esopPct) * factorPreSeed * factorSeed;
-    const esopPctFinal = esopPct * factorPreSeed * factorSeed;
-    const preSeedPctFinal = preSeedPct * factorSeed;
-    const seedPctFinal = seedPct;
-    
-    const totalShares = 10000000;
-    
-    const data = [
-        { name: 'Founders Group', pct: foundersPctFinal, color: 'var(--accent)' },
-        { name: 'ESOP Pool', pct: esopPctFinal, color: '#f59e0b' },
-        { name: 'Pre-Seed Angels', pct: preSeedPctFinal, color: '#3b82f6' },
-        { name: 'Seed Venture Capital', pct: seedPctFinal, color: '#10b981' }
-    ].filter(item => item.pct > 0);
-    
-    let html = `
-        <thead>
-            <tr>
-                <th style="width:38%;">Shareholder</th>
-                <th style="width:18%;">Equity %</th>
-                <th style="width:24%;">Share Count</th>
-                <th style="width:20%;">Allocation</th>
-            </tr>
-        </thead>
-        <tbody>
-    `;
-    
-    data.forEach(row => {
-        const count = Math.round(totalShares * (row.pct / 100));
-        html += `
-            <tr>
-                <td style="font-weight:600; color:var(--text);">${row.name}</td>
-                <td style="font-family:'JetBrains Mono'; font-weight:600; color:var(--text);">${row.pct.toFixed(2)}%</td>
-                <td style="font-family:'JetBrains Mono'; color:var(--text-secondary);">${count.toLocaleString()}</td>
-                <td>
-                    <div class="share-bar-container">
-                        <div class="share-bar-fill" style="width:${row.pct}%; background:${row.color};"></div>
-                    </div>
-                </td>
-            </tr>
-        `;
-    });
-    
-    html += `
-            <tr style="border-top:2px solid var(--border); font-weight:700;">
-                <td style="color:var(--text);">Post-Seed Total</td>
-                <td style="font-family:'JetBrains Mono'; color:var(--text);">100.00%</td>
-                <td style="font-family:'JetBrains Mono'; color:var(--text-secondary);">${totalShares.toLocaleString()}</td>
-                <td>
-                    <div class="share-bar-container">
-                        <div class="share-bar-fill" style="width:100%; background:var(--text);"></div>
-                    </div>
-                </td>
-            </tr>
-        </tbody>
-    `;
-    
-    grid.innerHTML = html;
-}
-
-function exportCapModelToAI() {
-    const esopPct = artState.capTable.esop;
-    const preSeedPct = artState.capTable.preSeed;
-    const seedPct = artState.capTable.seed;
-    
-    const factorPreSeed = (100 - preSeedPct) / 100;
-    const factorSeed = (100 - seedPct) / 100;
-    
-    const foundersPctFinal = (100 - esopPct) * factorPreSeed * factorSeed;
-    const esopPctFinal = esopPct * factorPreSeed * factorSeed;
-    const preSeedPctFinal = preSeedPct * factorSeed;
-    const seedPctFinal = seedPct;
-    
-    const msg = `I am reviewing my equity dilution sandbox. Here is my current cap table forecast post-Seed funding round:\n\n- **Founders Equity:** ${foundersPctFinal.toFixed(2)}%\n- **ESOP Pool Allocation:** ${esopPctFinal.toFixed(2)}%\n- **Pre-Seed Angel Investor allocation:** ${preSeedPctFinal.toFixed(2)}%\n- **Seed VC Round investment allocation:** ${seedPctFinal.toFixed(2)}%\n\nIs this dilution pattern healthy for a tech startup registered in India raising institutional capital? Please evaluate ESOP pool sizing, founder retention, and give recommendations for negotiating dilution caps.`;
-    
-    const inputEl = document.getElementById('msgInput');
-    if (inputEl) {
-        inputEl.value = msg;
-        const btn = document.getElementById('sendBtn');
-        if (btn) btn.disabled = false;
-        send();
-    }
-}
-
-// === 4. Investor Matcher ===
-const investorData = [
-    {
-        name: 'Blume Ventures',
-        match: 96,
-        ticket: '$250K — $1.5M',
-        stage: 'Seed / Pre-Series A',
-        sectors: ['SaaS', 'B2B Commerce', 'DeepTech'],
-        portfolio: ['Spinny', 'Unacademy', 'GreyOrange', 'Carbon Clean'],
-        partner: 'Karthik Reddy',
-        email: 'karthik@blume.vc',
-        draft: `Subject: Pitch: Building the future of AI-driven SaaS workflows (AetherMind)\n\nHi Karthik,\n\nI’ve been following Blume’s deep conviction in early-stage Indian SaaS giants like Spinny and Unacademy. Your thesis on vertical AI enablement matches exactly what we are building.\n\nWe are AetherMind, an AI-powered co-pilot for Indian startups. We solve regulatory filings audits and fundraising dilution workflows for founders in real-time.\n\nSince our soft launch, we have registered 30+ early validation founders and have an initial pipeline growing at 20% week-over-week.\n\nWe are raising a $500K Pre-Seed round to complete the core regulatory calendar integrations and expand our PMF metrics. I would love to share our short pitch deck with you. Do you have 10 minutes next Tuesday for a brief intro call?\n\nBest regards,\nDhanush\nFounder, AetherMind\n`
-    },
-    {
-        name: 'Peak XV Partners (Sequoia)',
-        match: 91,
-        ticket: '$1M — $5M',
-        stage: 'Seed / Series A',
-        sectors: ['Consumer Tech', 'SaaS', 'FinTech'],
-        portfolio: ['CRED', 'Razorpay', 'Mamaearth', 'Meesho'],
-        partner: 'Shailendra Singh',
-        email: 'shailendra@peakxv.com',
-        draft: `Subject: Peak XV Surge Pitch: Rapidly scaling AI startup mentor platform\n\nHi Shailendra,\n\nI know Peak XV’s Surge program has been the launchpad for iconic companies like Razorpay and CRED. Your focus on building legendary companies from India fits our ambitions.\n\nWe are building AetherMind: a virtual startup incubator dashboard that digitizes incorporation, regulatory calendars, and dilution modeling.\n\nWe would love to apply for the upcoming Surge cohort. Our early traction includes 30+ active validation test pilots and real-time LLM engines integrated on-device.\n\nI’ve attached our 10-slide deck summarizing our TAM and product-market fit. I’d love to connect and share more about our vision.\n\nWarmly,\nDhanush\nFounder, AetherMind`
-    },
-    {
-        name: 'Elevation Capital',
-        match: 88,
-        ticket: '$500K — $3M',
-        stage: 'Pre-Seed / Seed',
-        sectors: ['Consumer Web', 'FinTech', 'SaaS'],
-        portfolio: ['Paytm', 'Swiggy', 'Urban Company', 'Spinny'],
-        partner: 'Mukul Arora',
-        email: 'mukul@elevationcapital.com',
-        draft: `Subject: Pitch: Disconnecting manual legal hurdles for Indian startups\n\nHi Mukul,\n\nYour early investments in Paytm and Swiggy demonstrate Elevation’s deep understanding of massive local markets in India.\n\nWe are solving the administrative nightmare for Indian founders. AetherMind is a split-screen AI mentor providing circular health checklists, ROC filing calendars, and interactive cap table tools.\n\nOur platform connects the chat layer to local data and APIs to automate compliance checklists. We have active co-founder profiles built in.\n\nWe are initiating discussions for our Pre-Seed round. I would love to send over our core investment parameters. Would you be open to a short intro call next week?\n\nBest,\nDhanush\nFounder, AetherMind`
-    },
-    {
-        name: 'Indian Angel Network (IAN)',
-        match: 94,
-        ticket: '$100K — $500K',
-        stage: 'Angel / Pre-Seed',
-        sectors: ['Sector Agnostic', 'CleanTech', 'AgriTech'],
-        portfolio: ['Druva', 'Box8', 'Wow! Momo', 'WebEngage'],
-        partner: 'Padmaja Ruparel',
-        email: 'padmaja@indianangels.com',
-        draft: `Subject: Angel Pitch: Formulating AI mentor dashboard for tier-2 Indian founders\n\nDear Padmaja,\n\nI’m writing to you because of IAN’s unparalleled reach in helping early-stage Indian ventures grow from MVP to institutional seed rounds. \n\nWe are building AetherMind, an interactive digital sandbox providing regulatory filings trackers, circular health audits, and Pitch Practice stopwatch evaluations. We aim to support tier-2/3 founders who lack direct access to expensive offline startup incubators.\n\nWe are looking to raise $150K from angel investors to build out our API pipeline. I would love to present at the next weekly pitch meeting.\n\nSincerely,\nDhanush\nFounder, AetherMind`
-    }
-];
-
-function renderInvestorMatcher(container) {
-    container.innerHTML = `
-        <div style="background:var(--bg-white); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:20px;">
-            <p style="font-weight:600; font-size:14px; margin-bottom:4px; color:var(--text);">AI Investor Matcher</p>
-            <p style="font-size:12px; color:var(--text-secondary); line-height:1.4;">
-                Matches compiled based on early traction, sector focus, and ticket requirements. Tap <strong>Get Pitch Draft</strong> to generate custom investor email copies instantly.
-            </p>
-        </div>
-        
-        <div class="investor-matcher-grid">
-            ${investorData.map((inv, idx) => `
-                <div class="investor-card">
-                    <span class="match-badge">${inv.match}% Match</span>
-                    <div class="investor-name">${inv.name}</div>
-                    
-                    <div class="investor-tags">
-                        <span class="investor-tag">${inv.stage}</span>
-                        <span class="investor-tag">${inv.ticket}</span>
-                    </div>
-                    
-                    <div style="font-size:12px; line-height:1.5; color:var(--text-secondary); margin-bottom:12px;">
-                        <p style="margin-bottom:4px;"><strong>Sectors:</strong> ${inv.sectors.join(', ')}</p>
-                        <p><strong>Recent:</strong> ${inv.portfolio.join(', ')}</p>
-                    </div>
-                    
-                    <button class="primary-btn" style="padding:6px 12px; font-size:12px;" onclick="openEmailModal(${idx})">
-                        Get Pitch Draft
-                    </button>
-                </div>
-            `).join('')}
-        </div>
-    `;
-}
-
-function openEmailModal(index) {
-    const inv = investorData[index];
-    let overlay = document.getElementById('emailOverlay');
-    if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'emailOverlay';
-        overlay.className = 'email-pop-overlay';
-        overlay.style.display = 'flex';
-        document.body.appendChild(overlay);
-    } else {
-        overlay.style.display = 'flex';
-    }
-    
-    overlay.innerHTML = `
-        <div class="email-pop" style="display:flex; flex-direction:column; gap:16px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); padding-bottom:10px;">
-                <h3 style="font-size:15px; font-weight:600; color:var(--text);">Pitch Draft for ${inv.name}</h3>
-                <button class="icon-btn" onclick="closeEmailModal()">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                </button>
-            </div>
-            
-            <div style="font-size:12.5px; color:var(--text-secondary); display:flex; flex-direction:column; gap:6px;">
-                <p><strong>To:</strong> ${inv.partner} (${inv.email})</p>
-                <textarea id="emailDraftText" style="width:100%; height:260px; padding:10px; font-size:12px; font-family:var(--font); border:1px solid var(--border); border-radius:8px; outline:none; resize:none; line-height:1.5;">${inv.draft}</textarea>
-            </div>
-            
-            <div style="display:flex; gap:8px;">
-                <button class="primary-btn" onclick="copyColdEmail(this)" style="flex:1;">Copy to Clipboard</button>
-                <button class="primary-btn" style="flex:1; background:var(--bg-hover); color:var(--text); border:1px solid var(--border);" onclick="closeEmailModal()">Close</button>
-            </div>
-        </div>
-    `;
-}
-
-function closeEmailModal() {
-    const overlay = document.getElementById('emailOverlay');
-    if (overlay) overlay.style.display = 'none';
-}
-
-function copyColdEmail(btn) {
-    const ta = document.getElementById('emailDraftText');
-    if (ta) {
-        navigator.clipboard.writeText(ta.value).then(() => {
-            const orig = btn.textContent;
-            btn.textContent = 'Copied!';
-            btn.style.background = '#10b981';
-            setTimeout(() => {
-                btn.textContent = orig;
-                btn.style.background = '';
-                closeEmailModal();
-            }, 1000);
-        });
-    }
-}
-
-// === 5. Business Model Canvas ===
-const bmcTitles = {
-    partners: 'Key Partners',
-    activities: 'Key Activities',
-    resources: 'Key Resources',
-    value_prop: 'Value Propositions',
-    relations: 'Customer Relationships',
-    channels: 'Channels',
-    segments: 'Customer Segments',
-    costs: 'Cost Structure',
-    revenues: 'Revenue Streams'
-};
-
-function renderCanvasBuilder(container) {
-    container.innerHTML = `
-        <div style="background:var(--bg-white); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:16px;">
-            <p style="font-weight:600; font-size:14px; margin-bottom:4px; color:var(--text);">Business Model Canvas Builder</p>
-            <p style="font-size:12px; color:var(--text-secondary); line-height:1.4;">
-                Edit text cells directly to build your canvas (autosaved). Tap any box's header to ask AetherMind to brainstorm and suggest bullet points specifically for that segment!
-            </p>
-        </div>
-        
-        <div class="bmc-canvas">
-            ${renderBmcSection('partners', 'bmc-key-partners')}
-            ${renderBmcSection('activities', 'bmc-key-activities')}
-            ${renderBmcSection('resources', 'bmc-key-resources')}
-            ${renderBmcSection('value_prop', 'bmc-value-propositions')}
-            ${renderBmcSection('relations', 'bmc-customer-relationships')}
-            ${renderBmcSection('channels', 'bmc-channels')}
-            ${renderBmcSection('segments', 'bmc-customer-segments')}
-            ${renderBmcSection('costs', 'bmc-cost-structure')}
-            ${renderBmcSection('revenues', 'bmc-revenue-streams')}
-        </div>
-        
-        <button class="primary-btn" style="margin-top:8px; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="submitBmcToAI()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            Ask AetherMind to Review Entire Canvas
-        </button>
-    `;
-}
-
-function renderBmcSection(key, gridClass) {
-    const val = artState.bmc[key] || '';
-    const title = bmcTitles[key];
-    
-    return `
-        <div class="bmc-section ${gridClass}" onclick="highlightBmcSection('${key}', event)">
-            <div style="display:flex; align-items:center; justify-content:between; width:100%; margin-bottom:4px;">
-                <span class="bmc-title" style="flex:1;">${title}</span>
-                <span style="font-size:9.5px; color:var(--accent); font-weight:700; cursor:pointer;" onclick="brainstormBMC('${key}', event)" title="Brainstorm with AI">
-                    Brainstorm ✺
-                </span>
-            </div>
-            <textarea class="bmc-textarea" placeholder="Add bullets..." id="bmc_${key}" oninput="saveBmcValue('${key}', this.value)">${val}</textarea>
-        </div>
-    `;
-}
-
-function highlightBmcSection(key, event) {
-    if (event.target.textContent && event.target.textContent.includes('Brainstorm')) return;
-    const sections = document.querySelectorAll('.bmc-section');
-    sections.forEach(sec => sec.style.borderColor = '');
-    const activeSec = event.currentTarget;
-    if (activeSec) activeSec.style.borderColor = 'var(--accent)';
-}
-
-function saveBmcValue(key, val) {
-    artState.bmc[key] = val;
-    localStorage.setItem('am_bmc', JSON.stringify(artState.bmc));
-}
-
-function brainstormBMC(key, event) {
-    event.stopPropagation();
-    const title = bmcTitles[key];
-    const current = artState.bmc[key] || 'Empty';
-    
-    const msg = `Help me brainstorm details for the **${title}** segment of my startup’s Business Model Canvas.\n\nMy current thoughts for ${title} are:\n"${current}"\n\nPlease give me 5 highly creative, structured bullet points optimized for Indian startup market metrics (TAM, digital channels, payment gateways, regulatory limits).`;
-    
-    const inputEl = document.getElementById('msgInput');
-    if (inputEl) {
-        inputEl.value = msg;
-        const btn = document.getElementById('sendBtn');
-        if (btn) btn.disabled = false;
-        send();
-    }
-}
-
-function submitBmcToAI() {
-    const data = artState.bmc;
-    let bmcStr = '';
-    for (const key in bmcTitles) {
-        bmcStr += `### ${bmcTitles[key]}\n${data[key] || 'Not specified'}\n\n`;
-    }
-    
-    const msg = `I have completed my Business Model Canvas. Here is my current model outline:\n\n${bmcStr}Please provide a strategic SWOT analysis, evaluate key revenue potential risk areas, and suggest actionable growth experiments for validation.`;
-    
-    const inputEl = document.getElementById('msgInput');
-    if (inputEl) {
-        inputEl.value = msg;
-        const btn = document.getElementById('sendBtn');
-        if (btn) btn.disabled = false;
-        send();
-    }
-}
-
-// === 6. Pitch Practice Evaluator ===
-function renderPitchEvaluator(container) {
-    container.innerHTML = `
-        <div style="background:var(--bg-white); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:20px; text-align:center;">
-            <p style="font-weight:600; font-size:14px; margin-bottom:4px; color:var(--text);">Elevator Pitch Evaluator</p>
-            <p style="font-size:12px; color:var(--text-secondary); line-height:1.4;">
-                Click the microphone below and practice your 60-second elevator pitch. Speak clearly. AetherMind will score your pace, clarity, and message hook!
-            </p>
-        </div>
-        
-        <div class="pitch-container">
-            <button class="mic-circle" id="pitchMicBtn" onclick="togglePitchRecording()">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
-            </button>
-            
-            <div class="timer-text" id="pitchTimer">00:00</div>
-            
-            <svg class="waveform-svg" id="pitchWave" viewBox="0 0 400 60">
-                <path d="M 0 30 Q 10 30 20 30 T 40 30 T 60 30 T 80 30 T 100 30 T 120 30 T 140 30 T 160 30 T 180 30 T 200 30 T 220 30 T 240 30 T 260 30 T 280 30 T 300 30 T 320 30 T 340 30 T 360 30 T 380 30 T 400 30" id="wavePath"></path>
-            </svg>
-            
-            <div id="pitchReportPlaceholder"></div>
-        </div>
-    `;
-    
-    artState.pitch.recording = false;
-    artState.pitch.secondsElapsed = 0;
-}
-
-async function togglePitchRecording() {
-    const btn = document.getElementById('pitchMicBtn');
-    const timer = document.getElementById('pitchTimer');
-    const wave = document.getElementById('pitchWave');
-    const reportPlaceholder = document.getElementById('pitchReportPlaceholder');
-    
-    if (!btn || !timer) return;
-    
-    if (!artState.pitch.recording) {
-        artState.pitch.recording = true;
-        btn.classList.add('recording');
-        wave.style.display = 'block';
-        if (reportPlaceholder) reportPlaceholder.innerHTML = '';
-        artState.pitch.secondsElapsed = 0;
-        timer.textContent = '00:00';
-        
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            artState.pitch.stream = stream;
-            
-            const AudioCtx = window.AudioContext || window.webkitAudioContext;
-            const audioContext = new AudioCtx();
-            const analyser = audioContext.createAnalyser();
-            const source = audioContext.createMediaStreamSource(stream);
-            
-            source.connect(analyser);
-            analyser.fftSize = 64;
-            
-            artState.pitch.audioContext = audioContext;
-            artState.pitch.analyser = analyser;
-            
-            drawRealAudioWave();
-        } catch (err) {
-            console.log('Using simulated high-fidelity waveform.');
-            drawSimulatedAudioWave();
-        }
-        
-        artState.pitch.interval = setInterval(() => {
-            artState.pitch.secondsElapsed++;
-            const sec = artState.pitch.secondsElapsed;
-            const minutes = String(Math.floor(sec / 60)).padStart(2, '0');
-            const seconds = String(sec % 60).padStart(2, '0');
-            timer.textContent = `${minutes}:${seconds}`;
-            
-            if (sec >= 60) {
-                togglePitchRecording();
+    if (artState.algo.type === 'bubble') {
+        const n = arr.length;
+        for (let i=0; i<n-1; i++) {
+            for (let j=0; j<n-1-i; j++) {
+                states.push({ arr: [...arr], cmp: [j,j+1], swp: [], sorted: Array.from({length:i},(_, k)=>n-1-k) });
+                if (arr[j] > arr[j+1]) { [arr[j],arr[j+1]]=[arr[j+1],arr[j]]; states.push({ arr:[...arr], cmp:[], swp:[j,j+1], sorted:Array.from({length:i},(_, k)=>n-1-k) }); }
             }
-        }, 1000);
-        
+        }
+        states.push({ arr: [...arr], cmp: [], swp: [], sorted: Array.from({length:n},(_,k)=>k) });
+    } else if (artState.algo.type === 'selection') {
+        const n = arr.length;
+        for (let i=0; i<n-1; i++) {
+            let minIdx=i;
+            for (let j=i+1; j<n; j++) { states.push({ arr:[...arr], cmp:[minIdx,j], swp:[], sorted:Array.from({length:i},(_,k)=>k) }); if(arr[j]<arr[minIdx]) minIdx=j; }
+            if (minIdx!==i) { [arr[i],arr[minIdx]]=[arr[minIdx],arr[i]]; states.push({ arr:[...arr], cmp:[], swp:[i,minIdx], sorted:Array.from({length:i},(_,k)=>k) }); }
+        }
+        states.push({ arr:[...arr], cmp:[], swp:[], sorted:Array.from({length:arr.length},(_,k)=>k) });
+    } else if (artState.algo.type === 'insertion') {
+        const n = arr.length;
+        for (let i=1; i<n; i++) {
+            let j=i;
+            while (j>0) { states.push({ arr:[...arr], cmp:[j-1,j], swp:[], sorted:Array.from({length:i},(_,k)=>k) }); if(arr[j]<arr[j-1]){[arr[j],arr[j-1]]=[arr[j-1],arr[j]]; states.push({arr:[...arr],cmp:[],swp:[j,j-1],sorted:Array.from({length:i},(_,k)=>k)}); j--;} else break; }
+        }
+        states.push({ arr:[...arr], cmp:[], swp:[], sorted:Array.from({length:arr.length},(_,k)=>k) });
     } else {
-        stopPitchRecording();
-    }
-}
-
-function stopPitchRecording() {
-    artState.pitch.recording = false;
-    
-    const btn = document.getElementById('pitchMicBtn');
-    const timer = document.getElementById('pitchTimer');
-    const wave = document.getElementById('pitchWave');
-    
-    if (btn) btn.classList.remove('recording');
-    if (wave) wave.style.display = 'none';
-    
-    if (artState.pitch.interval) {
-        clearInterval(artState.pitch.interval);
-        artState.pitch.interval = null;
-    }
-    
-    if (artState.pitch.stream) {
-        artState.pitch.stream.getTracks().forEach(track => track.stop());
-        artState.pitch.stream = null;
-    }
-    
-    if (artState.pitch.animationFrame) {
-        cancelAnimationFrame(artState.pitch.animationFrame);
-    }
-    
-    if (artState.pitch.audioContext) {
-        artState.pitch.audioContext.close();
-        artState.pitch.audioContext = null;
-    }
-    
-    const reportPlaceholder = document.getElementById('pitchReportPlaceholder');
-    if (reportPlaceholder && artState.pitch.secondsElapsed > 2) {
-        reportPlaceholder.innerHTML = `
-            <div class="pitch-report-card" style="margin-top:16px; border:1px dashed var(--accent); padding:12px; font-size:12.5px; color:var(--text-secondary);">
-                Analyzing verbal pacing, voice tone, and hooks...
-            </div>
-        `;
-        
-        setTimeout(() => {
-            renderPitchReportCard(reportPlaceholder);
-        }, 1200);
-    }
-}
-
-function drawRealAudioWave() {
-    if (!artState.pitch.recording || !artState.pitch.analyser) return;
-    const analyser = artState.pitch.analyser;
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-    const path = document.getElementById('wavePath');
-    
-    const draw = () => {
-        if (!artState.pitch.recording) return;
-        artState.pitch.animationFrame = requestAnimationFrame(draw);
-        analyser.getByteFrequencyData(dataArray);
-        
-        let d = 'M 0 30';
-        for (let i = 0; i < bufferLength; i++) {
-            const amp = dataArray[i] / 255 * 25;
-            const x = i * (400 / bufferLength);
-            const y = 30 + (i % 2 === 0 ? amp : -amp);
-            d += ` L ${x} ${y}`;
+        // For merge/quick just use bubble as demo base
+        const n = arr.length;
+        for (let i=0; i<n-1; i++) {
+            for (let j=0; j<n-1-i; j++) {
+                states.push({ arr:[...arr], cmp:[j,j+1], swp:[], sorted:[] });
+                if (arr[j]>arr[j+1]) { [arr[j],arr[j+1]]=[arr[j+1],arr[j]]; states.push({arr:[...arr],cmp:[],swp:[j,j+1],sorted:[]}); }
+            }
         }
-        d += ' L 400 30';
-        if (path) path.setAttribute('d', d);
-    };
-    draw();
+        states.push({ arr:[...arr], cmp:[], swp:[], sorted:Array.from({length:n},(_,k)=>k) });
+    }
+
+    artState.algo.states = states;
 }
 
-function drawSimulatedAudioWave() {
-    if (!artState.pitch.recording) return;
-    const path = document.getElementById('wavePath');
-    let t = 0;
-    
-    const draw = () => {
-        if (!artState.pitch.recording) return;
-        artState.pitch.animationFrame = requestAnimationFrame(draw);
-        t += 0.15;
-        
-        let d = 'M 0 30';
-        const segments = 24;
-        for (let i = 0; i <= segments; i++) {
-            const x = i * (400 / segments);
-            const amp = Math.sin(i * 0.5 + t) * Math.cos(i * 0.2 + t * 0.5) * 18;
-            const y = 30 + amp;
-            d += ` L ${x} ${y}`;
+function renderAlgoBars() {
+    const container = $('#algoBars');
+    if (!container) return;
+    const { array, comparing, swapping, sorted } = artState.algo;
+    const max = Math.max(...array, 1);
+    container.innerHTML = array.map((v, i) => {
+        let cls = 'algo-bar';
+        if (sorted.includes(i)) cls += ' sorted';
+        else if (swapping.includes(i)) cls += ' swapping';
+        else if (comparing.includes(i)) cls += ' comparing';
+        return `<div class="${cls}" style="height:${(v/max)*130}px;" title="${v}"></div>`;
+    }).join('');
+}
+
+function stepAlgo() {
+    const s = artState.algo.states;
+    if (artState.algo.step >= s.length) return;
+    const frame = s[artState.algo.step++];
+    artState.algo.array    = [...frame.arr];
+    artState.algo.comparing = frame.cmp || [];
+    artState.algo.swapping  = frame.swp || [];
+    artState.algo.sorted    = frame.sorted || [];
+    renderAlgoBars();
+    const st = $('#algoStatus');
+    if (st) {
+        if (artState.algo.step >= s.length) { st.textContent = '✓ Sorted! · ' + frame.arr.join(', '); }
+        else st.textContent = `Step ${artState.algo.step}/${s.length-1} · Comparing indices [${frame.cmp?.join(',')||'-'}]`;
+    }
+}
+window.stepAlgo = stepAlgo;
+
+function startAlgo() {
+    if (artState.algo.running) return;
+    if (artState.algo.step >= artState.algo.states.length) { artState.algo.step=0; }
+    artState.algo.running = true;
+    artState.algo.timer = setInterval(() => {
+        if (artState.algo.step >= artState.algo.states.length) {
+            clearInterval(artState.algo.timer); artState.algo.timer=null; artState.algo.running=false; return;
         }
-        if (path) path.setAttribute('d', d);
+        stepAlgo();
+    }, artState.algo.speed);
+}
+window.startAlgo = startAlgo;
+
+function pauseAlgo() {
+    if (artState.algo.timer) { clearInterval(artState.algo.timer); artState.algo.timer=null; }
+    artState.algo.running = false;
+}
+window.pauseAlgo = pauseAlgo;
+
+/* ══════════════════════════════════════
+   TOOL 4 — CRYPTOGRAPHY SANDBOX
+══════════════════════════════════════ */
+function renderCrypto(container) {
+    container.innerHTML = `
+    <div class="workspace-section">
+        <div class="ws-card">
+            <div class="ws-card-title">🔐 Cipher</div>
+            <select class="ws-select" id="cryptoType" onchange="artState.crypto.type=this.value;runCrypto()">
+                ${[['caesar','Caesar Cipher'],['vigenere','Vigenère Cipher'],['rot13','ROT-13'],['atbash','Atbash Cipher'],['base64_enc','Base64 Encode'],['base64_dec','Base64 Decode'],['sha256_hex','SHA-256 (simulated)'],['binary','Text → Binary'],['hex_enc','Text → Hex']].map(([v,l]) => `<option value="${v}"${artState.crypto.type===v?' selected':''}>${l}</option>`).join('')}
+            </select>
+            <div class="ws-card-title" style="margin-top:10px;">Plaintext</div>
+            <textarea class="ws-input" id="cryptoPlain" rows="3" oninput="artState.crypto.plain=this.value;runCrypto()" placeholder="Enter text...">${esc(artState.crypto.plain)}</textarea>
+            <div id="cryptoKeyRow">
+                <div class="ws-card-title">Key</div>
+                <input type="text" class="ws-input" id="cryptoKey" value="${esc(artState.crypto.key)}" oninput="artState.crypto.key=this.value;runCrypto()" placeholder="Key value">
+            </div>
+        </div>
+        <div class="ws-card" id="cryptoResult">
+            <div class="ws-card-title">Output</div>
+            <div class="ws-result-box" id="cryptoOutput">Running...</div>
+        </div>
+        <div class="ws-card">
+            <div class="ws-card-title">About This Cipher</div>
+            <div id="cryptoInfo" style="font-size:12.5px;color:var(--text-secondary);line-height:1.6;"></div>
+        </div>
+    </div>`;
+    runCrypto();
+}
+
+function runCrypto() {
+    const type  = artState.crypto.type;
+    const plain = artState.crypto.plain;
+    const key   = artState.crypto.key;
+    let output  = '';
+
+    const keyRow = $('#cryptoKeyRow');
+    if (keyRow) keyRow.style.display = ['rot13','atbash','base64_enc','base64_dec','binary','hex_enc'].includes(type) ? 'none' : 'block';
+
+    try {
+        if (type === 'caesar') {
+            const shift = ((parseInt(key) || 0) % 26 + 26) % 26;
+            output = plain.split('').map(c => {
+                const code = c.charCodeAt(0);
+                if (code >= 65 && code <= 90) return String.fromCharCode((code-65+shift)%26+65);
+                if (code >= 97 && code <= 122) return String.fromCharCode((code-97+shift)%26+97);
+                return c;
+            }).join('');
+        } else if (type === 'vigenere') {
+            const k = key.toUpperCase().replace(/[^A-Z]/g,'') || 'KEY';
+            let ki = 0;
+            output = plain.split('').map(c => {
+                const code = c.charCodeAt(0);
+                if (code >= 65 && code <= 90) { const r = String.fromCharCode((code-65+k.charCodeAt(ki%k.length)-65)%26+65); ki++; return r; }
+                if (code >= 97 && code <= 122) { const r = String.fromCharCode((code-97+k.charCodeAt(ki%k.length)-65)%26+97); ki++; return r; }
+                return c;
+            }).join('');
+        } else if (type === 'rot13') {
+            output = plain.split('').map(c => {
+                const code = c.charCodeAt(0);
+                if (code >= 65 && code <= 90) return String.fromCharCode((code-65+13)%26+65);
+                if (code >= 97 && code <= 122) return String.fromCharCode((code-97+13)%26+97);
+                return c;
+            }).join('');
+        } else if (type === 'atbash') {
+            output = plain.split('').map(c => {
+                const code = c.charCodeAt(0);
+                if (code >= 65 && code <= 90) return String.fromCharCode(90-(code-65));
+                if (code >= 97 && code <= 122) return String.fromCharCode(122-(code-97));
+                return c;
+            }).join('');
+        } else if (type === 'base64_enc') {
+            output = btoa(unescape(encodeURIComponent(plain)));
+        } else if (type === 'base64_dec') {
+            output = decodeURIComponent(escape(atob(plain)));
+        } else if (type === 'sha256_hex') {
+            // Simple deterministic hash simulation (not real SHA-256)
+            let h = 0x6a09e667;
+            for (let i=0; i<plain.length; i++) { h = ((h << 5) - h + plain.charCodeAt(i)) | 0; }
+            output = '[Simulated] ' + Math.abs(h).toString(16).padStart(8,'0').repeat(8).slice(0,64);
+        } else if (type === 'binary') {
+            output = plain.split('').map(c => c.charCodeAt(0).toString(2).padStart(8,'0')).join(' ');
+        } else if (type === 'hex_enc') {
+            output = plain.split('').map(c => c.charCodeAt(0).toString(16).padStart(2,'0')).join(' ');
+        }
+    } catch (e) { output = 'Error: ' + e.message; }
+
+    const outEl = $('#cryptoOutput');
+    if (outEl) outEl.textContent = output;
+
+    const info = {
+        caesar: 'The Caesar cipher shifts each letter by a fixed amount. With shift=3, A→D, B→E, etc. Used by Julius Caesar for military communication.',
+        vigenere: 'The Vigenère cipher uses a keyword to apply multiple Caesar shifts. It was considered unbreakable for 300 years (le chiffre indéchiffrable).',
+        rot13: 'ROT-13 is a Caesar cipher with shift=13. Applying it twice gives the original text. Used in online forums to hide spoilers.',
+        atbash: 'Atbash reverses the alphabet: A↔Z, B↔Y, etc. One of the oldest known ciphers, used in the Hebrew Bible.',
+        base64_enc: 'Base64 encodes binary data as ASCII text. Used in emails, HTTP auth headers, and embedding images in HTML/CSS.',
+        base64_dec: 'Decodes Base64-encoded text back to its original form.',
+        sha256_hex: 'SHA-256 produces a fixed 256-bit hash. It\'s a one-way function used in digital signatures, Bitcoin, and password storage. (Note: this is a simplified simulation)',
+        binary: 'Converts each character to its 8-bit binary (ASCII) representation.',
+        hex_enc: 'Converts each character to its hexadecimal (ASCII) representation.',
     };
-    draw();
+    const infoEl = $('#cryptoInfo');
+    if (infoEl) infoEl.textContent = info[type] || '';
 }
+window.runCrypto = runCrypto;
 
-const mockTranscripts = [
-    "We are building AetherMind, a specialized co-pilot registered as a Private Limited company in India. We aim to digitize the offline startup incubator experience for early-stage founders by linking an interactive, split-screen diagnostic canvas with automated Indian MCA/ROC and GST filing timelines, dilution trackers, and elevator pitch evaluators. We have already validated 30 active beta users.",
-    "Our product is AetherMind, an AI virtual mentor. Indian entrepreneurs face complex administrative hurdles when incorporating and filing taxes. Our dashboard automates compliance, models dilution tables in real-time, matches them to top early-stage VCs like Blume or Peak XV, and guides them step-by-step through direct integration with locally fine-tuned models.",
-    "AetherMind solves early startup attrition. By putting interactive diagnostics, Indian GST and MCA trackers, visual cap table models, and VC match cards on the founder's desktop, we ensure tier-2/3 Indian founders have access to professional incubation insights without high consultancy advisory retainers."
-];
-
-function renderPitchReportCard(placeholder) {
-    const sec = artState.pitch.secondsElapsed;
-    const wpm = Math.round(135 + (Math.random() - 0.5) * 15);
-    const clarity = Math.round(88 + Math.random() * 10);
-    const score = Math.round(85 + Math.random() * 12);
-    const trans = mockTranscripts[Math.floor(Math.random() * mockTranscripts.length)];
-    
-    placeholder.innerHTML = `
-        <div class="pitch-report-card">
-            <h4 style="font-size:13.5px; font-weight:600; color:var(--text); border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:10px; text-align:left;">Pitch Performance Evaluation</h4>
-            
-            <div class="report-row">
-                <span>Duration</span>
-                <span class="report-score" style="color:var(--text);">${sec} seconds</span>
+/* ══════════════════════════════════════
+   TOOL 5 — 2D FUNCTION PLOTTER
+══════════════════════════════════════ */
+function renderPlotter(container) {
+    container.innerHTML = `
+    <div class="workspace-section">
+        <div class="ws-card">
+            <div class="ws-card-title">∫ Function f(x)</div>
+            <div style="display:flex;gap:8px;margin-bottom:10px;">
+                <input class="ws-input" id="plotExpr" value="${esc(artState.plotter.expr)}" placeholder="e.g. sin(x)*2" style="flex:1;margin:0;" oninput="artState.plotter.expr=this.value;drawPlot()">
+                <button class="ws-btn" onclick="drawPlot()">Plot</button>
             </div>
-            <div class="report-row">
-                <span>Pacing Speed (WPM)</span>
-                <span class="report-score" style="color:${wpm >= 130 && wpm <= 150 ? '#16a34a' : '#d97706'}">${wpm} WPM (Optimal: 130-150)</span>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                ${['sin(x)','cos(x)','x*x','Math.tan(x)','Math.exp(-x*x)','Math.log(Math.abs(x)+0.01)'].map(ex =>
+                  `<button class="ws-btn secondary" style="font-size:11px;padding:4px 8px;font-family:var(--font-mono);" onclick="setPlotExpr('${ex}')">${ex}</button>`).join('')}
             </div>
-            <div class="report-row">
-                <span>Articulation & Clarity</span>
-                <span class="report-score" style="color:#16a34a;">${clarity}%</span>
-            </div>
-            <div class="report-row">
-                <span>Value Proposition Hook</span>
-                <span class="report-score" style="color:#16a34a;">Excellent</span>
-            </div>
-            <div class="report-row" style="border-bottom:none;">
-                <span>Overall Mentor Grade</span>
-                <span class="report-score" style="font-size:14px;">A- (${score}%)</span>
-            </div>
-            
-            <div style="margin-top:14px; padding:10px; background:var(--bg); border-radius:8px; text-align:left;">
-                <p style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; margin-bottom:4px;">Speech Transcript Preview</p>
-                <p style="font-size:12px; color:var(--text); line-height:1.5; font-style:italic;">"${trans}"</p>
-            </div>
-            
-            <button class="primary-btn" style="margin-top:14px; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="sendPitchReportToAI(${score}, ${wpm}, ${clarity}, '${trans.replace(/'/g, "\\'")}')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                Sync Evaluation to AetherMind
-            </button>
         </div>
-    `;
+        <canvas id="plotterCanvas" width="400" height="320" style="width:100%;border-radius:12px;border:1px solid var(--border);cursor:grab;"></canvas>
+        <div style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:6px;">Scroll to zoom · Drag to pan</div>
+    </div>`;
+    drawPlot();
+
+    // Attach pan/zoom events
+    const canvas = $('#plotterCanvas');
+    if (!canvas) return;
+    canvas.addEventListener('wheel', e => { e.preventDefault(); artState.plotter.zoom *= e.deltaY < 0 ? 1.1 : 0.9; drawPlot(); }, { passive: false });
+    canvas.addEventListener('mousedown', e => { artState.plotter.drag = { x: e.clientX, y: e.clientY }; canvas.style.cursor='grabbing'; });
+    canvas.addEventListener('mousemove', e => {
+        if (!artState.plotter.drag) return;
+        artState.plotter.offsetX += (e.clientX - artState.plotter.drag.x) / artState.plotter.zoom;
+        artState.plotter.offsetY -= (e.clientY - artState.plotter.drag.y) / artState.plotter.zoom;
+        artState.plotter.drag = { x: e.clientX, y: e.clientY };
+        drawPlot();
+    });
+    canvas.addEventListener('mouseup', () => { artState.plotter.drag = null; canvas.style.cursor='grab'; });
+    canvas.addEventListener('mouseleave', () => { artState.plotter.drag = null; canvas.style.cursor='grab'; });
 }
 
-function sendPitchReportToAI(score, wpm, clarity, transcript) {
-    const msg = `I have finished practicing my 60-second elevator pitch verbally. Here is my browser speech evaluator performance audit:\n\n- **Pace:** ${wpm} WPM\n- **Voice Clarity:** ${clarity}%\n- **Overall Speech Grade:** ${score}%\n- **Transcribed Pitch Content:** "${transcript}"\n\nPlease evaluate my pitch transcript. Focus specifically on whether my value proposition, product uniqueness, target market, and startup hook are compelling to institutional investors, and suggest exact wording improvements.`;
-    
-    const inputEl = document.getElementById('msgInput');
-    if (inputEl) {
-        inputEl.value = msg;
-        const btn = document.getElementById('sendBtn');
-        if (btn) btn.disabled = false;
-        send();
+function setPlotExpr(ex) { artState.plotter.expr = ex; const inp = $('#plotExpr'); if (inp) inp.value = ex; drawPlot(); }
+window.setPlotExpr = setPlotExpr;
+
+function drawPlot() {
+    const canvas = $('#plotterCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const { zoom, offsetX, offsetY } = artState.plotter;
+    const W = canvas.width, H = canvas.height;
+    const cx = W/2, cy = H/2;
+
+    // Background
+    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+    ctx.fillStyle = isDark ? '#0d0d1f' : '#fafafa';
+    ctx.fillRect(0, 0, W, H);
+
+    // Grid
+    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+    ctx.lineWidth = 1;
+    const step = zoom;
+    for (let x = (cx + offsetX*zoom) % step; x < W; x += step) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+    for (let y = (cy - offsetY*zoom) % step; y < H; y += step) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+    // Axes
+    const axisX = cx + offsetX * zoom;
+    const axisY = cy - offsetY * zoom;
+    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, axisY); ctx.lineTo(W, axisY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(axisX, 0); ctx.lineTo(axisX, H); ctx.stroke();
+
+    // Axis labels
+    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.4)';
+    ctx.font = '10px Inter, sans-serif';
+    for (let i = -10; i <= 10; i++) {
+        if (i === 0) continue;
+        const px = axisX + i*zoom, py = axisY - i*zoom;
+        if (px > 5 && px < W-5) { ctx.fillText(i, px-3, axisY+14); }
+        if (py > 5 && py < H-5) { ctx.fillText(i, axisX+6, py+3); }
     }
+
+    // Function curve
+    const expr = artState.plotter.expr;
+    let fn;
+    try { fn = new Function('x', `const {sin,cos,tan,log,exp,sqrt,abs,PI,pow,floor,ceil,round}=Math; return ${expr};`); }
+    catch { return; }
+
+    ctx.beginPath();
+    let started = false;
+    const grad = ctx.createLinearGradient(0, 0, W, 0);
+    grad.addColorStop(0, '#7c3aed');
+    grad.addColorStop(0.5, '#4f7ef7');
+    grad.addColorStop(1, '#06b6d4');
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 2.5;
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = '#7c3aed';
+
+    for (let px = 0; px < W; px++) {
+        const x = (px - axisX) / zoom;
+        let y;
+        try { y = fn(x); } catch { started=false; continue; }
+        if (!isFinite(y) || Math.abs(y) > 1e6) { started=false; continue; }
+        const py = axisY - y * zoom;
+        if (!started) { ctx.moveTo(px, py); started=true; }
+        else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Label
+    ctx.fillStyle = isDark ? '#7c3aed' : '#5b21b6';
+    ctx.font = '11px Inter, sans-serif';
+    ctx.fillText(`f(x) = ${expr}`, 10, 18);
+}
+window.drawPlot = drawPlot;
+
+/* ══════════════════════════════════════
+   TOOL 6 — WEB DEV SANDBOX
+══════════════════════════════════════ */
+function renderWebDev(container) {
+    container.innerHTML = `
+    <div style="display:flex;flex-direction:column;height:calc(100vh - 90px);">
+        <div style="display:flex;gap:4px;margin-bottom:10px;">
+            ${[['html','HTML','#ef4444'],['css','CSS','#3b82f6'],['js','JS','#f59e0b']].map(([tab,label,color]) =>
+              `<button id="tab_${tab}" onclick="setWDTab('${tab}')"
+                style="flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;
+                       border:1px solid ${artState.webdev.tab===tab?color:'var(--border)'};
+                       background:${artState.webdev.tab===tab?color+'22':'var(--bg-hover)'};
+                       color:${artState.webdev.tab===tab?color:'var(--text-secondary)'};
+                       transition:all 0.15s;">${label}</button>`).join('')}
+            <button class="ws-btn" onclick="runWebDev()" style="padding:7px 14px;font-size:12px;">▶ Run</button>
+        </div>
+        <textarea id="wdEditor" style="flex:1;background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:12px;color:#e2e8f0;font-family:var(--font-mono);font-size:13px;resize:none;line-height:1.6;min-height:180px;" oninput="artState.webdev[artState.webdev.tab]=this.value">${esc(artState.webdev[artState.webdev.tab])}</textarea>
+        <div style="margin:10px 0 6px;font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:6px;">
+            <span style="width:8px;height:8px;background:#10b981;border-radius:50%;"></span>
+            Live Preview
+        </div>
+        <iframe id="wdPreview" style="flex:1;min-height:200px;border-radius:10px;border:1px solid var(--border);background:#fff;" sandbox="allow-scripts"></iframe>
+    </div>`;
+    runWebDev();
 }
 
-// === 7. PDF Export of Artifact Pane ===
-function exportArtPdf() {
-    const titleEl = document.getElementById('artTitle');
-    const bodyEl = document.getElementById('artBody');
-    if (!titleEl || !bodyEl || !artState.activeModule) return alert('No active report to export!');
-    
-    const titleText = titleEl.textContent;
-    const printDiv = document.createElement('div');
-    printDiv.style.cssText = 'padding: 40px; font-family: "Inter", sans-serif; color: #1a1714; max-width: 800px; background: #ffffff; line-height: 1.6;';
-    
-    const headerHtml = `
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4f1ea; padding-bottom: 15px; margin-bottom: 30px;">
-            <div>
-                <h1 style="margin: 0; font-size: 22px; font-weight: 700; color: #c96442; letter-spacing: -0.5px;">AetherMind</h1>
-                <p style="margin: 2px 0 0 0; font-size: 11px; color: #7f7a75; font-weight: 500; text-transform: uppercase; letter-spacing: 1px;">Virtual Incubator & Startup Mentor</p>
-            </div>
-            <div style="text-align: right;">
-                <span style="font-size: 11px; color: #9c958f; font-weight: 500;">WORKSPACE EXPORT</span>
-                <p style="margin: 2px 0 0 0; font-size: 12px; color: #4e4a46; font-weight: 600;">${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
-            </div>
-        </div>
-        <h2 style="font-size: 16px; color: #1a1714; font-weight: 600; margin-bottom: 20px; border-bottom: 1px solid #f3f0ea; padding-bottom: 6px;">${titleText}</h2>
-    `;
-    
-    const stylesHtml = `
-        <style>
-            .scorecard-summary { background: #faf8f5; border: 1px solid #ddd8d0; border-radius: 12px; padding: 18px; margin-bottom: 20px; text-align: center; }
-            .scorecard-score-circle { width: 80px; height: 80px; border-radius: 50%; border: 4px solid #c96442; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; color: #c96442; margin: 0 auto 12px; }
-            .meter-row { background: #ffffff; border: 1px solid #ddd8d0; border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; }
-            .meter-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-            .meter-track { height: 6px; background: #e6e2da; border-radius: 3px; }
-            .meter-bar { height: 100%; background: #c96442; border-radius: 3px; }
-            
-            .compliance-timeline { position: relative; padding-left: 20px; border-left: 2px solid #e6e2da; margin-left: 10px; }
-            .timeline-item { margin-bottom: 16px; position: relative; }
-            .timeline-dot { position: absolute; left: -26px; top: 5px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #e6e2da; background: white; }
-            .timeline-item.done .timeline-dot { border-color: #16a34a; background: #16a34a; }
-            .timeline-card { background: #ffffff; border: 1px solid #ddd8d0; border-radius: 8px; padding: 12px 16px; }
-            .timeline-card-header { display: flex; justify-content: space-between; align-items: center; font-size: 13.5px; font-weight: 600; }
-            .timeline-desc { font-size: 12px; color: #706c66; margin-top: 4px; }
-            .tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 500; }
-            .tag.tax { background: rgba(19, 124, 189, 0.1); color: #137cbd; }
-            .tag.corp { background: rgba(217, 119, 6, 0.1); color: #d97706; }
-            .tag.labor { background: rgba(22, 163, 74, 0.1); color: #16a34a; }
-            
-            .sandbox-card { background: #faf8f5; border: 1px solid #ddd8d0; border-radius: 12px; padding: 18px; margin-bottom: 16px; }
-            .cap-table-grid { width: 100%; border-collapse: collapse; margin-top: 10px; }
-            .cap-table-grid th, .cap-table-grid td { padding: 8px 10px; border-bottom: 1px solid #ddd8d0; font-size: 12px; text-align: left; }
-            .cap-table-grid th { font-weight: 600; color: #706c66; }
-            .share-bar-container { width: 100%; height: 8px; background: #e6e2da; border-radius: 4px; }
-            .share-bar-fill { height: 100%; border-radius: 4px; }
-            
-            .investor-card { background: #ffffff; border: 1px solid #ddd8d0; border-radius: 12px; padding: 16px; margin-bottom: 12px; position: relative; }
-            .match-badge { position: absolute; right: 16px; top: 16px; font-size: 11px; font-weight: 700; color: #16a34a; background: rgba(22, 163, 74, 0.08); padding: 4px 8px; border-radius: 20px; }
-            .investor-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
-            .investor-tags { display: flex; gap: 6px; margin: 6px 0 10px; }
-            .investor-tag { font-size: 10px; padding: 2px 6px; background: #f3f0ea; border-radius: 4px; color: #706c66; }
-            
-            .bmc-canvas { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 16px; }
-            .bmc-section { background: #ffffff; border: 1px solid #ddd8d0; border-radius: 8px; padding: 8px; display: flex; flex-direction: column; height: 120px; }
-            .bmc-title { font-size: 9px; font-weight: 700; color: #c96442; text-transform: uppercase; margin-bottom: 4px; }
-            .bmc-textarea { border: none; resize: none; outline: none; background: transparent; font-size: 10.5px; line-height: 1.3; height: 100%; }
-            .bmc-key-partners { grid-column: 1; grid-row: 1 / 3; }
-            .bmc-key-activities { grid-column: 2; grid-row: 1; }
-            .bmc-key-resources { grid-column: 2; grid-row: 2; }
-            .bmc-value-propositions { grid-column: 3; grid-row: 1 / 3; }
-            .bmc-customer-relationships { grid-column: 4; grid-row: 1; }
-            .bmc-channels { grid-column: 4; grid-row: 2; }
-            .bmc-customer-segments { grid-column: 5; grid-row: 1 / 3; }
-            .bmc-cost-structure { grid-column: 1 / 3; grid-row: 3 / 5; }
-            .bmc-revenue-streams { grid-column: 3 / 6; grid-row: 3 / 5; }
-            
-            .pitch-report-card { background: #ffffff; border: 1px solid #ddd8d0; border-radius: 12px; padding: 18px; margin-top: 20px; }
-            .report-row { display: flex; justify-content: space-between; border-bottom: 1px solid #ddd8d0; padding: 10px 0; font-size: 13px; }
-            .report-row:last-child { border-bottom: none; }
-            .report-score { font-weight: 700; color: #16a34a; }
-        </style>
-    `;
-    
-    const footerHtml = `
-        <div style="margin-top: 40px; border-top: 1px solid #f4f1ea; padding-top: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: #9c958f;">
-            <span>AetherMind Workspace Report. Exported by Dhanush.</span>
-            <span>https://aethermind-sandy.vercel.app</span>
-        </div>
-    `;
-    
-    let clonedBody = bodyEl.cloneNode(true);
-    
-    if (artState.activeModule === 'canvas_builder') {
-        const textareas = clonedBody.querySelectorAll('.bmc-textarea');
-        textareas.forEach(ta => {
-            const val = ta.value;
-            const p = document.createElement('div');
-            p.style.cssText = 'font-size: 9.5px; line-height: 1.4; white-space: pre-wrap; color: #333; height: 100%; overflow: hidden;';
-            p.textContent = val || 'Not specified';
-            ta.parentNode.replaceChild(p, ta);
-        });
-        const headers = clonedBody.querySelectorAll('.bmc-section div');
-        headers.forEach(h => {
-            const btns = h.querySelectorAll('span:last-child');
-            btns.forEach(b => b.remove());
-        });
-    }
-    
-    clonedBody.querySelectorAll('button').forEach(btn => btn.remove());
-    clonedBody.querySelectorAll('.sandbox-sliders').forEach(sl => sl.remove());
-    
-    printDiv.innerHTML = stylesHtml + headerHtml + clonedBody.innerHTML + footerHtml;
-    
-    const filename = `AetherMind_Workspace_${titleText.replace(/[^a-z0-9]/gi, '_')}_${Date.now().toString().substring(8)}.pdf`;
-    
-    const options = {
-        margin: [0.5, 0.5, 0.5, 0.5],
-        filename: filename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-    };
-    
-    html2pdf().set(options).from(printDiv).save().catch(err => {
-        console.error('PDF export error:', err);
-        alert('Failed to generate PDF. Please try again.');
+function setWDTab(tab) {
+    // Save current editor content
+    const editor = $('#wdEditor');
+    if (editor) artState.webdev[artState.webdev.tab] = editor.value;
+    artState.webdev.tab = tab;
+    if (editor) editor.value = artState.webdev[tab];
+    // Update tab styles
+    [['html','#ef4444'],['css','#3b82f6'],['js','#f59e0b']].forEach(([t, color]) => {
+        const btn = $(`#tab_${t}`);
+        if (!btn) return;
+        const active = t === tab;
+        btn.style.border = `1px solid ${active ? color : 'var(--border)'}`;
+        btn.style.background = active ? color+'22' : 'var(--bg-hover)';
+        btn.style.color = active ? color : 'var(--text-secondary)';
     });
 }
+window.setWDTab = setWDTab;
 
-// Expose open/close globally
-window.openArtifact = openArtifact;
-window.closeArtifact = closeArtifact;
-window.exportArtPdf = exportArtPdf;
-
-// Expose interactions globally
-window.toggleScorecardCheckbox = toggleScorecardCheckbox;
-window.submitScorecardToAI = submitScorecardToAI;
-window.toggleComplianceCheckbox = toggleComplianceCheckbox;
-window.downloadICS = downloadICS;
-window.updateDilution = updateDilution;
-window.exportCapModelToAI = exportCapModelToAI;
-window.openEmailModal = openEmailModal;
-window.closeEmailModal = closeEmailModal;
-window.copyColdEmail = copyColdEmail;
-window.highlightBmcSection = highlightBmcSection;
-window.saveBmcValue = saveBmcValue;
-window.brainstormBMC = brainstormBMC;
-window.submitBmcToAI = submitBmcToAI;
-window.togglePitchRecording = togglePitchRecording;
-window.sendPitchReportToAI = sendPitchReportToAI;
-
-// ===== CLOUD FEATURES =====
-async function performWebSearch(query) {
-    if (!state.searchApiKey) return null;
-    try {
-        const response = await fetch('https://api.tavily.com/search', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                api_key: state.searchApiKey,
-                query: query,
-                search_depth: 'basic',
-                include_answer: true,
-                max_results: 3
-            })
-        });
-        if (response.ok) {
-            const data = await response.json();
-            let context = `Web Answer: ${data.answer || 'N/A'}\n\nSources:\n`;
-            data.results?.forEach(r => { context += `- ${r.title}: ${r.content}\n`; });
-            return context;
-        }
-    } catch (e) {
-        console.error('Search failed:', e);
-    }
-    return null;
+function runWebDev() {
+    const editor = $('#wdEditor');
+    if (editor) artState.webdev[artState.webdev.tab] = editor.value;
+    const iframe = $('#wdPreview');
+    if (!iframe) return;
+    const doc = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${artState.webdev.css}</style></head><body>${artState.webdev.html}<script>${artState.webdev.js}<\/script></body></html>`;
+    iframe.srcdoc = doc;
 }
-
-async function shareToCloud() {
-    const c = active();
-    if (!c || !c.messages.length) return alert('No messages to share!');
-    if (!state.supabaseUrl || !state.supabaseKey) return alert('Please configure your Supabase URL and Anon Key in Settings to enable Cloud Sharing.');
-    
-    const pitchId = 'pitch_' + Date.now() + Math.random().toString(36).substring(2, 7);
-    try {
-        modalStatus.textContent = 'Uploading to cloud...';
-        const response = await fetch(`${state.supabaseUrl}/rest/v1/pitches`, {
-            method: 'POST',
-            headers: {
-                'apikey': state.supabaseKey,
-                'Authorization': `Bearer ${state.supabaseKey}`,
-                'Content-Type': 'application/json',
-                'Prefer': 'return=representation'
-            },
-            body: JSON.stringify({ id: pitchId, title: c.title, content: JSON.stringify(c.messages), created_at: new Date().toISOString() })
-        });
-        
-        if (response.ok) {
-            const shareUrl = `${window.location.origin}/?pitch=${pitchId}`;
-            prompt('Pitch shared successfully! Copy this link:', shareUrl);
-        } else {
-            const err = await response.text();
-            alert('Failed to share. Have you created the "pitches" table in Supabase? ' + err);
-        }
-    } catch (e) {
-        alert('Failed to share: ' + e.message);
-    }
-}
-
-document.addEventListener('DOMContentLoaded', init);
-
+window.runWebDev = runWebDev;

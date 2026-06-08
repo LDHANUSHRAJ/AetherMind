@@ -7,7 +7,7 @@ import shutil
 # 1. "unsloth/gemma-2-2b-it-bnb-4bit" (Lightweight, ~1.6 GB, perfect for low disk space)
 # 2. "unsloth/gemma-2-2b-it" (Full precision, ~5.2 GB)
 repo_id = "unsloth/gemma-2-2b-it-bnb-4bit"
-local_dir = r"C:\Users\Dhanu\foundermind\model\base"
+local_dir = r"C:\Users\Dhanu\aethermind\model\base"
 
 print("="*60)
 print(f" AetherMind Base Model Downloader (Public/Ungated)")

@@ -43,7 +43,7 @@ def generate_response(prompt):
         response = response.split("model\n")[-1]
     return response
 
-print("\nAetherMind AI Startup Mentor is ready!")
+print("\nAetherMind Computational AI Assistant (Math/Stats/CS/Coding/Cybersec/Web) is ready!")
 print("Type 'quit' or 'exit' to stop.\n")
 
 while True:
