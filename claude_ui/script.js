@@ -232,9 +232,19 @@ function setGreeting() {
     let g = h >= 5 && h < 12 ? 'Good morning' :
             h >= 12 && h < 17 ? 'Good afternoon' :
             h >= 17 && h < 22 ? 'Good evening' :
-            'Good night';
+            'Welcome';
+    
+    let userName = 'User';
+    try {
+        const userSession = localStorage.getItem('am_user');
+        if (userSession) {
+            const user = JSON.parse(userSession);
+            if (user.name) userName = user.name;
+        }
+    } catch(e) {}
+
     const el = $('#welcomeHeading');
-    if (el) el.textContent = `${g}, Dhanush`;
+    if (el) el.textContent = `${g}, ${userName}`;
 }
 
 /* ══════════════════════════════════════
