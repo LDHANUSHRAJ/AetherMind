@@ -760,6 +760,35 @@ async function send() {
 }
 
 function buildSystemPrompt(userText, attached) {
+    const lowerText = (userText || '').toLowerCase().trim();
+    
+    // Check if the query is a simple greeting or general/conversational query
+    const isGreetingOrCasual = !attached && (
+        /^(hi|hello|hey|greetings|what's up|whatsup|yo|sup|good morning|good afternoon|good evening|howdy|hola|bonjour)(\b|\?|\!|\.)*$/i.test(lowerText) ||
+        /^(how are you|who are you|what is your name|what can you do|help me|help|tell me a joke|write a poem)(\b|\?|\!|\.)*$/i.test(lowerText.replace(/\s+/g, ' ')) ||
+        !/[a-zA-Z]/.test(lowerText)
+    );
+
+    // List of key concepts/terms for STEM fields
+    const stemKeywords = [
+        'solve', 'calculate', 'differentiate', 'integrate', 'matrix', 'eigenvalue', 'limit', 'derivative',
+        'equation', 'calculus', 'series', 'theorem', 'vector', 'linear algebra', 'unicode', 'sympy',
+        'mean', 'median', 'variance', 'distribution', 'probability', 'hypothesis', 't-test', 'p-value',
+        'regression', 'confidence interval', 'bayesian', 'pmf', 'pdf', 'cdf', 'scipy', 'numpy',
+        'code', 'function', 'algorithm', 'sort', 'search', 'debug', 'recursion', 'array', 'tree',
+        'graph', 'dynamic programming', 'binary search', 'java', 'python', 'c++', 'javascript',
+        'website', 'page', 'landing', 'navbar', 'hero', 'html', 'css', 'react', 'component', 'ui',
+        'frontend', 'layout', 'web app', 'encrypt', 'decrypt', 'xss', 'csrf', 'sql injection',
+        'vulnerability', 'penetration', 'cve', 'cryptography', 'exploit', 'program', 'runnable'
+    ];
+    
+    const isStemQuery = attached || stemKeywords.some(kw => lowerText.includes(kw));
+
+    if (isGreetingOrCasual || !isStemQuery) {
+        return `You are AetherMind. You answer all questions directly, conversationally, and accurately. Do NOT refuse any topic, do NOT decline general questions, and do NOT output any technical/structured code blocks or formulas unless asked.
+User: ${userText}`;
+    }
+
     const systemPrompt = `═══════════════════════════════════════════════
 AETHERMIND v3 — SYSTEM PROMPT
 Precision Computational AI
