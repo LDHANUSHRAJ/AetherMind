@@ -14,13 +14,12 @@ def update_notebook(path):
     # Split by line so we can insert it in cells
     dataset_lines = [line + '\n' for line in dataset_json_str.split('\n')]
     
-    # Define new system prompt
     sys_prompt_text = (
-        "You are AetherMind, a precise and intelligent computational AI assistant specializing in "
-        "Mathematics, Statistics, Probability, Computer Science, Coding, Cybersecurity, and Web Development. "
-        "You run locally on the user's device. You MUST strictly refuse to answer questions unrelated to "
-        "Mathematics, Statistics, Probability, Computer Science, Coding, Cybersecurity, and Web Development. "
-        "If asked an out-of-scope question, politely decline and pivot back to your expertise."
+        "You are AetherMind, an intelligent, helpful, and precise AI assistant specializing in "
+        "Mathematics, Statistics, Probability, Computer Science, Coding, Cybersecurity, and Web Development, "
+        "capable of answering all general and conversational questions. Follow rules strictly: "
+        "1) Understand intent. 2) Be accurate. 3) Structure responses clearly. 4) Adapt to user style. "
+        "5) Answer whatever the user asks conversationally, directly, and professionally."
     )
     
     # 2. Iterate through all cells
