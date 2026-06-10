@@ -611,7 +611,33 @@
     async function gradioCall(endpoint, payload) {
         if (!state.gradioUrl) return null;
         const cleanUrl = state.gradioUrl.replace(/\/$/, '');
-        // Try both /gradio_api/call/ prefix and /call/ prefix
+        
+        // 1. Try direct synchronous predict endpoints (highly reliable fallback)
+        const syncPrefixes = ['/gradio_api/api/predict', '/api/predict'];
+        for (const prefix of syncPrefixes) {
+            try {
+                const res = await fetch(`${cleanUrl}${prefix}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: payload, fn_index: getFnIndex(endpoint) }),
+                    signal: AbortSignal.timeout(8000)
+                });
+                if (res.ok) {
+                    const j = await res.json();
+                    if (j.data) return j.data;
+                }
+            } catch(e) {}
+        }
+
+        // Helper to map endpoint strings to typical Gradio function indexes
+        function getFnIndex(ep) {
+            if (ep === 'generate_key') return 1;
+            if (ep === 'list_keys') return 2;
+            if (ep === 'revoke_key') return 3;
+            return 0;
+        }
+
+        // 2. Fall back to standard asynchronous event stream flow
         const prefixes = ['/gradio_api/call/', '/call/'];
         for (const prefix of prefixes) {
             try {
