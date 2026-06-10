@@ -241,6 +241,13 @@ function setGreeting() {
    INIT
 ══════════════════════════════════════ */
 function init() {
+    // Session guard: redirect to login if no user session
+    const userSession = localStorage.getItem('am_user');
+    if (!userSession) {
+        window.location.href = 'login.html';
+        return;
+    }
+
     applyTheme(state.theme);
     setGreeting();
     setupMarkdown();
@@ -249,6 +256,15 @@ function init() {
     renderSidebar();
     bindEvents();
     autoGrow($('#msgInput'));
+
+    // Load user profile into sidebar
+    try {
+        const user = JSON.parse(userSession);
+        const avatarEl = document.querySelector('#sidebarAvatar');
+        const nameEl = document.querySelector('#sidebarName');
+        if (avatarEl && user.name) avatarEl.textContent = user.name.charAt(0).toUpperCase();
+        if (nameEl && user.name) nameEl.textContent = user.name;
+    } catch(e) {}
 
     // Restore sidebar collapse
     if (localStorage.getItem('am_sidebar_collapsed') === 'true') {
@@ -303,6 +319,11 @@ function bindEvents() {
     // Theme
     $('#themeToggleBtn')?.addEventListener('click', () => {
         applyTheme(state.theme === 'dark' ? 'light' : 'dark');
+    });
+
+    // Profile Click to Settings
+    document.querySelector('.user-profile')?.addEventListener('click', () => {
+        window.location.href = 'settings.html';
     });
 
     // Settings Modal
@@ -729,10 +750,12 @@ async function send() {
 }
 
 function buildSystemPrompt(userText, attached) {
-    const systemPrompt = `You are AetherMind, an elite AI assistant. Expert in: Math, Stats, CS, Coding, Web Dev, Cybersecurity, Data Science/ML.
-NEVER refuse requests in these domains.
+    const systemPrompt = `You are AetherMind, an elite AI assistant created by the AetherMind team. Expert in: Math, Stats, CS, Coding, Web Dev, Cybersecurity, Data Science/ML.
+You are also a warm, friendly, and witty conversational partner.
+NEVER refuse requests in your expert domains.
 
 CLASSIFICATION RULES:
+- If the message is a greeting, casual talk, or general question (e.g. "hi", "hello", "hey bro", "how are you?", "what's up?", "thanks", "who are you?", "tell me about yourself", "what can you do?", jokes, small talk) -> DOMAIN: GENERAL CONVERSATION. Action: Respond warmly, naturally, and with personality. Be friendly, use emojis sparingly, and keep it engaging. Introduce yourself as AetherMind if asked.
 - If message has "build", "create", "design", "website", "page", "landing", "portfolio", "UI", "HTML", "CSS", "React", "frontend", "glassmorphism", "dark mode" -> DOMAIN: WEB DEVELOPMENT. Action: Generate complete HTML/CSS/JS only. No math/stats.
 - If message has "calculate", "find", "solve", "mean", "variance", "probability", "integrate", "matrix", "t-test", "derivative" -> DOMAIN: MATH/STATS. Action: Formula + steps + Python code.
 - If message has "code", "program", "function", "debug", "algorithm", "sort", "search", "Fibonacci", "recursion" -> DOMAIN: CODING. Action: Full runnable code + complexity.
@@ -741,6 +764,9 @@ CLASSIFICATION RULES:
 OUT OF SCOPE (ONLY refuse these): Cooking, dating, medical, legal, politics, entertainment, astrology, non-tech.
 
 MANDATORY FORMATS:
+
+[GENERAL CONVERSATION]
+Just reply naturally as a smart, friendly AI. Use markdown formatting if helpful (bold, bullet lists). Keep it concise but warm. If the user greets you, greet back enthusiastically.
 
 [WEB DEVELOPMENT]
 ## 🌐 What I'm Building
@@ -763,6 +789,7 @@ Open index.html in browser.
 ## 📐 Type | ## 📋 Given | ## 📖 Method | ## 🔢 Formula ($...$ / $$...$$) | ## 🪜 Step-by-Step | ## 🎯 Final Answer (> blockquote) | ## 🖥️ Python Code | ## 💬 Interpretation
 
 STRICT RULES:
+- General: Be friendly, approachable. Don't give formatted technical answers for casual chat.
 - Web Dev: Complete HTML/CSS/JS ONLY. No stats/math symbols.
 - Coding: Full runnable code. Simple iterative for series (no memoization for Fibonacci).`;
 

@@ -231,12 +231,12 @@
         </nav>
         <div class="mt-auto pt-8">
             <div class="flex items-center gap-3 px-2">
-                <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-white/60 shadow-sm bg-primary/20 flex items-center justify-center font-bold text-white">
-                    D
+                <div id="sidebarAvatar" class="w-10 h-10 rounded-full overflow-hidden border-2 border-white/60 shadow-sm bg-primary/20 flex items-center justify-center font-bold text-white">
+                    ?
                 </div>
                 <div class="flex flex-col">
-                    <span class="text-label-md font-bold text-on-surface dark:text-white">Dhanush</span>
-                    <span class="text-label-sm text-on-surface-variant">Developer</span>
+                    <span id="sidebarName" class="text-label-md font-bold text-on-surface dark:text-white">User</span>
+                    <span id="sidebarEmail" class="text-label-sm text-on-surface-variant">Not signed in</span>
                 </div>
             </div>
         </div>
@@ -396,6 +396,32 @@
                     </div>
                 </section>
 
+                <!-- Profile Section -->
+                <section>
+                    <h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest mb-4 px-2 opacity-70">Profile</h3>
+                    <div class="lg-card rounded-3xl overflow-hidden p-6 space-y-6">
+                        <div class="flex items-center gap-5">
+                            <div id="profileAvatar" class="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+                                ?
+                            </div>
+                            <div class="flex-1">
+                                <p id="profileName" class="text-on-surface dark:text-white font-bold text-lg">User</p>
+                                <p id="profileEmail" class="text-label-sm text-on-surface-variant">Not signed in</p>
+                                <p id="profileProvider" class="text-label-sm text-on-surface-variant mt-0.5 flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[14px]">verified</span>
+                                    <span>—</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 pt-2 border-t border-outline-variant/20">
+                            <button id="logoutBtn" class="px-5 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl font-bold text-label-sm transition-all active:scale-95 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px]">logout</span>
+                                Sign Out
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
                 <!-- Appearance Preference -->
                 <section>
                     <h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest mb-4 px-2 opacity-70">Appearance</h3>
@@ -446,6 +472,13 @@
 
     // Init Theme and Values
     function init() {
+        // Session guard
+        const userSession = localStorage.getItem('am_user');
+        if (!userSession) {
+            window.location.href = 'login.html';
+            return;
+        }
+
         applyTheme(state.theme);
         if (gradioInput) gradioInput.value = state.gradioUrl;
         if (tavilyInput) tavilyInput.value = state.searchApiKey;
@@ -453,11 +486,39 @@
         if (supabaseKeyInput) supabaseKeyInput.value = state.supabaseKey;
 
         updateDocUrls();
+        loadProfile();
 
         // Test connection
         if (state.gradioUrl) {
             testConnection(state.gradioUrl);
         }
+    }
+
+    function loadProfile() {
+        try {
+            const user = JSON.parse(localStorage.getItem('am_user'));
+            if (!user) return;
+
+            const initial = user.name ? user.name.charAt(0).toUpperCase() : '?';
+            const sideAvatar = document.getElementById('sidebarAvatar');
+            const sideName = document.getElementById('sidebarName');
+            const sideEmail = document.getElementById('sidebarEmail');
+            const profAvatar = document.getElementById('profileAvatar');
+            const profName = document.getElementById('profileName');
+            const profEmail = document.getElementById('profileEmail');
+            const profProvider = document.getElementById('profileProvider');
+
+            if (sideAvatar) sideAvatar.textContent = initial;
+            if (sideName) sideName.textContent = user.name || 'User';
+            if (sideEmail) sideEmail.textContent = user.email || '';
+            if (profAvatar) profAvatar.textContent = initial;
+            if (profName) profName.textContent = user.name || 'User';
+            if (profEmail) profEmail.textContent = user.email || '';
+            if (profProvider) {
+                const provText = user.provider === 'google' ? 'Google Account' : 'Email Account';
+                profProvider.querySelector('span:last-child').textContent = provText;
+            }
+        } catch(e) {}
     }
 
     function updateDocUrls() {
@@ -549,34 +610,39 @@
     // --- API Key Manager Operations ---
     async function gradioCall(endpoint, payload) {
         if (!state.gradioUrl) return null;
-        try {
-            const res = await fetch(`${state.gradioUrl}/call/${endpoint}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ data: payload }),
-                signal: AbortSignal.timeout(10000)
-            });
-            if (res.ok) {
-                const j = await res.json();
-                if (j.event_id) {
-                    const statusRes = await fetch(`${state.gradioUrl}/call/${endpoint}/${j.event_id}`);
-                    if (statusRes.ok) {
-                        const sse = await statusRes.text();
-                        const lines = sse.split('\n');
-                        for (const line of lines) {
-                            if (line.trim().startsWith('data:')) {
-                                const data = line.substring(5).trim();
-                                try {
-                                    const parsed = JSON.parse(data);
-                                    if (Array.isArray(parsed)) return parsed;
-                                } catch(e) {}
+        const cleanUrl = state.gradioUrl.replace(/\/$/, '');
+        // Try both /gradio_api/call/ prefix and /call/ prefix
+        const prefixes = ['/gradio_api/call/', '/call/'];
+        for (const prefix of prefixes) {
+            try {
+                const res = await fetch(`${cleanUrl}${prefix}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: payload }),
+                    signal: AbortSignal.timeout(10000)
+                });
+                if (res.ok) {
+                    const j = await res.json();
+                    if (j.event_id) {
+                        const statusRes = await fetch(`${cleanUrl}${prefix}${endpoint}/${j.event_id}`);
+                        if (statusRes.ok) {
+                            const sse = await statusRes.text();
+                            const lines = sse.split('\n');
+                            for (const line of lines) {
+                                if (line.trim().startsWith('data:')) {
+                                    const data = line.substring(5).trim();
+                                    try {
+                                        const parsed = JSON.parse(data);
+                                        if (Array.isArray(parsed)) return parsed;
+                                    } catch(e) {}
+                                }
                             }
                         }
                     }
                 }
+            } catch(e) {
+                console.warn(`Gradio prefix ${prefix} failed for ${endpoint}`, e);
             }
-        } catch(e) {
-            console.error('Gradio request failed', e);
         }
         return null;
     }
@@ -666,6 +732,12 @@
     $('#refreshKeysBtn').addEventListener('click', () => {
         loadAPIKeys();
         showToast('API keys list refreshed.');
+    });
+
+    // Logout Handler
+    $('#logoutBtn')?.addEventListener('click', () => {
+        localStorage.removeItem('am_user');
+        window.location.href = 'login.html';
     });
 
     // Run init
