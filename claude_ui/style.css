@@ -412,6 +412,12 @@ a { color: var(--primary); text-decoration: none; }
     border-color: var(--border);
     color: var(--text-primary);
 }
+.sidebar-nav-item.active {
+    background: var(--bg-active);
+    color: var(--primary);
+    border-color: var(--border-primary);
+    font-weight: 600;
+}
 .sidebar-nav-item:active { transform: scale(0.97); }
 
 /* User Profile */
