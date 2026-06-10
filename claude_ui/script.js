@@ -306,7 +306,6 @@ function bindEvents() {
     });
 
     // Settings Modal
-    $('#settingsBtn')?.addEventListener('click', () => $('#settingsModal')?.classList.add('visible'));
     $('#closeModal')?.addEventListener('click', () => $('#settingsModal')?.classList.remove('visible'));
     $('#settingsModal')?.addEventListener('click', e => {
         if (e.target === $('#settingsModal')) $('#settingsModal')?.classList.remove('visible');
