@@ -5,520 +5,553 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>AetherMind | Analytics</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="analytics-data.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    "colors": {
-                        "on-tertiary": "#ffffff",
-                        "glass-border": "rgba(255, 255, 255, 0.4)",
-                        "on-surface": "#1b1b23",
-                        "surface": "#fcf8ff",
-                        "on-primary": "#ffffff",
-                        "glass-specular": "rgba(255, 255, 255, 0.6)",
-                        "tertiary-fixed-dim": "#c7c5d0",
-                        "outline-variant": "#c6c5d7",
-                        "inverse-on-surface": "#f2effb",
-                        "on-primary-container": "#d1d1ff",
-                        "on-error": "#ffffff",
-                        "background": "#fcf8ff",
-                        "secondary-fixed": "#e9ddff",
-                        "on-primary-fixed-variant": "#2e2ebe",
-                        "primary-fixed-dim": "#c0c1ff",
-                        "surface-dim": "#dbd8e4",
-                        "on-secondary-fixed": "#23005c",
-                        "surface-tint": "#484bd6",
-                        "code-block-bg": "#1b1b23e6",
-                        "surface-container-low": "#f5f2fe",
-                        "primary-fixed": "#e1e0ff",
-                        "on-tertiary-fixed": "#1b1b23",
-                        "on-surface-variant": "#464554",
-                        "on-secondary-container": "#fffbff",
-                        "error-container": "#ffdad6",
-                        "secondary": "#6b38d4",
-                        "on-background": "#1b1b23",
-                        "secondary-container": "#8455ee",
-                        "surface-bright": "#fcf8ff",
-                        "primary": "#2c2abc",
-                        "on-error-container": "#93000a",
-                        "on-secondary-fixed-variant": "#5517be",
-                        "inverse-primary": "#c0c1ff",
-                        "on-tertiary-container": "#d6d3df",
-                        "on-primary-fixed": "#06006c",
-                        "ai-bubble-accent": "rgba(70, 72, 212, 0.12)",
-                        "outline": "#767586",
-                        "tertiary": "#44444d",
-                        "inverse-surface": "#303038",
-                        "surface-container-highest": "#e4e1ed",
-                        "tertiary-container": "#5c5b65",
-                        "glass-surface": "rgba(255, 255, 255, 0.03)",
-                        "surface-container": "#efecf8",
-                        "tertiary-fixed": "#e4e1ec",
-                        "surface-container-high": "#e9e6f3",
-                        "surface-variant": "#e4e1ed",
-                        "primary-container": "#4648d4",
-                        "on-tertiary-fixed-variant": "#46464f",
-                        "on-secondary": "#ffffff",
-                        "error": "#ba1a1a",
-                        "secondary-fixed-dim": "#d0bcff",
-                        "surface-container-lowest": "#ffffff"
-                    },
-                    "borderRadius": {
-                        "DEFAULT": "1rem",
-                        "lg": "2rem",
-                        "xl": "3rem",
-                        "full": "9999px"
-                    },
-                    "spacing": {
-                        "sidebar-width": "18rem",
-                        "bubble-gap": "32px",
-                        "glass-padding": "20px",
-                        "gutter": "24px"
-                    },
-                    "fontFamily": {
-                        "label-md": ["Inter"],
-                        "code-sm": ["JetBrains Mono"],
-                        "display-lg": ["Inter"],
-                        "label-sm-caps": ["Inter"],
-                        "body-md": ["Inter"],
-                        "headline-md": ["Inter"]
-                    },
-                    "fontSize": {
-                        "label-md": ["0.75rem", {"lineHeight": "1rem", "fontWeight": "600"}],
-                        "code-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
-                        "display-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
-                        "label-sm-caps": ["10px", {"lineHeight": "12px", "letterSpacing": "0.15em", "fontWeight": "800"}],
-                        "body-md": ["0.875rem", {"lineHeight": "1.6", "fontWeight": "400"}],
-                        "headline-md": ["1.25rem", {"lineHeight": "1.75rem", "fontWeight": "600"}]
-                    }
-                },
-            },
-        }
-    </script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "on-tertiary": "#ffffff", "glass-border": "rgba(255,255,255,0.4)", "on-surface": "#1b1b23", "surface": "#fcf8ff",
+        "on-primary": "#ffffff", "glass-specular": "rgba(255,255,255,0.6)", "on-surface-variant": "#464554",
+        "secondary": "#6b38d4", "secondary-container": "#8455ee", "surface-bright": "#fcf8ff",
+        "primary": "#2c2abc", "ai-bubble-accent": "rgba(70,72,212,0.12)", "outline": "#767586",
+        "tertiary": "#44444d", "inverse-surface": "#303038", "surface-container-highest": "#e4e1ed",
+        "tertiary-container": "#5c5b65", "glass-surface": "rgba(255,255,255,0.03)",
+        "surface-container": "#efecf8", "primary-container": "#4648d4", "on-secondary": "#ffffff",
+        "error": "#ba1a1a", "surface-container-lowest": "#ffffff",
+      },
+      borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "full": "9999px" },
+      spacing: { "sidebar-width": "18rem", "glass-padding": "20px", "gutter": "24px" },
+      fontFamily: { "label-md": ["Inter"], "code-sm": ["JetBrains Mono"], "display-lg": ["Inter"], "label-sm-caps": ["Inter"], "body-md": ["Inter"], "headline-md": ["Inter"] },
+      fontSize: {
+        "label-md": ["0.75rem", {"lineHeight":"1rem","fontWeight":"600"}],
+        "code-sm": ["14px", {"lineHeight":"1.5","fontWeight":"400"}],
+        "display-lg": ["24px", {"lineHeight":"32px","letterSpacing":"-0.02em","fontWeight":"700"}],
+        "label-sm-caps": ["10px", {"lineHeight":"12px","letterSpacing":"0.15em","fontWeight":"800"}],
+        "body-md": ["0.875rem", {"lineHeight":"1.6","fontWeight":"400"}],
+        "headline-md": ["1.25rem", {"lineHeight":"1.75rem","fontWeight":"600"}]
+      }
+    }
+  }
+}
+</script>
 <style>
-        .liquid-glass {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(28px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
-        }
-        
-        .sidebar-blur {
-            backdrop-filter: blur(40px);
-        }
-
-        .header-blur {
-            backdrop-filter: blur(20px);
-        }
-
-        .atmospheric-bg {
-            background: radial-gradient(circle at 0% 0%, #fcf8ff 0%, #e1e0ff 30%, #f2effb 60%, #ffffff 100%);
-            min-height: 100vh;
-        }
-
-        /* Dark Mode overrides for tailwind classes */
-        .dark .atmospheric-bg {
-            background: radial-gradient(circle at 0% 0%, #0e0e18 0%, #13131f 30%, #1a1a2e 60%, #0e0e18 100%);
-        }
-        .dark .liquid-glass {
-            background: rgba(255, 255, 255, 0.02);
-            border-color: rgba(255, 255, 255, 0.08);
-            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
-        }
-
-        .mastery-bar {
-            height: 4px;
-            border-radius: 2px;
-            background: rgba(44, 42, 188, 0.1);
-            overflow: hidden;
-        }
-
-        .mastery-progress {
-            height: 100%;
-            background: linear-gradient(90deg, #4648d4, #6b38d4);
-        }
-
-        /* Custom Scrollbar for Glass UI */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(44, 42, 188, 0.2); border-radius: 10px; }
-        
-        .heatmap-cell {
-            aspect-ratio: 1/1;
-            border-radius: 2px;
-            transition: transform 0.2s;
-        }
-        .heatmap-cell:hover { transform: scale(1.3); z-index: 10; }
-
-        .sparkline {
-            height: 24px;
-            width: 80px;
-        }
-    </style>
+  .liquid-glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(28px); border: 1px solid rgba(255,255,255,0.4); box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.6); }
+  .sidebar-blur { backdrop-filter: blur(40px); }
+  .header-blur { backdrop-filter: blur(20px); }
+  .atmospheric-bg { background: radial-gradient(circle at 0% 0%, #fcf8ff 0%, #e1e0ff 30%, #f2effb 60%, #fff 100%); min-height: 100vh; }
+  .dark .atmospheric-bg { background: radial-gradient(circle at 0% 0%, #0e0e18 0%, #13131f 30%, #1a1a2e 60%, #0e0e18 100%); }
+  .dark .liquid-glass { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.08); box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.05); }
+  .mastery-bar { height: 4px; border-radius: 2px; background: rgba(44,42,188,0.1); overflow: hidden; }
+  .mastery-progress { height: 100%; background: linear-gradient(90deg,#4648d4,#6b38d4); transition: width 0.9s ease; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(44,42,188,0.2); border-radius: 10px; }
+  .heatmap-cell { aspect-ratio:1/1; border-radius:2px; transition:transform 0.15s; cursor:pointer; }
+  .heatmap-cell:hover { transform:scale(1.4); z-index:10; position:relative; }
+  .chart-wrap { position:relative; width:100%; height:240px; }
+  .sparkline { height: 24px; width: 80px; }
+</style>
 </head>
 <body class="atmospheric-bg text-on-surface dark:text-white selection:bg-primary-container selection:text-white">
-<!-- Side Navigation -->
+
+<!-- Sidebar -->
 <aside class="fixed left-0 top-0 h-full w-sidebar-width sidebar-blur border-r border-glass-border flex flex-col p-glass-padding z-50 !bg-white/10 dark:!bg-black/10">
-<div class="mb-10">
-<h1 class="font-display-lg text-display-lg text-on-surface dark:text-white tracking-tight">AetherMind</h1>
-<p id="strategistTier" class="font-label-sm-caps text-label-sm-caps text-on-surface-variant opacity-60">STRATEGIST TIER</p>
-</div>
-<nav class="flex-grow space-y-2">
-<a class="flex items-center gap-3 text-on-surface-variant dark:text-zinc-400 px-4 py-2 hover:bg-glass-specular/10 transition-all duration-200 rounded-lg" href="index.html">
-<span class="material-symbols-outlined">chat</span>
-<span class="font-label-md text-label-md">Chat</span>
-</a>
-<a class="flex items-center gap-3 text-on-surface-variant dark:text-zinc-400 px-4 py-2 hover:bg-glass-specular/10 transition-all duration-200 rounded-lg" href="dashboard.html">
-<span class="material-symbols-outlined">dashboard</span>
-<span class="font-label-md text-label-md">Dashboard</span>
-</a>
-<a class="flex items-center gap-3 bg-ai-bubble-accent text-primary dark:text-white border border-glass-border font-bold px-4 py-2 rounded-lg -translate-y-0.5 transition-transform shadow-[inset_1px_1px_0px_0px_rgba(255,255,255,0.4)]" href="analytics.html">
-<span class="material-symbols-outlined">insights</span>
-<span class="font-label-md text-label-md">Analytics</span>
-</a>
-<a class="flex items-center gap-3 text-on-surface-variant dark:text-zinc-400 px-4 py-2 hover:bg-glass-specular/10 transition-all duration-200 rounded-lg" href="tools.html">
-<span class="material-symbols-outlined">construction</span>
-<span class="font-label-md text-label-md">Tools</span>
-</a>
-<a class="flex items-center gap-3 text-on-surface-variant dark:text-zinc-400 px-4 py-2 hover:bg-glass-specular/10 transition-all duration-200 rounded-lg" href="settings.html">
-<span class="material-symbols-outlined">settings</span>
-<span class="font-label-md text-label-md">Settings</span>
-</a>
-</nav>
-<div class="mt-auto pt-6 border-t border-glass-border">
-<button onclick="window.location.href='index.html'" class="w-full bg-primary-container text-on-primary py-3 rounded-full font-label-md text-label-md mb-6 hover:shadow-lg hover:shadow-primary/30 transition-all">
-                New Session
-            </button>
-<div class="space-y-2">
-<a class="flex items-center gap-3 text-on-surface-variant dark:text-zinc-400 px-4 py-2 hover:bg-glass-specular/10 transition-all duration-200 rounded-lg" href="#">
-<span class="material-symbols-outlined">help</span>
-<span class="font-label-md text-label-md">Help</span>
-</a>
-<a id="logoutBtn" class="flex items-center gap-3 text-on-surface-variant dark:text-zinc-400 px-4 py-2 hover:bg-glass-specular/10 transition-all duration-200 rounded-lg" href="#">
-<span class="material-symbols-outlined">logout</span>
-<span class="font-label-md text-label-md">Logout</span>
-</a>
-</div>
-</div>
+  <div class="mb-10">
+    <h1 class="font-display-lg text-display-lg text-on-surface dark:text-white tracking-tight">AetherMind</h1>
+    <p id="strategistTier" class="font-label-sm-caps text-label-sm-caps text-on-surface-variant opacity-60">STRATEGIST TIER</p>
+  </div>
+  <nav class="flex-grow space-y-2">
+    <a class="flex items-center gap-3 text-on-surface-variant dark:text-zinc-400 px-4 py-2 hover:bg-glass-specular/10 transition-all duration-200 rounded-lg" href="index.html">
+      <span class="material-symbols-outlined">chat</span><span class="font-label-md text-label-md">Chat</span>
+    </a>
+    <a class="flex items-center gap-3 text-on-surface-variant dark:text-zinc-400 px-4 py-2 hover:bg-glass-specular/10 transition-all duration-200 rounded-lg" href="dashboard.html">
+      <span class="material-symbols-outlined">dashboard</span><span class="font-label-md text-label-md">Dashboard</span>
+    </a>
+    <a class="flex items-center gap-3 bg-ai-bubble-accent text-primary dark:text-white border border-glass-border font-bold px-4 py-2 rounded-lg -translate-y-0.5 transition-transform shadow-[inset_1px_1px_0px_0px_rgba(255,255,255,0.4)]" href="analytics.html">
+      <span class="material-symbols-outlined">insights</span><span class="font-label-md text-label-md">Analytics</span>
+    </a>
+    <a class="flex items-center gap-3 text-on-surface-variant dark:text-zinc-400 px-4 py-2 hover:bg-glass-specular/10 transition-all duration-200 rounded-lg" href="tools.html">
+      <span class="material-symbols-outlined">construction</span><span class="font-label-md text-label-md">Tools</span>
+    </a>
+    <a class="flex items-center gap-3 text-on-surface-variant dark:text-zinc-400 px-4 py-2 hover:bg-glass-specular/10 transition-all duration-200 rounded-lg" href="settings.html">
+      <span class="material-symbols-outlined">settings</span><span class="font-label-md text-label-md">Settings</span>
+    </a>
+  </nav>
+  <div class="mt-auto pt-6 border-t border-glass-border">
+    <button onclick="window.location.href='index.html'" class="w-full bg-primary-container text-on-primary py-3 rounded-full font-label-md text-label-md mb-6 hover:shadow-lg hover:shadow-primary/30 transition-all">New Session</button>
+    <div class="space-y-2">
+      <a class="flex items-center gap-3 text-on-surface-variant dark:text-zinc-400 px-4 py-2 hover:bg-glass-specular/10 transition-all duration-200 rounded-lg" href="#">
+        <span class="material-symbols-outlined">help</span><span class="font-label-md text-label-md">Help</span>
+      </a>
+      <a id="logoutBtn" class="flex items-center gap-3 text-on-surface-variant dark:text-zinc-400 px-4 py-2 hover:bg-glass-specular/10 transition-all duration-200 rounded-lg cursor-pointer" href="#">
+        <span class="material-symbols-outlined">logout</span><span class="font-label-md text-label-md">Logout</span>
+      </a>
+    </div>
+  </div>
 </aside>
-<!-- Top App Bar -->
+
+<!-- Header -->
 <header class="fixed top-0 right-0 left-sidebar-width h-16 header-blur border-b border-glass-border flex justify-between items-center px-gutter z-40 !bg-white/10 dark:!bg-black/10">
-<div class="flex items-center gap-6">
-<span class="font-label-sm-caps text-label-sm-caps text-on-surface-variant dark:text-zinc-400">AETHERMIND V3</span>
-<div class="flex gap-4">
-<span class="text-on-surface-variant dark:text-zinc-300 font-label-md text-label-md border-b-2 border-primary text-primary pb-1">Session #4 today</span>
-<span class="text-on-surface-variant dark:text-zinc-400 font-label-md text-label-md opacity-60">Tokens: 1.2k/5k</span>
-</div>
-</div>
-<div class="flex items-center gap-4">
-<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors cursor-pointer">notifications</button>
-<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors cursor-pointer" onclick="window.location.href='settings.html'">settings</button>
-<div class="w-8 h-8 rounded-full overflow-hidden border border-glass-border bg-primary/20 flex items-center justify-center font-bold text-white text-xs" id="avatarContainer">
-<span id="avatarLetter">U</span>
-</div>
-</div>
+  <div class="flex items-center gap-6">
+    <span class="font-label-sm-caps text-label-sm-caps text-on-surface-variant dark:text-zinc-400">AETHERMIND V3</span>
+    <div class="flex gap-4">
+      <span id="headerSessions" class="text-primary border-b-2 border-primary font-label-md text-label-md pb-1">— sessions</span>
+      <span id="headerTokens" class="text-on-surface-variant dark:text-zinc-400 font-label-md text-label-md opacity-60">Tokens: —</span>
+    </div>
+  </div>
+  <div class="flex items-center gap-4">
+    <button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors cursor-pointer">notifications</button>
+    <button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors cursor-pointer" onclick="window.location.href='settings.html'">settings</button>
+    <div class="w-8 h-8 rounded-full overflow-hidden border border-glass-border bg-primary/20 flex items-center justify-center font-bold text-white text-xs" id="avatarContainer">
+      <span id="avatarLetter">U</span>
+    </div>
+  </div>
 </header>
-<!-- Main Content -->
+
+<!-- Main -->
 <main class="ml-sidebar-width pt-24 pb-12 px-gutter max-w-[1200px] mx-auto">
-<!-- Today's Overview -->
-<section class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-<div class="liquid-glass p-glass-padding rounded-lg">
-<div class="flex justify-between items-start mb-4">
-<span class="material-symbols-outlined text-primary">query_stats</span>
-<span class="text-green-500 font-label-md text-[10px]">+12%</span>
-</div>
-<p class="text-on-surface-variant dark:text-zinc-400 font-label-sm-caps text-label-sm-caps">QUERIES</p>
-<h2 class="font-display-lg text-display-lg text-on-surface dark:text-white">142</h2>
-</div>
-<div class="liquid-glass p-glass-padding rounded-lg">
-<div class="flex justify-between items-start mb-4">
-<span class="material-symbols-outlined text-secondary">database</span>
-<span class="text-on-surface-variant dark:text-zinc-400 font-label-md text-[10px]">Today</span>
-</div>
-<p class="text-on-surface-variant dark:text-zinc-400 font-label-sm-caps text-label-sm-caps">TOKENS</p>
-<h2 class="font-display-lg text-display-lg text-on-surface dark:text-white">1.2k</h2>
-</div>
-<div class="liquid-glass p-glass-padding rounded-lg">
-<div class="flex justify-between items-start mb-4">
-<span class="material-symbols-outlined text-primary">hub</span>
-<span class="text-on-surface-variant dark:text-zinc-400 font-label-md text-[10px]">Top Pick</span>
-</div>
-<p class="text-on-surface-variant dark:text-zinc-400 font-label-sm-caps text-label-sm-caps">ACTIVE DOMAIN</p>
-<h2 class="font-display-lg text-display-lg text-on-surface dark:text-white truncate">Data Analysis</h2>
-</div>
-<div class="liquid-glass p-glass-padding rounded-lg">
-<div class="flex justify-between items-start mb-4">
-<span class="material-symbols-outlined text-orange-500" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
-<span class="text-orange-500 font-label-md text-[10px]">On Fire</span>
-</div>
-<p class="text-on-surface-variant dark:text-zinc-400 font-label-sm-caps text-label-sm-caps">STREAK</p>
-<h2 class="font-display-lg text-display-lg text-on-surface dark:text-white">14 DAYS</h2>
-</div>
-</section>
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-<!-- Usage Over Time -->
-<div class="lg:col-span-2 liquid-glass p-glass-padding rounded-lg min-h-[400px] flex flex-col">
-<div class="flex justify-between items-center mb-6">
-<h3 class="font-headline-md text-headline-md text-on-surface dark:text-white">Usage Over Time</h3>
-<div class="flex gap-2">
-<button class="px-3 py-1 rounded-full bg-ai-bubble-accent text-primary font-label-md text-[10px] border border-glass-border">30D</button>
-<button class="px-3 py-1 rounded-full text-on-surface-variant dark:text-zinc-400 font-label-md text-[10px]">90D</button>
-</div>
-</div>
-<div class="flex-grow relative overflow-hidden">
-<!-- Chart -->
-<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 800 300">
-<defs>
-<lineargradient id="chartGradient" x1="0%" x2="0%" y1="0%" y2="100%">
-<stop offset="0%" style="stop-color:rgba(70, 72, 212, 0.2);stop-opacity:1"></stop>
-<stop offset="100%" style="stop-color:rgba(70, 72, 212, 0);stop-opacity:1"></stop>
-</lineargradient>
-</defs>
-<path d="M0,250 Q100,220 200,240 T400,180 T600,100 T800,50 L800,300 L0,300 Z" fill="url(#chartGradient)"></path>
-<path d="M0,250 Q100,220 200,240 T400,180 T600,100 T800,50" fill="none" stroke="#2c2abc" stroke-width="3"></path>
-<!-- Data Points -->
-<circle class="cursor-pointer hover:r-6 transition-all" cx="200" cy="240" fill="#fff" r="4" stroke="#2c2abc" stroke-width="2"></circle>
-<circle class="cursor-pointer hover:r-6 transition-all" cx="400" cy="180" fill="#fff" r="4" stroke="#2c2abc" stroke-width="2"></circle>
-<circle class="cursor-pointer hover:r-6 transition-all" cx="600" cy="100" fill="#fff" r="4" stroke="#2c2abc" stroke-width="2"></circle>
-</svg>
-<div class="absolute bottom-0 w-full flex justify-between font-label-md text-[10px] text-on-surface-variant dark:text-zinc-400 opacity-40">
-<span>1 Oct</span>
-<span>10 Oct</span>
-<span>20 Oct</span>
-<span>30 Oct</span>
-</div>
-</div>
-</div>
-<!-- Domain Breakdown -->
-<div class="liquid-glass p-glass-padding rounded-lg flex flex-col">
-<h3 class="font-headline-md text-headline-md text-on-surface dark:text-white mb-6">Domain Breakdown</h3>
-<div class="flex-grow flex items-center justify-center relative">
-<svg class="w-48 h-48 transform -rotate-90">
-<circle cx="96" cy="96" fill="transparent" r="80" stroke="rgba(70, 72, 212, 0.1)" stroke-width="16"></circle>
-<!-- Donut segments -->
-<circle cx="96" cy="96" fill="transparent" r="80" stroke="#2c2abc" stroke-dasharray="100 502" stroke-width="16"></circle>
-<circle cx="96" cy="96" fill="transparent" r="80" stroke="#6b38d4" stroke-dasharray="150 502" stroke-dashoffset="-100" stroke-width="16"></circle>
-<circle cx="96" cy="96" fill="transparent" r="80" stroke="#44444d" stroke-dasharray="252 502" stroke-dashoffset="-250" stroke-width="16"></circle>
-</svg>
-<div class="absolute text-center">
-<span class="block font-display-lg text-display-lg text-on-surface dark:text-white">8</span>
-<span class="text-on-surface-variant dark:text-zinc-400 font-label-sm-caps text-[10px]">DOMAINS</span>
-</div>
-</div>
-<div class="grid grid-cols-2 gap-4 mt-6">
-<div class="flex items-center gap-2">
-<div class="w-2 h-2 rounded-full bg-primary"></div>
-<span class="font-label-md text-[12px] text-on-surface-variant dark:text-zinc-300">Coding</span>
-</div>
-<div class="flex items-center gap-2">
-<div class="w-2 h-2 rounded-full bg-secondary"></div>
-<span class="font-label-md text-[12px] text-on-surface-variant dark:text-zinc-300">Math</span>
-</div>
-<div class="flex items-center gap-2">
-<div class="w-2 h-2 rounded-full bg-tertiary"></div>
-<span class="font-label-md text-[12px] text-on-surface-variant dark:text-zinc-300">Stats</span>
-</div>
-<div class="flex items-center gap-2">
-<div class="w-2 h-2 rounded-full bg-ai-bubble-accent"></div>
-<span class="font-label-md text-[12px] text-on-surface-variant dark:text-zinc-300">Logic</span>
-</div>
-</div>
-</div>
-</div>
-<!-- Topic Tracker -->
-<section class="liquid-glass p-glass-padding rounded-lg mb-8 overflow-hidden">
-<div class="flex justify-between items-center mb-6">
-<h3 class="font-headline-md text-headline-md text-on-surface dark:text-white">Topic Tracker</h3>
-<div class="flex items-center gap-4">
-<div class="relative">
-<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
-<input class="bg-surface/50 dark:bg-black/20 border border-glass-border rounded-full pl-9 pr-4 py-1 font-label-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white" placeholder="Filter topics..." type="text"/>
-</div>
-<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">filter_list</button>
-</div>
-</div>
-<div class="overflow-x-auto">
-<table class="w-full text-left">
-<thead>
-<tr class="border-b border-glass-border">
-<th class="py-4 font-label-sm-caps text-label-sm-caps text-on-surface-variant dark:text-zinc-400">TOPIC</th>
-<th class="py-4 font-label-sm-caps text-label-sm-caps text-on-surface-variant dark:text-zinc-400">DOMAIN</th>
-<th class="py-4 font-label-sm-caps text-label-sm-caps text-on-surface-variant dark:text-zinc-400">TIMES ASKED</th>
-<th class="py-4 font-label-sm-caps text-label-sm-caps text-on-surface-variant dark:text-zinc-400">LAST STUDIED</th>
-<th class="py-4 font-label-sm-caps text-label-sm-caps text-on-surface-variant dark:text-zinc-400">MASTERY</th>
-</tr>
-</thead>
-<tbody class="divide-y divide-glass-border/30">
-<!-- Row 1 -->
-<tr class="hover:bg-glass-specular/5 transition-colors cursor-pointer group">
-<td class="py-4">
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-sm opacity-0 group-hover:opacity-100 transition-opacity">expand_more</span>
-<span class="font-label-md text-on-surface dark:text-zinc-200">Neural Architectures</span>
-</div>
-</td>
-<td class="py-4"><span class="bg-primary/10 text-primary dark:text-indigo-400 px-2 py-1 rounded text-[10px] font-label-md">Coding</span></td>
-<td class="py-4 font-code-sm text-code-sm text-on-surface dark:text-zinc-300">124</td>
-<td class="py-4 font-label-md text-on-surface-variant dark:text-zinc-400 text-xs">2h ago</td>
-<td class="py-4">
-<div class="w-32">
-<div class="flex justify-between mb-1">
-<span class="text-[10px] font-label-md text-on-surface-variant dark:text-zinc-400">88%</span>
-</div>
-<div class="mastery-bar"><div class="mastery-progress" style="width: 88%"></div></div>
-</div>
-</td>
-</tr>
-<!-- Row 2 -->
-<tr class="hover:bg-glass-specular/5 transition-colors cursor-pointer group">
-<td class="py-4">
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-sm opacity-0 group-hover:opacity-100 transition-opacity">expand_more</span>
-<span class="font-label-md text-on-surface dark:text-zinc-200">Bayesian Inference</span>
-</div>
-</td>
-<td class="py-4"><span class="bg-secondary/10 text-secondary dark:text-purple-400 px-2 py-1 rounded text-[10px] font-label-md">Stats</span></td>
-<td class="py-4 font-code-sm text-code-sm text-on-surface dark:text-zinc-300">82</td>
-<td class="py-4 font-label-md text-on-surface-variant dark:text-zinc-400 text-xs">Yesterday</td>
-<td class="py-4">
-<div class="w-32">
-<div class="flex justify-between mb-1">
-<span class="text-[10px] font-label-md text-on-surface-variant dark:text-zinc-400">64%</span>
-</div>
-<div class="mastery-bar"><div class="mastery-progress" style="width: 64%"></div></div>
-</div>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
-<!-- Lower Section: Token Analytics & Heatmap -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-<!-- Token Analytics & API Tracker -->
-<div class="liquid-glass p-glass-padding rounded-lg">
-<div class="flex justify-between items-center mb-6">
-<h3 class="font-headline-md text-headline-md text-on-surface dark:text-white">Token Analytics</h3>
-<div class="flex items-center gap-2 bg-surface/50 dark:bg-black/20 px-3 py-1 rounded-full border border-glass-border">
-<span class="text-[10px] font-label-sm-caps text-on-surface-variant dark:text-zinc-400">RATE: $</span>
-<input class="w-12 bg-transparent border-none p-0 text-[10px] font-bold focus:ring-0 text-on-surface dark:text-white" step="0.001" type="number" value="0.002"/>
-</div>
-</div>
-<div class="space-y-6">
-<div>
-<div class="flex justify-between font-label-sm-caps text-[10px] text-on-surface-variant dark:text-zinc-400 mb-2">
-<span>DOMAIN USAGE (TOKENS)</span>
-<span>TOTAL: 42,800</span>
-</div>
-<div class="flex gap-1 h-8 rounded-lg overflow-hidden">
-<div class="bg-primary h-full" style="width: 45%" title="Coding"></div>
-<div class="bg-secondary h-full" style="width: 25%" title="Math"></div>
-<div class="bg-tertiary h-full" style="width: 20%" title="Stats"></div>
-<div class="bg-outline h-full" style="width: 10%" title="Others"></div>
-</div>
-</div>
-<div class="grid grid-cols-2 gap-4">
-<div class="p-4 bg-surface/30 dark:bg-black/10 border border-glass-border rounded-lg">
-<span class="text-[10px] font-label-sm-caps text-on-surface-variant dark:text-zinc-400">EST. COST</span>
-<p class="font-display-lg text-headline-md text-primary dark:text-indigo-300">$85.60</p>
-</div>
-<div class="p-4 bg-surface/30 dark:bg-black/10 border border-glass-border rounded-lg">
-<span class="text-[10px] font-label-sm-caps text-on-surface-variant dark:text-zinc-400">EFFICIENCY</span>
-<p class="font-display-lg text-headline-md text-secondary dark:text-purple-300">92%</p>
-</div>
-</div>
-</div>
-</div>
-<!-- Activity Heatmap -->
-<div class="liquid-glass p-glass-padding rounded-lg">
-<div class="flex justify-between items-center mb-6">
-<h3 class="font-headline-md text-headline-md text-on-surface dark:text-white">Activity Heatmap</h3>
-<span class="text-[10px] font-label-sm-caps text-on-surface-variant dark:text-zinc-400">LAST 12 MONTHS</span>
-</div>
-<div class="flex gap-2">
-<div class="flex flex-col justify-between py-4 text-[9px] font-label-sm-caps text-on-surface-variant dark:text-zinc-400 opacity-40">
-<span>Mon</span>
-<span>Wed</span>
-<span>Fri</span>
-</div>
-<div class="flex-grow grid grid-cols-[repeat(52,1fr)] gap-1">
-<!-- Generative Cells for Heatmap -->
-<script>
-                            const container = document.currentScript.parentElement;
-                            for(let i=0; i<364; i++) {
-                                const opacity = Math.random();
-                                const color = opacity > 0.8 ? 'bg-primary' : (opacity > 0.5 ? 'bg-primary/60' : (opacity > 0.2 ? 'bg-primary/20' : 'bg-surface/50 dark:bg-zinc-800'));
-                                const cell = document.createElement('div');
-                                cell.className = `heatmap-cell ${color}`;
-                                container.appendChild(cell);
-                            }
-                        </script>
-</div>
-</div>
-<div class="mt-4 flex items-center justify-end gap-2">
-<span class="text-[9px] font-label-sm-caps text-on-surface-variant dark:text-zinc-400">Less</span>
-<div class="flex gap-1">
-<div class="w-2 h-2 rounded-sm bg-surface/50 dark:bg-zinc-800"></div>
-<div class="w-2 h-2 rounded-sm bg-primary/20"></div>
-<div class="w-2 h-2 rounded-sm bg-primary/60"></div>
-<div class="w-2 h-2 rounded-sm bg-primary"></div>
-</div>
-<span class="text-[9px] font-label-sm-caps text-on-surface-variant dark:text-zinc-400">More</span>
-</div>
-</div>
-</div>
+
+  <!-- KPI Cards -->
+  <section class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="liquid-glass p-glass-padding rounded-lg">
+      <div class="flex justify-between items-start mb-4">
+        <span class="material-symbols-outlined text-primary">query_stats</span>
+        <span id="kpiBadgeQueries" class="text-green-500 font-label-md text-[10px]">Today: 0</span>
+      </div>
+      <p class="text-on-surface-variant dark:text-zinc-400 font-label-sm-caps text-label-sm-caps">QUERIES</p>
+      <h2 id="kpiQueries" class="font-display-lg text-display-lg text-on-surface dark:text-white">0</h2>
+    </div>
+    <div class="liquid-glass p-glass-padding rounded-lg">
+      <div class="flex justify-between items-start mb-4">
+        <span class="material-symbols-outlined text-secondary">database</span>
+        <span id="kpiBadgeTokens" class="text-on-surface-variant dark:text-zinc-400 font-label-md text-[10px]">Today: 0</span>
+      </div>
+      <p class="text-on-surface-variant dark:text-zinc-400 font-label-sm-caps text-label-sm-caps">TOKENS</p>
+      <h2 id="kpiTokens" class="font-display-lg text-display-lg text-on-surface dark:text-white">0</h2>
+    </div>
+    <div class="liquid-glass p-glass-padding rounded-lg">
+      <div class="flex justify-between items-start mb-4">
+        <span class="material-symbols-outlined text-primary">hub</span>
+        <span class="text-on-surface-variant dark:text-zinc-400 font-label-md text-[10px]">Top Pick</span>
+      </div>
+      <p class="text-on-surface-variant dark:text-zinc-400 font-label-sm-caps text-label-sm-caps">ACTIVE DOMAIN</p>
+      <h2 id="kpiDomain" class="font-display-lg text-display-lg text-on-surface dark:text-white truncate">—</h2>
+    </div>
+    <div class="liquid-glass p-glass-padding rounded-lg">
+      <div class="flex justify-between items-start mb-4">
+        <span class="material-symbols-outlined text-orange-500" style="font-variation-settings:'FILL' 1;">local_fire_department</span>
+        <span id="streakBadge" class="text-orange-500 font-label-md text-[10px]">Start Today</span>
+      </div>
+      <p class="text-on-surface-variant dark:text-zinc-400 font-label-sm-caps text-label-sm-caps">STREAK</p>
+      <h2 id="kpiStreak" class="font-display-lg text-display-lg text-on-surface dark:text-white">0 DAYS</h2>
+    </div>
+  </section>
+
+  <!-- Usage Chart + Domain Donut -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+    <div class="lg:col-span-2 liquid-glass p-glass-padding rounded-lg flex flex-col">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="font-headline-md text-headline-md text-on-surface dark:text-white">Usage Over Time</h3>
+        <div class="flex gap-2">
+          <button id="btn7d" onclick="loadAnalyticsChart(7)" class="px-3 py-1 rounded-full text-on-surface-variant dark:text-zinc-400 font-label-md text-[10px] transition-all">7D</button>
+          <button id="btn30d" onclick="loadAnalyticsChart(30)" class="px-3 py-1 rounded-full bg-ai-bubble-accent text-primary font-label-md text-[10px] border border-glass-border transition-all">30D</button>
+          <button id="btn90d" onclick="loadAnalyticsChart(90)" class="px-3 py-1 rounded-full text-on-surface-variant dark:text-zinc-400 font-label-md text-[10px] transition-all">90D</button>
+        </div>
+      </div>
+      <div class="flex-grow">
+        <div class="chart-wrap"><canvas id="analyticsChart"></canvas></div>
+      </div>
+    </div>
+    <div class="liquid-glass p-glass-padding rounded-lg flex flex-col">
+      <h3 class="font-headline-md text-headline-md text-on-surface dark:text-white mb-6">Domain Breakdown</h3>
+      <div class="flex-grow flex items-center justify-center relative">
+        <div style="position:relative;width:192px;height:192px;">
+          <canvas id="domainChart" width="192" height="192"></canvas>
+          <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <span id="donutCenter" class="font-display-lg text-display-lg text-on-surface dark:text-white">—</span>
+            <span class="text-on-surface-variant dark:text-zinc-400 font-label-sm-caps text-[10px]">DOMAINS</span>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-2 mt-6">
+        <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-primary shrink-0"></div><span id="legendCoding" class="font-label-md text-[11px] text-on-surface-variant dark:text-zinc-300">Coding: 0</span></div>
+        <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-secondary shrink-0"></div><span id="legendMath" class="font-label-md text-[11px] text-on-surface-variant dark:text-zinc-300">Math: 0</span></div>
+        <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-tertiary shrink-0"></div><span id="legendStats" class="font-label-md text-[11px] text-on-surface-variant dark:text-zinc-300">Stats: 0</span></div>
+        <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-outline shrink-0"></div><span id="legendWebDev" class="font-label-md text-[11px] text-on-surface-variant dark:text-zinc-300">Web Dev: 0</span></div>
+        <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-primary-container shrink-0"></div><span id="legendSecurity" class="font-label-md text-[11px] text-on-surface-variant dark:text-zinc-300">Security: 0</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Topic Tracker -->
+  <section class="liquid-glass p-glass-padding rounded-lg mb-8 overflow-hidden">
+    <div class="flex justify-between items-center mb-6">
+      <h3 class="font-headline-md text-headline-md text-on-surface dark:text-white">Topic Tracker</h3>
+      <div class="flex items-center gap-4">
+        <div class="relative">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+          <input id="topicSearch" class="bg-surface/50 dark:bg-black/20 border border-glass-border rounded-full pl-9 pr-4 py-1 font-label-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white" placeholder="Filter topics..." type="text"/>
+        </div>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead>
+          <tr class="border-b border-glass-border">
+            <th class="py-4 font-label-sm-caps text-label-sm-caps text-on-surface-variant dark:text-zinc-400">TOPIC</th>
+            <th class="py-4 font-label-sm-caps text-label-sm-caps text-on-surface-variant dark:text-zinc-400">DOMAIN</th>
+            <th class="py-4 font-label-sm-caps text-label-sm-caps text-on-surface-variant dark:text-zinc-400">TIMES ASKED</th>
+            <th class="py-4 font-label-sm-caps text-label-sm-caps text-on-surface-variant dark:text-zinc-400">LAST STUDIED</th>
+            <th class="py-4 font-label-sm-caps text-label-sm-caps text-on-surface-variant dark:text-zinc-400">MASTERY</th>
+          </tr>
+        </thead>
+        <tbody id="topicTbody" class="divide-y divide-glass-border/30">
+          <tr><td colspan="5" class="py-10 text-center text-on-surface-variant dark:text-zinc-500 font-label-md opacity-60">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Token Analytics + Activity Heatmap -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="liquid-glass p-glass-padding rounded-lg">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="font-headline-md text-headline-md text-on-surface dark:text-white">Token Analytics</h3>
+        <div class="flex items-center gap-2 bg-surface/50 dark:bg-black/20 px-3 py-1 rounded-full border border-glass-border">
+          <span class="text-[10px] font-label-sm-caps text-on-surface-variant dark:text-zinc-400">RATE: $</span>
+          <input id="rateInput" class="w-12 bg-transparent border-none p-0 text-[10px] font-bold focus:ring-0 text-on-surface dark:text-white" step="0.001" type="number" value="0.002" min="0"/>
+        </div>
+      </div>
+      <div class="space-y-6">
+        <div>
+          <div class="flex justify-between font-label-sm-caps text-[10px] text-on-surface-variant dark:text-zinc-400 mb-2">
+            <span>DOMAIN USAGE (TOKENS)</span>
+            <span id="tokenTotal">TOTAL: 0</span>
+          </div>
+          <div class="flex gap-[2px] h-8 rounded-lg overflow-hidden bg-surface/20 dark:bg-black/10">
+            <div id="tokenBarCoding" class="bg-primary h-full transition-all duration-700 cursor-pointer" style="width:0%" title="Coding"></div>
+            <div id="tokenBarMath" class="bg-secondary h-full transition-all duration-700 cursor-pointer" style="width:0%" title="Math"></div>
+            <div id="tokenBarStats" class="bg-tertiary h-full transition-all duration-700 cursor-pointer" style="width:0%" title="Stats"></div>
+            <div id="tokenBarOther" class="bg-outline h-full transition-all duration-700 cursor-pointer" style="width:0%" title="Other"></div>
+          </div>
+          <div class="flex gap-4 mt-2 flex-wrap">
+            <span id="barLabelCoding" class="text-[9px] font-label-sm-caps text-primary opacity-80"></span>
+            <span id="barLabelMath" class="text-[9px] font-label-sm-caps text-secondary opacity-80"></span>
+            <span id="barLabelStats" class="text-[9px] font-label-sm-caps text-tertiary opacity-80"></span>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="p-4 bg-surface/30 dark:bg-black/10 border border-glass-border rounded-lg">
+            <span class="text-[10px] font-label-sm-caps text-on-surface-variant dark:text-zinc-400">EST. COST</span>
+            <p id="tokenCost" class="font-display-lg text-headline-md text-primary dark:text-indigo-300 mt-1">$0.00</p>
+          </div>
+          <div class="p-4 bg-surface/30 dark:bg-black/10 border border-glass-border rounded-lg">
+            <span class="text-[10px] font-label-sm-caps text-on-surface-variant dark:text-zinc-400">EFFICIENCY</span>
+            <p id="tokenEfficiency" class="font-display-lg text-headline-md text-secondary dark:text-purple-300 mt-1">—%</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Heatmap -->
+    <div class="liquid-glass p-glass-padding rounded-lg">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="font-headline-md text-headline-md text-on-surface dark:text-white">Activity Heatmap</h3>
+        <span id="heatmapTotal" class="text-[10px] font-label-sm-caps text-on-surface-variant dark:text-zinc-400">LAST 12 MONTHS</span>
+      </div>
+      <div class="flex gap-2">
+        <div class="flex flex-col justify-between py-3 text-[9px] font-label-sm-caps text-on-surface-variant dark:text-zinc-400 opacity-40 shrink-0">
+          <span>Mon</span><span>Wed</span><span>Fri</span>
+        </div>
+        <div id="heatmapGrid" class="flex-grow grid grid-cols-[repeat(52,1fr)] gap-[2px]"></div>
+      </div>
+      <div class="mt-4 flex items-center justify-end gap-2">
+        <span class="text-[9px] font-label-sm-caps text-on-surface-variant dark:text-zinc-400">Less</span>
+        <div class="flex gap-1">
+          <div class="w-2 h-2 rounded-sm bg-surface/30 dark:bg-zinc-800"></div>
+          <div class="w-2 h-2 rounded-sm bg-primary/20"></div>
+          <div class="w-2 h-2 rounded-sm bg-primary/60"></div>
+          <div class="w-2 h-2 rounded-sm bg-primary"></div>
+        </div>
+        <span class="text-[9px] font-label-sm-caps text-on-surface-variant dark:text-zinc-400">More</span>
+      </div>
+    </div>
+  </div>
 </main>
+
 <script>
-        // Micro-interactions for glass hover
-        document.querySelectorAll('.liquid-glass').forEach(card => {
-            card.addEventListener('mousemove', (e) => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                card.style.setProperty('--mouse-x', `${x}px`);
-                card.style.setProperty('--mouse-y', `${y}px`);
-            });
-        });
+const A = window.AetherAnalytics;
+let analyticsChartInst = null;
+let domainChartInst = null;
 
-        // Hydration & Session Guard
-        document.addEventListener('DOMContentLoaded', () => {
-            const userSession = localStorage.getItem('am_user');
-            if (!userSession) {
-                window.location.href = 'login.html';
-                return;
-            }
-            const user = JSON.parse(userSession);
-            
-            // Set theme
-            const theme = localStorage.getItem('am_theme') || 'dark';
-            document.documentElement.classList.toggle('dark', theme === 'dark');
-            
-            // Set User Details
-            if (user.name) {
-                const init = user.name.charAt(0).toUpperCase();
-                document.getElementById('avatarLetter').textContent = init;
-                document.getElementById('strategistTier').textContent = `${user.provider.toUpperCase()} TIER`;
-            }
-            if (user.avatar) {
-                const img = document.createElement('img');
-                img.src = user.avatar;
-                img.className = 'w-full h-full object-cover';
-                img.alt = 'User Avatar';
-                const container = document.getElementById('avatarContainer');
-                container.innerHTML = '';
-                container.appendChild(img);
-            }
+/* ── Usage Line Chart (with tokens overlay) ── */
+function loadAnalyticsChart(days) {
+  const isDark = document.documentElement.classList.contains('dark');
+  const data = A.getUsageOverTime(days);
+  ['btn7d','btn30d','btn90d'].forEach(id => {
+    document.getElementById(id).className = 'px-3 py-1 rounded-full text-on-surface-variant dark:text-zinc-400 font-label-md text-[10px] transition-all';
+  });
+  const activeId = days === 7 ? 'btn7d' : days === 30 ? 'btn30d' : 'btn90d';
+  document.getElementById(activeId).className = 'px-3 py-1 rounded-full bg-ai-bubble-accent text-primary font-label-md text-[10px] border border-glass-border transition-all';
+  if (analyticsChartInst) analyticsChartInst.destroy();
+  const ctx = document.getElementById('analyticsChart').getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 0, 240);
+  grad.addColorStop(0, 'rgba(70,72,212,0.18)');
+  grad.addColorStop(1, 'rgba(70,72,212,0)');
+  const grad2 = ctx.createLinearGradient(0, 0, 0, 240);
+  grad2.addColorStop(0, 'rgba(107,56,212,0.12)');
+  grad2.addColorStop(1, 'rgba(107,56,212,0)');
+  analyticsChartInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.labels,
+      datasets: [{
+        label: 'Queries',
+        data: data.queries,
+        fill: true,
+        backgroundColor: grad,
+        borderColor: '#4648d4',
+        borderWidth: 2.5,
+        tension: 0.42,
+        pointRadius: 3,
+        pointBackgroundColor: isDark ? '#13131f' : '#fff',
+        pointBorderColor: '#4648d4',
+        pointBorderWidth: 2,
+        pointHoverRadius: 5,
+        yAxisID: 'y',
+      },{
+        label: 'Tokens',
+        data: data.tokens,
+        fill: true,
+        backgroundColor: grad2,
+        borderColor: '#6b38d4',
+        borderWidth: 1.5,
+        tension: 0.42,
+        pointRadius: 0,
+        borderDash: [4,4],
+        yAxisID: 'y1',
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 700, easing: 'easeInOutCubic' },
+      plugins: {
+        legend: { display: true, position: 'top', labels: { boxWidth: 10, font: { size: 10 }, color: isDark ? '#9ca3af' : '#464554' } },
+        tooltip: {
+          mode: 'index', intersect: false,
+          backgroundColor: isDark ? 'rgba(15,15,24,0.95)' : 'rgba(255,255,255,0.95)',
+          titleColor: isDark ? '#fff' : '#1b1b23',
+          bodyColor: isDark ? '#9ca3af' : '#464554',
+          borderColor: 'rgba(70,72,212,0.25)', borderWidth: 1, padding: 10,
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true, position: 'left',
+          ticks: { stepSize: 1, color: isDark ? '#4b5563' : '#767586', font: { size: 10 } },
+          grid: { color: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(70,72,212,0.05)' },
+          title: { display: true, text: 'Queries', color: isDark ? '#6b7280' : '#767586', font: { size: 9 } }
+        },
+        y1: {
+          beginAtZero: true, position: 'right',
+          ticks: { color: isDark ? '#4b5563' : '#767586', font: { size: 10 } },
+          grid: { drawOnChartArea: false },
+          title: { display: true, text: 'Tokens', color: isDark ? '#6b7280' : '#767586', font: { size: 9 } }
+        },
+        x: { grid: { display: false }, ticks: { color: isDark ? '#4b5563' : '#767586', font: { size: 9 }, maxTicksLimit: 9, maxRotation: 0 } }
+      }
+    }
+  });
+}
 
-            // Bind Logout
-            document.getElementById('logoutBtn').addEventListener('click', (e) => {
-                e.preventDefault();
-                localStorage.removeItem('am_user');
-                window.location.href = 'login.html';
-            });
-        });
-    </script>
+/* ── Domain Donut ── */
+function buildDonut() {
+  const isDark = document.documentElement.classList.contains('dark');
+  const bd = A.getDomainBreakdown();
+  const vals = [bd.CODING, bd.MATH, bd.STATS, bd.WEB_DEV, bd.SECURITY];
+  const hasData = vals.some(v => v > 0);
+  const active = vals.filter(v => v > 0).length;
+  document.getElementById('donutCenter').textContent = hasData ? active : '—';
+  // Update legend counts
+  document.getElementById('legendCoding').textContent = 'Coding: ' + bd.CODING;
+  document.getElementById('legendMath').textContent = 'Math: ' + bd.MATH;
+  document.getElementById('legendStats').textContent = 'Stats: ' + bd.STATS;
+  document.getElementById('legendWebDev').textContent = 'Web Dev: ' + bd.WEB_DEV;
+  document.getElementById('legendSecurity').textContent = 'Security: ' + bd.SECURITY;
+  if (domainChartInst) domainChartInst.destroy();
+  domainChartInst = new Chart(document.getElementById('domainChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Coding','Math','Stats','Web Dev','Security'],
+      datasets: [{
+        data: hasData ? vals : [1,1,1,1,1],
+        backgroundColor: hasData
+          ? ['#2c2abc','#6b38d4','#44444d','#767586','#4648d4']
+          : Array(5).fill('rgba(70,72,212,0.08)'),
+        borderWidth: 0, hoverOffset: hasData ? 5 : 0,
+      }]
+    },
+    options: {
+      responsive: false, cutout: '72%',
+      animation: { animateRotate: true, duration: 800 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          enabled: hasData,
+          backgroundColor: isDark ? 'rgba(15,15,24,0.95)' : 'rgba(255,255,255,0.95)',
+          titleColor: isDark ? '#fff' : '#1b1b23', bodyColor: isDark ? '#9ca3af' : '#464554',
+          borderColor: 'rgba(70,72,212,0.25)', borderWidth: 1,
+          callbacks: {
+            label: ctx => {
+              const total = ctx.dataset.data.reduce((s,v) => s+v, 0) || 1;
+              return ` ${ctx.label}: ${ctx.parsed} (${Math.round(ctx.parsed/total*100)}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+/* ── Topic Table ── */
+function buildTopics(filter) {
+  const all = A.getTopics(20);
+  const topics = filter ? all.filter(t => t.topic.toLowerCase().includes(filter.toLowerCase())) : all;
+  const tbody = document.getElementById('topicTbody');
+  const dc = { CODING:'bg-primary/10 text-primary dark:text-indigo-400', MATH:'bg-secondary/10 text-secondary dark:text-purple-400', STATS:'bg-tertiary/10 text-tertiary dark:text-zinc-300', WEB_DEV:'bg-blue-500/10 text-blue-600 dark:text-blue-400', SECURITY:'bg-orange-500/10 text-orange-600 dark:text-orange-400' };
+  const dl = { CODING:'Coding', MATH:'Math', STATS:'Stats', WEB_DEV:'Web Dev', SECURITY:'Security' };
+  if (!topics.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-on-surface-variant dark:text-zinc-500 font-label-md opacity-60">${all.length ? 'No matching topics.' : 'No topics yet — start chatting to see data here.'}</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = topics.map(t => `
+    <tr class="hover:bg-glass-specular/5 transition-colors">
+      <td class="py-4"><span class="font-label-md text-on-surface dark:text-zinc-200 block max-w-[200px] truncate" title="${t.topic}">${t.topic}</span></td>
+      <td class="py-4"><span class="${dc[t.domain]||dc.CODING} px-2 py-1 rounded text-[10px] font-label-md">${dl[t.domain]||t.domain}</span></td>
+      <td class="py-4 font-code-sm text-code-sm text-on-surface dark:text-zinc-300">${t.timesAsked}</td>
+      <td class="py-4 font-label-md text-on-surface-variant dark:text-zinc-400 text-xs">${t.lastStudied}</td>
+      <td class="py-4">
+        <div class="w-28">
+          <div class="flex justify-between mb-1"><span class="text-[10px] font-label-md text-on-surface-variant dark:text-zinc-400">${t.mastery}%</span></div>
+          <div class="mastery-bar"><div class="mastery-progress" style="width:${t.mastery}%"></div></div>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+/* ── Token Analytics Bar ── */
+function buildTokenAnalytics(rate) {
+  const r = parseFloat(rate) || 0.002;
+  const ta = A.getTokenAnalytics();
+  const total = ta.total || 1;
+  const c = Math.round(ta.domainTokens.CODING / total * 100);
+  const m = Math.round(ta.domainTokens.MATH / total * 100);
+  const s = Math.round(ta.domainTokens.STATS / total * 100);
+  const o = Math.max(0, 100 - c - m - s);
+  document.getElementById('tokenBarCoding').style.width = c + '%';
+  document.getElementById('tokenBarMath').style.width = m + '%';
+  document.getElementById('tokenBarStats').style.width = s + '%';
+  document.getElementById('tokenBarOther').style.width = o + '%';
+  document.getElementById('tokenTotal').textContent = 'TOTAL: ' + A.formatTokens(ta.total);
+  document.getElementById('tokenCost').textContent = '$' + ((ta.total / 1000) * r).toFixed(2);
+  document.getElementById('tokenEfficiency').textContent = A.getEfficiency() + '%';
+  if (c) document.getElementById('barLabelCoding').textContent = `CODING ${c}%`;
+  if (m) document.getElementById('barLabelMath').textContent = `MATH ${m}%`;
+  if (s) document.getElementById('barLabelStats').textContent = `STATS ${s}%`;
+}
+
+/* ── Activity Heatmap ── */
+function buildHeatmap() {
+  const cells = A.getActivityHeatmap();
+  const grid = document.getElementById('heatmapGrid');
+  grid.innerHTML = '';
+  let totalActive = 0;
+  cells.forEach(cell => {
+    if (cell.count > 0) totalActive++;
+    const div = document.createElement('div');
+    div.className = 'heatmap-cell ';
+    if (cell.count === 0) div.className += 'bg-surface/30 dark:bg-zinc-800/50';
+    else if (cell.count <= 2) div.className += 'bg-primary/25';
+    else if (cell.count <= 5) div.className += 'bg-primary/60';
+    else div.className += 'bg-primary';
+    div.title = `${cell.date}: ${cell.count} ${cell.count === 1 ? 'query' : 'queries'}`;
+    grid.appendChild(div);
+  });
+  if (totalActive > 0) {
+    document.getElementById('heatmapTotal').textContent = `${totalActive} ACTIVE DAYS`;
+  }
+}
+
+/* ══ Main Init ══ */
+document.addEventListener('DOMContentLoaded', () => {
+  const session = localStorage.getItem('am_user');
+  if (!session) { window.location.href = 'login.html'; return; }
+  const user = JSON.parse(session);
+
+  const theme = localStorage.getItem('am_theme') || 'dark';
+  document.documentElement.classList.toggle('dark', theme === 'dark');
+
+  // User hydration
+  if (user.name) {
+    document.getElementById('avatarLetter').textContent = user.name.charAt(0).toUpperCase();
+    document.getElementById('strategistTier').textContent = `${(user.provider||'FREE').toUpperCase()} TIER`;
+  }
+  if (user.avatar) {
+    const img = document.createElement('img');
+    img.src = user.avatar; img.className = 'w-full h-full object-cover'; img.alt = 'Avatar';
+    const ac = document.getElementById('avatarContainer'); ac.innerHTML = ''; ac.appendChild(img);
+  }
+
+  // KPI values
+  document.getElementById('kpiQueries').textContent = A.getTotalQueries();
+  document.getElementById('kpiBadgeQueries').textContent = 'Today: ' + A.getQueriesToday();
+  document.getElementById('kpiTokens').textContent = A.formatTokens(A.getTotalTokens());
+  document.getElementById('kpiBadgeTokens').textContent = 'Today: ' + A.formatTokens(A.getTokensToday());
+  document.getElementById('kpiDomain').textContent = A.getActiveDomain();
+  const streak = A.getStreak();
+  document.getElementById('kpiStreak').textContent = streak + ' DAYS';
+  document.getElementById('streakBadge').textContent = streak >= 7 ? '🔥 On Fire!' : streak > 0 ? `${streak} day run` : 'Start today';
+
+  // Header
+  const s = A.getTotalSessions();
+  document.getElementById('headerSessions').textContent = `${s} session${s !== 1 ? 's' : ''} total`;
+  document.getElementById('headerTokens').textContent = 'Tokens: ' + A.formatTokens(A.getTotalTokens());
+
+  // Charts & widgets
+  loadAnalyticsChart(30);
+  buildDonut();
+  buildTopics();
+  buildTokenAnalytics(0.002);
+  buildHeatmap();
+
+  // Topic filter
+  document.getElementById('topicSearch').addEventListener('input', e => buildTopics(e.target.value));
+
+  // Rate recalc
+  document.getElementById('rateInput').addEventListener('change', e => buildTokenAnalytics(e.target.value));
+
+  // Logout
+  document.getElementById('logoutBtn').addEventListener('click', e => {
+    e.preventDefault();
+    localStorage.removeItem('am_user');
+    window.location.href = 'login.html';
+  });
+
+  // Glass hover shimmer
+  document.querySelectorAll('.liquid-glass').forEach(el => {
+    el.addEventListener('mousemove', e => {
+      const r = el.getBoundingClientRect();
+      el.style.setProperty('--mouse-x', `${e.clientX - r.left}px`);
+      el.style.setProperty('--mouse-y', `${e.clientY - r.top}px`);
+    });
+  });
+});
+</script>
 </body>
 </html>

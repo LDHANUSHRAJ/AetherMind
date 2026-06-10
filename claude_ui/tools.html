@@ -4,144 +4,57 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>AetherMind | Tools Panel</title>
-<!-- Google Fonts -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
-<!-- Material Symbols -->
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<!-- Tailwind CSS -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="analytics-data.js"></script>
 <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    "colors": {
-                        "on-tertiary": "#ffffff",
-                        "glass-border": "rgba(255, 255, 255, 0.4)",
-                        "on-surface": "#1b1b23",
-                        "surface": "#fcf8ff",
-                        "on-primary": "#ffffff",
-                        "glass-specular": "rgba(255, 255, 255, 0.6)",
-                        "tertiary-fixed-dim": "#c7c5d0",
-                        "outline-variant": "#c6c5d7",
-                        "inverse-on-surface": "#f2effb",
-                        "on-primary-container": "#d1d1ff",
-                        "on-error": "#ffffff",
-                        "background": "#fcf8ff",
-                        "secondary-fixed": "#e9ddff",
-                        "on-primary-fixed-variant": "#2e2ebe",
-                        "primary-fixed-dim": "#c0c1ff",
-                        "surface-dim": "#dbd8e4",
-                        "on-secondary-fixed": "#23005c",
-                        "surface-tint": "#484bd6",
-                        "code-block-bg": "#1b1b23e6",
-                        "surface-container-low": "#f5f2fe",
-                        "primary-fixed": "#e1e0ff",
-                        "on-tertiary-fixed": "#1b1b23",
-                        "on-surface-variant": "#464554",
-                        "on-secondary-container": "#fffbff",
-                        "error-container": "#ffdad6",
-                        "secondary": "#6b38d4",
-                        "on-background": "#1b1b23",
-                        "secondary-container": "#8455ee",
-                        "surface-bright": "#fcf8ff",
-                        "primary": "#2c2abc",
-                        "on-error-container": "#93000a",
-                        "on-secondary-fixed-variant": "#5517be",
-                        "inverse-primary": "#c0c1ff",
-                        "on-tertiary-container": "#d6d3df",
-                        "on-primary-fixed": "#06006c",
-                        "ai-bubble-accent": "rgba(70, 72, 212, 0.12)",
-                        "outline": "#767586",
-                        "tertiary": "#44444d",
-                        "inverse-surface": "#303038",
-                        "surface-container-highest": "#e4e1ed",
-                        "tertiary-container": "#5c5b65",
-                        "glass-surface": "rgba(255, 255, 255, 0.03)",
-                        "surface-container": "#efecf8",
-                        "tertiary-fixed": "#e4e1ec",
-                        "surface-container-high": "#e9e6f3",
-                        "surface-variant": "#e4e1ed",
-                        "primary-container": "#4648d4",
-                        "on-tertiary-fixed-variant": "#46464f",
-                        "on-secondary": "#ffffff",
-                        "error": "#ba1a1a",
-                        "secondary-fixed-dim": "#d0bcff",
-                        "surface-container-lowest": "#ffffff"
-                    },
-                    "borderRadius": {
-                        "DEFAULT": "1rem",
-                        "lg": "2rem",
-                        "xl": "3rem",
-                        "full": "9999px"
-                    },
-                    "spacing": {
-                        "sidebar-width": "18rem",
-                        "bubble-gap": "32px",
-                        "glass-padding": "20px",
-                        "gutter": "24px"
-                    },
-                    "fontFamily": {
-                        "label-md": ["Inter"],
-                        "code-sm": ["JetBrains Mono"],
-                        "display-lg": ["Inter"],
-                        "label-sm-caps": ["Inter"],
-                        "body-md": ["Inter"],
-                        "headline-md": ["Inter"]
-                    },
-                    "fontSize": {
-                        "label-md": ["0.75rem", {"lineHeight": "1rem", "fontWeight": "600"}],
-                        "code-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
-                        "display-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
-                        "label-sm-caps": ["10px", {"lineHeight": "12px", "letterSpacing": "0.15em", "fontWeight": "800"}],
-                        "body-md": ["0.875rem", {"lineHeight": "1.6", "fontWeight": "400"}],
-                        "headline-md": ["1.25rem", {"lineHeight": "1.75rem", "fontWeight": "600"}]
-                    }
-                },
-            },
-        }
-    </script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "on-tertiary": "#ffffff", "glass-border": "rgba(255,255,255,0.4)", "on-surface": "#1b1b23", "surface": "#fcf8ff",
+        "on-primary": "#ffffff", "glass-specular": "rgba(255,255,255,0.6)",
+        "on-surface-variant": "#464554", "secondary": "#6b38d4", "secondary-container": "#8455ee",
+        "surface-bright": "#fcf8ff", "primary": "#2c2abc", "ai-bubble-accent": "rgba(70,72,212,0.12)",
+        "outline": "#767586", "tertiary": "#44444d", "inverse-surface": "#303038",
+        "surface-container-highest": "#e4e1ed", "tertiary-container": "#5c5b65",
+        "glass-surface": "rgba(255,255,255,0.03)", "surface-container": "#efecf8",
+        "primary-container": "#4648d4", "on-secondary": "#ffffff", "error": "#ba1a1a",
+        "surface-container-lowest": "#ffffff",
+      },
+      borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+      spacing: { "sidebar-width": "18rem", "bubble-gap": "32px", "glass-padding": "20px", "gutter": "24px" },
+      fontFamily: { "label-md": ["Inter"], "code-sm": ["JetBrains Mono"], "display-lg": ["Inter"], "label-sm-caps": ["Inter"], "body-md": ["Inter"], "headline-md": ["Inter"] },
+      fontSize: {
+        "label-md": ["0.75rem", {"lineHeight":"1rem","fontWeight":"600"}],
+        "code-sm": ["14px", {"lineHeight":"1.5","fontWeight":"400"}],
+        "display-lg": ["24px", {"lineHeight":"32px","letterSpacing":"-0.02em","fontWeight":"700"}],
+        "label-sm-caps": ["10px", {"lineHeight":"12px","letterSpacing":"0.15em","fontWeight":"800"}],
+        "body-md": ["0.875rem", {"lineHeight":"1.6","fontWeight":"400"}],
+        "headline-md": ["1.25rem", {"lineHeight":"1.75rem","fontWeight":"600"}]
+      }
+    }
+  }
+}
+</script>
 <style>
-        body {
-            background: radial-gradient(circle at top left, #fcf8ff, #e9e6f3, #e1e0ff);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        
-        .dark body {
-            background: radial-gradient(circle at top left, #0e0e18, #13131f, #1a1a2e);
-        }
-
-        .liquid-glass {
-            backdrop-filter: blur(28px);
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
-        }
-
-        .dark .liquid-glass {
-            background: rgba(255, 255, 255, 0.02);
-            border-color: rgba(255, 255, 255, 0.08);
-            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
-        }
-
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            vertical-align: middle;
-        }
-        .active-pill {
-            background: linear-gradient(135deg, #4648d4, #6b38d4);
-            box-shadow: 0 4px 12px rgba(70, 72, 212, 0.3);
-        }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(70, 72, 212, 0.2); border-radius: 10px; }
-    </style>
+  body { background: radial-gradient(circle at top left, #fcf8ff, #e9e6f3, #e1e0ff); min-height: 100vh; overflow-x: hidden; }
+  .dark body { background: radial-gradient(circle at top left, #0e0e18, #13131f, #1a1a2e); }
+  .liquid-glass { backdrop-filter: blur(28px); background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.4); box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.6); }
+  .dark .liquid-glass { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.08); box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.05); }
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
+  .active-pill { background: linear-gradient(135deg, #4648d4, #6b38d4); box-shadow: 0 4px 12px rgba(70,72,212,0.3); }
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(70,72,212,0.2); border-radius: 10px; }
+</style>
 </head>
 <body class="font-body-md text-on-surface dark:text-zinc-100">
-<!-- Sidebar Navigation (Shared Component) -->
+<!-- Sidebar Navigation -->
 <aside class="fixed left-0 top-0 h-full w-sidebar-width bg-glass-surface flex flex-col p-glass-padding backdrop-blur-[40px] border-r border-glass-border shadow-[inset_1px_1px_0px_0px_rgba(255,255,255,0.4)] z-50 !bg-white/10 dark:!bg-black/10">
 <div class="mb-10 px-4">
 <h1 class="font-display-lg text-display-lg text-on-surface dark:text-white">AetherMind</h1>
@@ -160,7 +73,6 @@
 <span class="material-symbols-outlined">insights</span>
 <span class="font-label-md text-label-md">Analytics</span>
 </a>
-<!-- Active State: Tools -->
 <a class="flex items-center space-x-3 bg-ai-bubble-accent text-primary dark:text-white border border-glass-border font-bold px-4 py-2 rounded-lg -translate-y-0.5 transition-transform" href="tools.html">
 <span class="material-symbols-outlined">construction</span>
 <span class="font-label-md text-label-md">Tools</span>
@@ -187,13 +99,14 @@
 </div>
 </div>
 </aside>
-<!-- Top App Bar (Shared Component) -->
+
+<!-- Top App Bar -->
 <header class="fixed top-0 right-0 left-sidebar-width h-16 bg-glass-surface/50 backdrop-blur-[20px] border-b border-glass-border shadow-sm flex justify-between items-center px-gutter z-40 !bg-white/10 dark:!bg-black/10">
 <div class="flex items-center space-x-4">
 <span class="font-display-lg text-display-lg font-bold text-primary dark:text-indigo-400">AetherMind v3</span>
 <div class="h-4 w-[1px] bg-glass-border"></div>
-<span class="font-label-sm-caps text-label-sm-caps text-on-surface-variant dark:text-zinc-400">Session #4 today</span>
-<span class="font-label-sm-caps text-label-sm-caps text-on-surface-variant dark:text-zinc-400">Tokens: 1.2k/5k</span>
+<span id="headerSessions" class="font-label-sm-caps text-label-sm-caps text-on-surface-variant dark:text-zinc-400">— sessions</span>
+<span id="headerTokens" class="font-label-sm-caps text-label-sm-caps text-on-surface-variant dark:text-zinc-400">Tokens: —</span>
 </div>
 <div class="flex items-center space-x-6">
 <span class="material-symbols-outlined text-primary dark:text-zinc-300 cursor-pointer opacity-90 hover:opacity-100">notifications</span>
@@ -203,266 +116,461 @@
 </div>
 </div>
 </header>
-<!-- Main Content Container -->
+
+<!-- Main Content -->
 <main class="ml-sidebar-width pt-24 px-gutter pb-12 flex flex-col items-center">
 <div class="w-full max-w-[760px] space-y-10">
-<!-- Section Title -->
-<section class="flex justify-between items-end">
-<div>
-<h2 class="font-headline-md text-headline-md text-on-surface dark:text-white">Tools &amp; Intelligence</h2>
-<p class="text-on-surface-variant dark:text-zinc-400 opacity-70">Optimize your cognitive workflow and data exports.</p>
-</div>
-<div class="flex space-x-2">
-<button class="liquid-glass px-4 py-2 rounded-full font-label-md text-label-md text-primary dark:text-indigo-300 flex items-center space-x-2 hover:bg-glass-specular/10 transition-colors">
-<span class="material-symbols-outlined text-[18px]">auto_awesome</span>
-<span>Auto-Optimize</span>
-</button>
-</div>
-</section>
-<!-- Study Planner Grid -->
-<section class="space-y-6">
-<div class="flex items-center space-x-2 text-primary dark:text-indigo-400">
-<span class="material-symbols-outlined">book</span>
-<h3 class="font-headline-md text-[1.1rem]">Study Planner</h3>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-<!-- Topics Tracker -->
-<div class="liquid-glass p-6 rounded-lg space-y-4">
-<h4 class="font-label-md text-label-md text-on-surface-variant dark:text-zinc-400 uppercase tracking-wider">Want to Study</h4>
-<div class="space-y-3">
-<div class="flex items-center justify-between p-3 bg-white/40 dark:bg-black/20 rounded-lg border border-glass-border group">
-<span class="text-body-md text-on-surface dark:text-zinc-200">Advanced Neural Architectures</span>
-<button class="opacity-0 group-hover:opacity-100 transition-opacity text-primary dark:text-indigo-400">
-<span class="material-symbols-outlined">check_circle</span>
-</button>
-</div>
-<div class="flex items-center justify-between p-3 bg-white/40 dark:bg-black/20 rounded-lg border border-glass-border group">
-<span class="text-body-md text-on-surface dark:text-zinc-200">Quantum Cryptography Basics</span>
-<button class="opacity-0 group-hover:opacity-100 transition-opacity text-primary dark:text-indigo-400">
-<span class="material-symbols-outlined">check_circle</span>
-</button>
-</div>
-<div class="flex items-center justify-between p-3 bg-white/20 dark:bg-black/10 rounded-lg border border-dashed border-glass-border cursor-pointer hover:bg-white/40 transition-colors">
-<span class="text-on-surface-variant dark:text-zinc-400 font-label-md">+ Add New Topic</span>
-</div>
-</div>
-</div>
-<!-- AI Suggestions & Goal -->
-<div class="space-y-6">
-<div class="liquid-glass p-6 rounded-lg bg-gradient-to-br from-primary/5 to-secondary/5 relative overflow-hidden">
-<div class="relative z-10">
-<h4 class="font-label-md text-label-md text-primary dark:text-indigo-400 flex items-center space-x-2">
-<span class="material-symbols-outlined text-[16px]">psychology</span>
-<span>AI Suggestions</span>
-</h4>
-<p class="mt-2 text-body-md font-semibold text-on-surface dark:text-white">Focus on: Linear Algebra for ML</p>
-<p class="text-label-md text-on-surface-variant dark:text-zinc-400 mt-1">Identified as a foundational gap based on your recent queries.</p>
-<button class="mt-4 px-4 py-2 bg-primary/10 dark:bg-primary/20 border border-primary/20 rounded-full text-primary dark:text-indigo-300 font-label-md hover:bg-primary/20 transition-colors">Start Module</button>
-</div>
-<div class="absolute -right-10 -bottom-10 w-32 h-32 bg-primary/10 rounded-full blur-2xl"></div>
-</div>
-<div class="liquid-glass p-6 rounded-lg border-l-4 border-l-secondary">
-<h4 class="font-label-md text-label-md text-secondary dark:text-purple-400 uppercase tracking-wider">Daily Goal</h4>
-<p class="text-body-md mt-2 italic text-on-surface-variant dark:text-zinc-300">"Synthesize 3 core concepts of Neural ODEs into a visual mental map."</p>
-<div class="mt-4 flex items-center justify-between">
-<div class="flex -space-x-2">
-<div class="w-6 h-6 rounded-full bg-secondary border-2 border-white dark:border-zinc-800"></div>
-<div class="w-6 h-6 rounded-full bg-primary border-2 border-white dark:border-zinc-800"></div>
-</div>
-<button class="text-secondary dark:text-purple-400 font-label-md flex items-center space-x-1">
-<span>Refresh</span>
-<span class="material-symbols-outlined text-[14px]">refresh</span>
-</button>
-</div>
-</div>
-</div>
-</div>
-</section>
-<!-- Topic Export Section -->
-<section class="space-y-6">
-<div class="flex items-center space-x-2 text-primary dark:text-indigo-400">
-<span class="material-symbols-outlined">file_export</span>
-<h3 class="font-headline-md text-[1.1rem]">Data Export</h3>
-</div>
-<div class="liquid-glass p-8 rounded-lg">
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-<div class="space-y-4">
-<label class="block font-label-md text-on-surface-variant dark:text-zinc-400">Date Range</label>
-<div class="flex space-x-2">
-<input class="w-full bg-white/40 dark:bg-black/20 border-glass-border rounded-lg text-body-md p-2 outline-none focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white" type="date"/>
-<input class="w-full bg-white/40 dark:bg-black/20 border-glass-border rounded-lg text-body-md p-2 outline-none focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white" type="date"/>
-</div>
-</div>
-<div class="space-y-4">
-<label class="block font-label-md text-on-surface-variant dark:text-zinc-400">Mastery Level Filter</label>
-<div class="flex flex-wrap gap-2">
-<span class="px-3 py-1 bg-primary text-white text-label-md rounded-full cursor-pointer">Novice</span>
-<span class="px-3 py-1 bg-white/40 dark:bg-black/20 border border-glass-border text-label-md rounded-full cursor-pointer hover:bg-white/60 text-on-surface dark:text-zinc-200">Proficient</span>
-<span class="px-3 py-1 bg-white/40 dark:bg-black/20 border border-glass-border text-label-md rounded-full cursor-pointer hover:bg-white/60 text-on-surface dark:text-zinc-200">Expert</span>
-</div>
-</div>
-</div>
-<div class="mt-8 pt-8 border-t border-glass-border flex flex-col md:flex-row md:items-center justify-between gap-4">
-<div class="flex items-center space-x-4">
-<div class="flex items-center space-x-2 text-body-md text-on-surface dark:text-zinc-200">
-<input class="rounded text-primary focus:ring-primary" id="csv" type="checkbox"/>
-<label for="csv">Include Raw Logs</label>
-</div>
-<div class="flex items-center space-x-2 text-body-md text-on-surface dark:text-zinc-200">
-<input checked="" class="rounded text-primary focus:ring-primary" id="viz" type="checkbox"/>
-<label for="viz">Include Visual Maps</label>
-</div>
-</div>
-<div class="flex space-x-4">
-<button class="px-6 py-2 border border-glass-border rounded-full font-label-md hover:bg-white/40 text-on-surface dark:text-zinc-200 transition-colors">Export CSV</button>
-<button class="px-6 py-2 active-pill text-white rounded-full font-label-md transition-transform hover:-translate-y-0.5">Generate PDF Report</button>
-</div>
-</div>
-</div>
-</section>
-<!-- Personal Settings Section -->
-<section class="space-y-6">
-<div class="flex items-center space-x-2 text-primary dark:text-indigo-400">
-<span class="material-symbols-outlined">tune</span>
-<h3 class="font-headline-md text-[1.1rem]">Personal Settings</h3>
-</div>
-<div class="liquid-glass rounded-lg divide-y divide-glass-border overflow-hidden">
-<!-- API Cost Config -->
-<div class="p-6 flex items-center justify-between">
-<div class="flex items-center space-x-4">
-<div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary dark:text-indigo-400">
-<span class="material-symbols-outlined">payments</span>
-</div>
-<div>
-<h5 class="font-label-md text-[1rem] text-on-surface dark:text-white">API Cost Threshold</h5>
-<p class="text-label-md text-on-surface-variant dark:text-zinc-400">Alert me when single query costs exceed amount.</p>
-</div>
-</div>
-<div class="flex items-center space-x-2">
-<span class="text-on-surface-variant dark:text-zinc-400">$</span>
-<input class="w-20 bg-white/40 dark:bg-black/20 border-glass-border rounded px-2 py-1 text-center outline-none text-on-surface dark:text-white" type="number" value="0.50"/>
-</div>
-</div>
-<!-- Token Budget -->
-<div class="p-6 flex items-center justify-between">
-<div class="flex items-center space-x-4">
-<div class="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary dark:text-purple-400">
-<span class="material-symbols-outlined">toll</span>
-</div>
-<div>
-<h5 class="font-label-md text-[1rem] text-on-surface dark:text-white">Daily Token Budget</h5>
-<p class="text-label-md text-on-surface-variant dark:text-zinc-400">Hard limit for automated background tasks.</p>
-</div>
-</div>
-<div class="flex items-center space-x-4 w-48">
-<input class="w-full accent-secondary" max="10000" min="1000" step="500" type="range"/>
-<span class="text-label-md font-bold text-secondary dark:text-purple-400">5k</span>
-</div>
-</div>
-<!-- UI Toggles -->
-<div class="p-6 flex items-center justify-between">
-<div class="flex items-center space-x-4">
-<div class="w-10 h-10 rounded-lg bg-tertiary/10 flex items-center justify-center text-tertiary dark:text-zinc-400">
-<span class="material-symbols-outlined">visibility</span>
-</div>
-<div>
-<h5 class="font-label-md text-[1rem] text-on-surface dark:text-white">Show Domain Badges</h5>
-<p class="text-label-md text-on-surface-variant dark:text-zinc-400">Display subject tags on every AI response.</p>
-</div>
-</div>
-<button class="w-12 h-6 bg-primary rounded-full relative transition-colors">
-<span class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></span>
-</button>
-</div>
-<!-- Crystal Transparency Toggle -->
-<div class="p-6 flex items-center justify-between">
-<div class="flex items-center space-x-4">
-<div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary dark:text-indigo-400">
-<span class="material-symbols-outlined">layers</span>
-</div>
-<div>
-<h5 class="font-label-md text-[1rem] text-on-surface dark:text-white">Ultra-Glass Mode</h5>
-<p class="text-label-md text-on-surface-variant dark:text-zinc-400">Enables refractive backdrop filters and extra blur.</p>
-</div>
-</div>
-<button class="w-12 h-6 bg-surface-container-highest dark:bg-zinc-800 rounded-full relative transition-colors">
-<span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm"></span>
-</button>
-</div>
-</div>
-</section>
-<!-- Bottom Spacer -->
-<div class="h-20"></div>
+
+  <!-- Section Title -->
+  <section class="flex justify-between items-end">
+    <div>
+      <h2 class="font-headline-md text-headline-md text-on-surface dark:text-white">Tools &amp; Intelligence</h2>
+      <p class="text-on-surface-variant dark:text-zinc-400 opacity-70">Optimize your cognitive workflow and data exports.</p>
+    </div>
+    <div class="flex space-x-2">
+      <button id="autoOptimizeBtn" class="liquid-glass px-4 py-2 rounded-full font-label-md text-label-md text-primary dark:text-indigo-300 flex items-center space-x-2 hover:bg-glass-specular/10 transition-colors">
+        <span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+        <span>Auto-Optimize</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- Study Planner Grid -->
+  <section class="space-y-6">
+    <div class="flex items-center space-x-2 text-primary dark:text-indigo-400">
+      <span class="material-symbols-outlined">book</span>
+      <h3 class="font-headline-md text-[1.1rem]">Study Planner</h3>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Topics Tracker (dynamic) -->
+      <div class="liquid-glass p-6 rounded-lg space-y-4">
+        <h4 class="font-label-md text-label-md text-on-surface-variant dark:text-zinc-400 uppercase tracking-wider">Suggested Topics</h4>
+        <div id="suggestedTopicsList" class="space-y-3">
+          <div class="p-3 bg-white/20 dark:bg-black/10 rounded-lg border border-dashed border-glass-border text-center">
+            <span class="text-on-surface-variant dark:text-zinc-400 font-label-md opacity-60">Loading…</span>
+          </div>
+        </div>
+      </div>
+      <!-- AI Suggestions & Goal -->
+      <div class="space-y-6">
+        <div class="liquid-glass p-6 rounded-lg bg-gradient-to-br from-primary/5 to-secondary/5 relative overflow-hidden">
+          <div class="relative z-10">
+            <h4 class="font-label-md text-label-md text-primary dark:text-indigo-400 flex items-center space-x-2">
+              <span class="material-symbols-outlined text-[16px]">psychology</span>
+              <span>AI Suggestions</span>
+            </h4>
+            <p id="aiSuggestionTitle" class="mt-2 text-body-md font-semibold text-on-surface dark:text-white">Focus on: —</p>
+            <p id="aiSuggestionDesc" class="text-label-md text-on-surface-variant dark:text-zinc-400 mt-1">Analyzing your conversation history for suggestions…</p>
+            <button id="startModuleBtn" class="mt-4 px-4 py-2 bg-primary/10 dark:bg-primary/20 border border-primary/20 rounded-full text-primary dark:text-indigo-300 font-label-md hover:bg-primary/20 transition-colors">Start Module</button>
+          </div>
+          <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-primary/10 rounded-full blur-2xl"></div>
+        </div>
+        <div class="liquid-glass p-6 rounded-lg border-l-4 border-l-secondary">
+          <h4 class="font-label-md text-label-md text-secondary dark:text-purple-400 uppercase tracking-wider">Session Stats</h4>
+          <div class="mt-3 space-y-2">
+            <div class="flex justify-between">
+              <span class="text-on-surface-variant dark:text-zinc-400 text-sm">Total Sessions</span>
+              <span id="statSessions" class="font-bold text-on-surface dark:text-white">0</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-on-surface-variant dark:text-zinc-400 text-sm">Total Queries</span>
+              <span id="statQueries" class="font-bold text-on-surface dark:text-white">0</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-on-surface-variant dark:text-zinc-400 text-sm">Active Domain</span>
+              <span id="statDomain" class="font-bold text-primary dark:text-indigo-300">—</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-on-surface-variant dark:text-zinc-400 text-sm">Current Streak</span>
+              <span id="statStreak" class="font-bold text-orange-500">0 days</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Topic Export Section -->
+  <section class="space-y-6">
+    <div class="flex items-center space-x-2 text-primary dark:text-indigo-400">
+      <span class="material-symbols-outlined">file_export</span>
+      <h3 class="font-headline-md text-[1.1rem]">Data Export</h3>
+    </div>
+    <div class="liquid-glass p-8 rounded-lg">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="space-y-4">
+          <label class="block font-label-md text-on-surface-variant dark:text-zinc-400">Date Range</label>
+          <div class="flex space-x-2">
+            <input id="exportDateFrom" class="w-full bg-white/40 dark:bg-black/20 border-glass-border rounded-lg text-body-md p-2 outline-none focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white" type="date"/>
+            <input id="exportDateTo" class="w-full bg-white/40 dark:bg-black/20 border-glass-border rounded-lg text-body-md p-2 outline-none focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white" type="date"/>
+          </div>
+        </div>
+        <div class="space-y-4">
+          <label class="block font-label-md text-on-surface-variant dark:text-zinc-400">Domain Filter</label>
+          <div id="domainFilterChips" class="flex flex-wrap gap-2">
+            <span data-domain="ALL" class="px-3 py-1 bg-primary text-white text-label-md rounded-full cursor-pointer domain-chip">All</span>
+            <span data-domain="CODING" class="px-3 py-1 bg-white/40 dark:bg-black/20 border border-glass-border text-label-md rounded-full cursor-pointer hover:bg-white/60 text-on-surface dark:text-zinc-200 domain-chip">Coding</span>
+            <span data-domain="MATH" class="px-3 py-1 bg-white/40 dark:bg-black/20 border border-glass-border text-label-md rounded-full cursor-pointer hover:bg-white/60 text-on-surface dark:text-zinc-200 domain-chip">Math</span>
+            <span data-domain="STATS" class="px-3 py-1 bg-white/40 dark:bg-black/20 border border-glass-border text-label-md rounded-full cursor-pointer hover:bg-white/60 text-on-surface dark:text-zinc-200 domain-chip">Stats</span>
+            <span data-domain="WEB_DEV" class="px-3 py-1 bg-white/40 dark:bg-black/20 border border-glass-border text-label-md rounded-full cursor-pointer hover:bg-white/60 text-on-surface dark:text-zinc-200 domain-chip">Web Dev</span>
+            <span data-domain="SECURITY" class="px-3 py-1 bg-white/40 dark:bg-black/20 border border-glass-border text-label-md rounded-full cursor-pointer hover:bg-white/60 text-on-surface dark:text-zinc-200 domain-chip">Security</span>
+          </div>
+        </div>
+      </div>
+      <div class="mt-8 pt-8 border-t border-glass-border flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center space-x-4">
+          <div class="flex items-center space-x-2 text-body-md text-on-surface dark:text-zinc-200">
+            <input class="rounded text-primary focus:ring-primary" id="csvIncludeLogs" type="checkbox"/>
+            <label for="csvIncludeLogs">Include Raw Logs</label>
+          </div>
+          <div class="flex items-center space-x-2 text-body-md text-on-surface dark:text-zinc-200">
+            <input checked="" class="rounded text-primary focus:ring-primary" id="csvIncludeTopics" type="checkbox"/>
+            <label for="csvIncludeTopics">Include Topics</label>
+          </div>
+        </div>
+        <div class="flex space-x-4">
+          <button id="exportCsvBtn" class="px-6 py-2 border border-glass-border rounded-full font-label-md hover:bg-white/40 text-on-surface dark:text-zinc-200 transition-colors">Export CSV</button>
+          <button id="exportJsonBtn" class="px-6 py-2 active-pill text-white rounded-full font-label-md transition-transform hover:-translate-y-0.5">Export JSON</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Personal Settings Section -->
+  <section class="space-y-6">
+    <div class="flex items-center space-x-2 text-primary dark:text-indigo-400">
+      <span class="material-symbols-outlined">tune</span>
+      <h3 class="font-headline-md text-[1.1rem]">Personal Settings</h3>
+    </div>
+    <div class="liquid-glass rounded-lg divide-y divide-glass-border overflow-hidden">
+      <!-- API Cost Config -->
+      <div class="p-6 flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary dark:text-indigo-400">
+            <span class="material-symbols-outlined">payments</span>
+          </div>
+          <div>
+            <h5 class="font-label-md text-[1rem] text-on-surface dark:text-white">API Cost Threshold</h5>
+            <p class="text-label-md text-on-surface-variant dark:text-zinc-400">Alert me when single query costs exceed amount.</p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="text-on-surface-variant dark:text-zinc-400">$</span>
+          <input id="costThreshold" class="w-20 bg-white/40 dark:bg-black/20 border-glass-border rounded px-2 py-1 text-center outline-none text-on-surface dark:text-white" type="number" value="0.50" step="0.1"/>
+        </div>
+      </div>
+      <!-- Token Budget -->
+      <div class="p-6 flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <div class="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary dark:text-purple-400">
+            <span class="material-symbols-outlined">toll</span>
+          </div>
+          <div>
+            <h5 class="font-label-md text-[1rem] text-on-surface dark:text-white">Daily Token Budget</h5>
+            <p class="text-label-md text-on-surface-variant dark:text-zinc-400">Hard limit for automated background tasks.</p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-4 w-48">
+          <input id="budgetRange" class="w-full accent-secondary" max="10000" min="1000" step="500" type="range" value="5000"/>
+          <span id="budgetLabel" class="text-label-md font-bold text-secondary dark:text-purple-400">5k</span>
+        </div>
+      </div>
+      <!-- UI Toggles -->
+      <div class="p-6 flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <div class="w-10 h-10 rounded-lg bg-tertiary/10 flex items-center justify-center text-tertiary dark:text-zinc-400">
+            <span class="material-symbols-outlined">visibility</span>
+          </div>
+          <div>
+            <h5 class="font-label-md text-[1rem] text-on-surface dark:text-white">Show Domain Badges</h5>
+            <p class="text-label-md text-on-surface-variant dark:text-zinc-400">Display subject tags on every AI response.</p>
+          </div>
+        </div>
+        <button id="toggleBadges" class="w-12 h-6 bg-primary rounded-full relative transition-colors">
+          <span class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full transition-all"></span>
+        </button>
+      </div>
+      <!-- Crystal Transparency Toggle -->
+      <div class="p-6 flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary dark:text-indigo-400">
+            <span class="material-symbols-outlined">layers</span>
+          </div>
+          <div>
+            <h5 class="font-label-md text-[1rem] text-on-surface dark:text-white">Ultra-Glass Mode</h5>
+            <p class="text-label-md text-on-surface-variant dark:text-zinc-400">Enables refractive backdrop filters and extra blur.</p>
+          </div>
+        </div>
+        <button id="toggleGlass" class="w-12 h-6 bg-surface-container-highest dark:bg-zinc-800 rounded-full relative transition-colors">
+          <span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm transition-all"></span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <div class="h-20"></div>
 </div>
 </main>
-<!-- Floating Atmosphere Elements -->
+
+<!-- Floating Atmosphere -->
 <div class="fixed top-20 right-10 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
 <div class="fixed bottom-10 left-64 w-80 h-80 bg-secondary/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
+
 <script>
-        // Micro-interactions for glass toggles
-        document.querySelectorAll('button.rounded-full.relative').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const dot = this.querySelector('span');
-                const isActive = this.classList.contains('bg-primary');
-                
-                if (isActive) {
-                    this.classList.remove('bg-primary');
-                    this.classList.add('bg-surface-container-highest');
-                    dot.classList.replace('right-1', 'left-1');
-                } else {
-                    this.classList.add('bg-primary');
-                    this.classList.remove('bg-surface-container-highest');
-                    dot.classList.replace('left-1', 'right-1');
-                }
-            });
-        });
+const A = window.AetherAnalytics;
+let selectedDomainFilter = 'ALL';
 
-        // Date input hover effect
-        document.querySelectorAll('input[type="date"]').forEach(input => {
-            input.addEventListener('focus', () => {
-                input.parentElement.classList.add('scale-[1.02]');
-            });
-            input.addEventListener('blur', () => {
-                input.parentElement.classList.remove('scale-[1.02]');
-            });
-        });
+/* ── Toggle switches ── */
+document.querySelectorAll('#toggleBadges, #toggleGlass').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const dot = this.querySelector('span');
+    const isActive = this.classList.contains('bg-primary');
+    if (isActive) {
+      this.classList.remove('bg-primary');
+      this.classList.add('bg-surface-container-highest', 'dark:bg-zinc-800');
+      dot.classList.replace('right-1', 'left-1');
+    } else {
+      this.classList.add('bg-primary');
+      this.classList.remove('bg-surface-container-highest', 'dark:bg-zinc-800');
+      dot.classList.replace('left-1', 'right-1');
+    }
+  });
+});
 
-        // Hydration & Session Guard
-        document.addEventListener('DOMContentLoaded', () => {
-            const userSession = localStorage.getItem('am_user');
-            if (!userSession) {
-                window.location.href = 'login.html';
-                return;
-            }
-            const user = JSON.parse(userSession);
-            
-            // Set theme
-            const theme = localStorage.getItem('am_theme') || 'dark';
-            document.documentElement.classList.toggle('dark', theme === 'dark');
-            
-            // Set User Details
-            if (user.name) {
-                const init = user.name.charAt(0).toUpperCase();
-                document.getElementById('avatarLetter').textContent = init;
-                document.getElementById('strategistTier').textContent = `${user.provider.charAt(0).toUpperCase() + user.provider.slice(1)} Tier`;
-            }
-            if (user.avatar) {
-                const img = document.createElement('img');
-                img.src = user.avatar;
-                img.className = 'w-full h-full object-cover';
-                img.alt = 'User Avatar';
-                const container = document.getElementById('avatarContainer');
-                container.innerHTML = '';
-                container.appendChild(img);
-            }
+/* ── Domain filter chips ── */
+document.getElementById('domainFilterChips').addEventListener('click', e => {
+  const chip = e.target.closest('.domain-chip');
+  if (!chip) return;
+  selectedDomainFilter = chip.dataset.domain;
+  document.querySelectorAll('.domain-chip').forEach(c => {
+    c.className = 'px-3 py-1 bg-white/40 dark:bg-black/20 border border-glass-border text-label-md rounded-full cursor-pointer hover:bg-white/60 text-on-surface dark:text-zinc-200 domain-chip';
+  });
+  chip.className = 'px-3 py-1 bg-primary text-white text-label-md rounded-full cursor-pointer domain-chip';
+});
 
-            // Bind Logout
-            document.getElementById('logoutBtn').addEventListener('click', (e) => {
-                e.preventDefault();
-                localStorage.removeItem('am_user');
-                window.location.href = 'login.html';
-            });
-        });
-    </script>
+/* ── Budget range ── */
+document.getElementById('budgetRange').addEventListener('input', e => {
+  const v = parseInt(e.target.value);
+  document.getElementById('budgetLabel').textContent = v >= 1000 ? (v/1000) + 'k' : v;
+  localStorage.setItem('am_daily_budget', v);
+});
+
+/* ── Cost threshold save ── */
+document.getElementById('costThreshold').addEventListener('change', e => {
+  localStorage.setItem('am_cost_threshold', e.target.value);
+});
+
+/* ── Build suggested topics from real data ── */
+function buildSuggestedTopics() {
+  const container = document.getElementById('suggestedTopicsList');
+  const suggested = A.getSuggestedTopics(5);
+  const domainLabels = { CODING:'Coding', MATH:'Math', STATS:'Stats', WEB_DEV:'Web Dev', SECURITY:'Security' };
+
+  if (!suggested.length) {
+    // Show from recent topics if no suggestions
+    const topics = A.getTopics(5);
+    if (!topics.length) {
+      container.innerHTML = `
+        <div class="p-3 bg-white/20 dark:bg-black/10 rounded-lg border border-dashed border-glass-border text-center">
+          <span class="text-on-surface-variant dark:text-zinc-400 font-label-md opacity-60">No topics yet — start chatting to generate suggestions</span>
+        </div>`;
+      return;
+    }
+    container.innerHTML = topics.map(t => `
+      <div class="flex items-center justify-between p-3 bg-white/40 dark:bg-black/20 rounded-lg border border-glass-border group">
+        <div class="flex-1 min-w-0">
+          <span class="text-body-md text-on-surface dark:text-zinc-200 block truncate">${t.topic}</span>
+          <span class="text-[10px] text-on-surface-variant dark:text-zinc-500">${domainLabels[t.domain] || t.domain} · ${t.mastery}% mastery</span>
+        </div>
+        <button onclick="window.location.href='index.html'" class="opacity-0 group-hover:opacity-100 transition-opacity text-primary dark:text-indigo-400 ml-2 shrink-0">
+          <span class="material-symbols-outlined">chat</span>
+        </button>
+      </div>`).join('');
+    return;
+  }
+
+  container.innerHTML = suggested.map(t => `
+    <div class="flex items-center justify-between p-3 bg-white/40 dark:bg-black/20 rounded-lg border border-glass-border group">
+      <div class="flex-1 min-w-0">
+        <span class="text-body-md text-on-surface dark:text-zinc-200 block truncate">${t.topic}</span>
+        <span class="text-[10px] text-on-surface-variant dark:text-zinc-500">${domainLabels[t.domain] || t.domain} · ${t.mastery}% mastery · ${t.lastStudied}</span>
+      </div>
+      <button onclick="window.location.href='index.html'" class="opacity-0 group-hover:opacity-100 transition-opacity text-primary dark:text-indigo-400 ml-2 shrink-0">
+        <span class="material-symbols-outlined">chat</span>
+      </button>
+    </div>`).join('');
+}
+
+/* ── AI suggestion from weakest topic ── */
+function buildAISuggestion() {
+  const suggested = A.getSuggestedTopics(1);
+  if (suggested.length > 0) {
+    document.getElementById('aiSuggestionTitle').textContent = 'Focus on: ' + suggested[0].topic;
+    document.getElementById('aiSuggestionDesc').textContent = `Identified as a gap area with only ${suggested[0].mastery}% mastery. Last studied: ${suggested[0].lastStudied}.`;
+  } else {
+    const topics = A.getTopics(1);
+    if (topics.length > 0) {
+      document.getElementById('aiSuggestionTitle').textContent = 'Continue: ' + topics[0].topic;
+      document.getElementById('aiSuggestionDesc').textContent = `Your most active topic with ${topics[0].mastery}% mastery. Keep going!`;
+    } else {
+      document.getElementById('aiSuggestionTitle').textContent = 'Start a conversation!';
+      document.getElementById('aiSuggestionDesc').textContent = 'Chat with AetherMind to get personalized study suggestions.';
+    }
+  }
+  document.getElementById('startModuleBtn').addEventListener('click', () => {
+    window.location.href = 'index.html';
+  });
+}
+
+/* ── Export CSV ── */
+function exportCSV() {
+  const conversations = JSON.parse(localStorage.getItem('am_convs_v2') || '[]');
+  const fromDate = document.getElementById('exportDateFrom').value;
+  const toDate = document.getElementById('exportDateTo').value;
+  const includeLogs = document.getElementById('csvIncludeLogs').checked;
+  const includeTopics = document.getElementById('csvIncludeTopics').checked;
+
+  let filtered = conversations;
+  if (fromDate) filtered = filtered.filter(c => (c.createdAt || '') >= fromDate);
+  if (toDate) filtered = filtered.filter(c => (c.createdAt || '').split('T')[0] <= toDate);
+  if (selectedDomainFilter !== 'ALL') {
+    filtered = filtered.filter(c => {
+      return (c.messages || []).some(m => {
+        if (m.role !== 'user') return false;
+        const d = A._detectDomain(m.content);
+        return d === selectedDomainFilter;
+      });
+    });
+  }
+
+  let csv = 'Conversation ID,Title,Created At,Messages,User Messages\n';
+  filtered.forEach(c => {
+    const msgs = (c.messages || []);
+    const userMsgs = msgs.filter(m => m.role === 'user').length;
+    const title = (c.title || 'Untitled').replace(/"/g, '""');
+    csv += `"${c.id}","${title}","${c.createdAt || ''}",${msgs.length},${userMsgs}\n`;
+  });
+
+  if (includeTopics) {
+    csv += '\n\nTopic,Domain,Times Asked,Mastery\n';
+    A.getTopics(50).forEach(t => {
+      csv += `"${t.topic}","${t.domain}",${t.timesAsked},${t.mastery}%\n`;
+    });
+  }
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `aethermind_export_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+/* ── Export JSON ── */
+function exportJSON() {
+  const conversations = JSON.parse(localStorage.getItem('am_convs_v2') || '[]');
+  const fromDate = document.getElementById('exportDateFrom').value;
+  const toDate = document.getElementById('exportDateTo').value;
+
+  let filtered = conversations;
+  if (fromDate) filtered = filtered.filter(c => (c.createdAt || '') >= fromDate);
+  if (toDate) filtered = filtered.filter(c => (c.createdAt || '').split('T')[0] <= toDate);
+  if (selectedDomainFilter !== 'ALL') {
+    filtered = filtered.filter(c => {
+      return (c.messages || []).some(m => {
+        if (m.role !== 'user') return false;
+        const d = A._detectDomain(m.content);
+        return d === selectedDomainFilter;
+      });
+    });
+  }
+
+  const exportData = {
+    exportedAt: new Date().toISOString(),
+    totalConversations: filtered.length,
+    topics: A.getTopics(50),
+    domainBreakdown: A.getDomainBreakdown(),
+    tokenAnalytics: A.getTokenAnalytics(),
+    conversations: filtered,
+  };
+
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `aethermind_export_${new Date().toISOString().split('T')[0]}.json`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+/* ── Auto-Optimize (reset caches and reload) ── */
+document.getElementById('autoOptimizeBtn').addEventListener('click', () => {
+  // Force re-scan conversations
+  window.AetherAnalytics = null;
+  location.reload();
+});
+
+/* ══ Main Init ══ */
+document.addEventListener('DOMContentLoaded', () => {
+  const userSession = localStorage.getItem('am_user');
+  if (!userSession) { window.location.href = 'login.html'; return; }
+  const user = JSON.parse(userSession);
+
+  // Theme
+  const theme = localStorage.getItem('am_theme') || 'dark';
+  document.documentElement.classList.toggle('dark', theme === 'dark');
+
+  // User details
+  if (user.name) {
+    document.getElementById('avatarLetter').textContent = user.name.charAt(0).toUpperCase();
+    document.getElementById('strategistTier').textContent = `${(user.provider || 'Free').charAt(0).toUpperCase() + (user.provider || 'Free').slice(1)} Tier`;
+  }
+  if (user.avatar) {
+    const img = document.createElement('img');
+    img.src = user.avatar; img.className = 'w-full h-full object-cover'; img.alt = 'User Avatar';
+    const container = document.getElementById('avatarContainer');
+    container.innerHTML = ''; container.appendChild(img);
+  }
+
+  // Header stats from real data
+  const sessions = A.getTotalSessions();
+  document.getElementById('headerSessions').textContent = `${sessions} session${sessions !== 1 ? 's' : ''}`;
+  document.getElementById('headerTokens').textContent = 'Tokens: ' + A.formatTokens(A.getTotalTokens());
+
+  // Session stats
+  document.getElementById('statSessions').textContent = A.getTotalSessions();
+  document.getElementById('statQueries').textContent = A.getTotalQueries();
+  document.getElementById('statDomain').textContent = A.getActiveDomain();
+  document.getElementById('statStreak').textContent = A.getStreak() + ' days';
+
+  // Load saved settings
+  const savedBudget = localStorage.getItem('am_daily_budget');
+  if (savedBudget) {
+    document.getElementById('budgetRange').value = savedBudget;
+    const v = parseInt(savedBudget);
+    document.getElementById('budgetLabel').textContent = v >= 1000 ? (v/1000) + 'k' : v;
+  }
+  const savedThreshold = localStorage.getItem('am_cost_threshold');
+  if (savedThreshold) document.getElementById('costThreshold').value = savedThreshold;
+
+  // Set default date range
+  const today = new Date().toISOString().split('T')[0];
+  const monthAgo = new Date(Date.now() - 30*86400000).toISOString().split('T')[0];
+  document.getElementById('exportDateFrom').value = monthAgo;
+  document.getElementById('exportDateTo').value = today;
+
+  // Build dynamic sections
+  buildSuggestedTopics();
+  buildAISuggestion();
+
+  // Export buttons
+  document.getElementById('exportCsvBtn').addEventListener('click', exportCSV);
+  document.getElementById('exportJsonBtn').addEventListener('click', exportJSON);
+
+  // Logout
+  document.getElementById('logoutBtn').addEventListener('click', e => {
+    e.preventDefault();
+    localStorage.removeItem('am_user');
+    window.location.href = 'login.html';
+  });
+});
+</script>
 </body>
 </html>
