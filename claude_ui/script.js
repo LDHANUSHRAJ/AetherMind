@@ -694,6 +694,52 @@ function showTyping() {
 }
 function hideTyping() { $('#typingEl')?.remove(); }
 
+function getConversationalReply(userText, attached) {
+    if (attached) return null;
+    const lowerText = (userText || '').toLowerCase().trim();
+    
+    // 1. Common greetings
+    const greetings = ['hi', 'hello', 'hey', 'greetings', 'whatsup', 'whats up', 'yo', 'sup', 'good morning', 'good afternoon', 'good evening', 'howdy', 'hola', 'hi bro', 'hey bro', 'hello bro', 'whatsup bro', 'whats up bro', 'yo bro'];
+    const cleanText = lowerText.replace(/[^a-zA-Z\s]/g, '').trim();
+    if (greetings.includes(lowerText) || greetings.includes(cleanText)) {
+        return "Hey there! How can I help you today with Mathematics, Statistics, Computer Science, Coding, Cybersecurity, or Web Development?";
+    }
+    
+    // 2. Common general conversational questions
+    if (lowerText.includes('how are you') || lowerText.includes('how\'s it going') || lowerText.includes('hows it going')) {
+        return "I'm doing great, thanks for asking! Ready to dive into some computational problems, coding, or math. What are you working on?";
+    }
+    if (lowerText.includes('who are you') || lowerText.includes('what is your name') || lowerText.includes('what are you')) {
+        return "I am AetherMind, your precision computational AI assistant specializing in Mathematics, Statistics, Computer Science, Coding, Cybersecurity, and Web Development. How can I help you today?";
+    }
+    if (lowerText.includes('what can you do') || lowerText.includes('your features') || lowerText.includes('what do you support')) {
+        return "I specialize in the following domains:\n\n1. **Mathematics**: Calculus, algebra, differentiation, integration (with SymPy verification).\n2. **Statistics**: Probability distributions, hypothesis testing (with SciPy/NumPy verification).\n3. **Computer Science & Coding**: Algorithms, data structures, and complete runnable programs.\n4. **Cybersecurity**: Explaining and demonstrating concepts like XSS and SQL injection securely.\n5. **Web Development**: Generating single-file responsive HTML/CSS/JS applications.\n\nHow can I assist you with your project or study?";
+    }
+    if (lowerText === 'help' || lowerText === 'help me') {
+        return "I'm here to help! You can ask me math questions, request code implementations, seek explanation of computer science concepts, or ask me to design a responsive web layout. What would you like to do?";
+    }
+
+    // 3. Fallback for non-technical queries to avoid model hallucinations
+    const stemKeywords = [
+        'solve', 'calculate', 'differentiate', 'integrate', 'matrix', 'eigenvalue', 'limit', 'derivative',
+        'equation', 'calculus', 'series', 'theorem', 'vector', 'linear algebra', 'unicode', 'sympy',
+        'mean', 'median', 'variance', 'distribution', 'probability', 'hypothesis', 't-test', 'p-value',
+        'regression', 'confidence interval', 'bayesian', 'pmf', 'pdf', 'cdf', 'scipy', 'numpy',
+        'code', 'function', 'algorithm', 'sort', 'search', 'debug', 'recursion', 'array', 'tree',
+        'graph', 'dynamic programming', 'binary search', 'java', 'python', 'c++', 'javascript',
+        'website', 'page', 'landing', 'navbar', 'hero', 'html', 'css', 'react', 'component', 'ui',
+        'frontend', 'layout', 'web app', 'encrypt', 'decrypt', 'xss', 'csrf', 'sql injection',
+        'vulnerability', 'penetration', 'cve', 'cryptography', 'exploit', 'program', 'runnable'
+    ];
+    
+    const isStemQuery = stemKeywords.some(kw => lowerText.includes(kw));
+    if (!isStemQuery) {
+        return "I am specialized in Mathematics, Statistics, Computer Science, Coding, Cybersecurity, and Web Development. Please ask me a question related to these domains, and I will be happy to solve or explain it for you!";
+    }
+
+    return null;
+}
+
 /* ══════════════════════════════════════
    SEND MESSAGE
 ══════════════════════════════════════ */
@@ -729,6 +775,20 @@ async function send() {
 
     state.generating = true;
     showTyping();
+
+    // Check if we can answer conversationally or guide general requests locally
+    const localReply = getConversationalReply(text, attached);
+    if (localReply) {
+        setTimeout(() => {
+            hideTyping();
+            c.messages.push({ role: 'assistant', content: localReply });
+            save();
+            addMsg('assistant', localReply);
+            state.generating = false;
+            updateSendBtn();
+        }, 450);
+        return;
+    }
 
     try {
         // Build context with system prompt
