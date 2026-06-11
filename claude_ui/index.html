@@ -31,6 +31,23 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- ═══════════════ SPLASH SCREEN ═══════════════ -->
+    <div id="splashScreen" class="splash-screen">
+        <canvas class="splash-particles" id="splashCanvas"></canvas>
+        <div class="splash-content">
+            <div class="splash-logo-container">
+                <img class="splash-logo" src="logo.png" alt="AetherMind Logo">
+                <div class="splash-logo-glow"></div>
+            </div>
+            <h1 class="splash-title">AetherMind</h1>
+            <p class="splash-subtitle">Elite Computational AI Workspace</p>
+            <div class="splash-loader">
+                <div class="splash-loader-bar" id="splashLoaderBar"></div>
+            </div>
+            <div class="splash-percentage" id="splashPercent">0%</div>
+        </div>
+    </div>
+
     <!-- Animated Background -->
     <div class="bg-mesh" aria-hidden="true">
         <div class="mesh-orb orb-1"></div>
@@ -47,7 +64,7 @@
                 <!-- Brand -->
                 <div class="sidebar-brand">
                     <div class="brand-logo">
-                        <div class="brand-icon">✺</div>
+                        <img src="logo.png" alt="AetherMind Logo" style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover; box-shadow: 0 4px 14px rgba(70,72,212,0.45); flex-shrink: 0; margin-right: 2px;">
                         <span class="brand-name">AetherMind</span>
                         <span class="brand-version">v2</span>
                     </div>
@@ -182,7 +199,7 @@
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
                 </button>
                 <div class="mobile-brand">
-                    <span class="mobile-brand-icon">✺</span>
+                    <img src="logo.png" alt="AetherMind Logo" style="width: 20px; height: 20px; border-radius: 4px; object-fit: cover; margin-right: 4px;">
                     <span>AetherMind</span>
                 </div>
                 <button class="icon-btn" id="mobileExportBtn">
@@ -200,7 +217,7 @@
                             <div class="orb-ring orb-ring-1"></div>
                             <div class="orb-ring orb-ring-2"></div>
                             <div class="orb-ring orb-ring-3"></div>
-                            <div class="orb-core">✺</div>
+                            <div class="orb-core" style="background: none; box-shadow: none; border: none; overflow: hidden; border-radius: 50%;"><img src="logo.png" alt="AetherMind Logo" style="width: 100%; height: 100%; object-fit: contain;"></div>
                         </div>
                         <h1 class="welcome-title" id="welcomeHeading">Welcome</h1>
                         <p class="welcome-sub">Elite AI for Mathematics · Statistics · CS · Cybersecurity · Web Dev</p>
@@ -352,6 +369,93 @@
     <!-- Toast Notification -->
     <div class="toast-container" id="toastContainer"></div>
 
+    <script>
+        // Self-contained Splash Screen Script
+        (function() {
+            const canvas = document.getElementById('splashCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+            
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+            
+            // 3D Particles
+            const numParticles = 120;
+            const particles = [];
+            
+            for (let i = 0; i < numParticles; i++) {
+                particles.push({
+                    x: (Math.random() - 0.5) * 2000,
+                    y: (Math.random() - 0.5) * 2000,
+                    z: Math.random() * 2000,
+                    size: Math.random() * 2.5 + 0.8,
+                    color: Math.random() > 0.5 ? '107, 56, 212' : '96, 99, 238'
+                });
+            }
+            
+            const fov = 800;
+            
+            function animateSplash() {
+                ctx.fillStyle = '#06060c';
+                ctx.fillRect(0, 0, width, height);
+                
+                const cx = width / 2;
+                const cy = height / 2;
+                
+                particles.forEach(p => {
+                    p.z -= 6; // move forward
+                    
+                    if (p.z <= 0) {
+                        p.z = 2000;
+                        p.x = (Math.random() - 0.5) * 2000;
+                        p.y = (Math.random() - 0.5) * 2000;
+                    }
+                    
+                    // 3D Projection
+                    const scale = fov / (fov + p.z);
+                    const x2d = cx + p.x * scale;
+                    const y2d = cy + p.y * scale;
+                    const size2d = p.size * scale * 2.5;
+                    const alpha = (1 - p.z / 2000) * 0.85;
+                    
+                    if (x2d >= 0 && x2d <= width && y2d >= 0 && y2d <= height) {
+                        ctx.beginPath();
+                        ctx.arc(x2d, y2d, size2d, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(${p.color}, ${alpha})`;
+                        ctx.fill();
+                    }
+                });
+                
+                requestAnimationFrame(animateSplash);
+            }
+            
+            animateSplash();
+            
+            // Simulating a smooth loader
+            let progress = 0;
+            const loaderBar = document.getElementById('splashLoaderBar');
+            const percentText = document.getElementById('splashPercent');
+            const splashScreen = document.getElementById('splashScreen');
+            
+            const interval = setInterval(() => {
+                progress += Math.floor(Math.random() * 7) + 3;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        splashScreen.classList.add('hidden');
+                    }, 500);
+                }
+                if (loaderBar) loaderBar.style.width = progress + '%';
+                if (percentText) percentText.textContent = progress + '%';
+            }, 60);
+        })();
+    </script>
     <script src="script.js"></script>
 </body>
 </html>

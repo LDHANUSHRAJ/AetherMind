@@ -63,49 +63,102 @@ function initParticles() {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
 
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
+    let width = canvas.width  = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
 
-    const particles = Array.from({ length: 55 }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.35,
-        vy: (Math.random() - 0.5) * 0.35,
-        size: Math.random() * 1.8 + 0.4,
-        opacity: Math.random() * 0.4 + 0.05,
+    const particles = Array.from({ length: 65 }, () => ({
+        x: (Math.random() - 0.5) * 1200,
+        y: (Math.random() - 0.5) * 1200,
+        z: (Math.random() - 0.5) * 1000,
+        size: Math.random() * 2 + 0.6,
+        color: Math.random() > 0.4 ? '96, 99, 238' : '107, 56, 212'
     }));
 
+    let mouseX = 0, mouseY = 0;
+    let targetRotationY = 0.001, targetRotationX = 0.0005;
+    let rotationY = 0.001, rotationX = 0.0005;
+
+    window.addEventListener('mousemove', (e) => {
+        mouseX = (e.clientX - width / 2) / (width / 2);
+        mouseY = (e.clientY - height / 2) / (height / 2);
+        targetRotationY = mouseX * 0.005;
+        targetRotationX = mouseY * 0.005;
+    });
+
+    const fov = 500;
+    const cx = width / 2;
+    const cy = height / 2;
+
     function drawParticles() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-        const baseColor = isLight ? '80, 60, 180' : '160, 140, 255';
+        ctx.clearRect(0, 0, width, height);
+        
+        // Smoothly interpolate rotation
+        rotationY += (targetRotationY - rotationY) * 0.05;
+        rotationX += (targetRotationX - rotationX) * 0.05;
+
+        // Auto-rotation component to keep it alive
+        const rotY = rotationY + 0.0015;
+        const rotX = rotationX + 0.0008;
+
+        const sinY = Math.sin(rotY);
+        const cosY = Math.cos(rotY);
+        const sinX = Math.sin(rotX);
+        const cosX = Math.cos(rotX);
+
+        // Project and rotate particles
+        const projected = [];
 
         particles.forEach(p => {
-            p.x += p.vx; p.y += p.vy;
-            if (p.x < 0) p.x = canvas.width;
-            if (p.x > canvas.width) p.x = 0;
-            if (p.y < 0) p.y = canvas.height;
-            if (p.y > canvas.height) p.y = 0;
+            // Rotate around Y-axis
+            let x1 = p.x * cosY - p.z * sinY;
+            let z1 = p.z * cosY + p.x * sinY;
 
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(${baseColor}, ${p.opacity})`;
-            ctx.fill();
+            // Rotate around X-axis
+            let y2 = p.y * cosX - z1 * sinX;
+            let z2 = z1 * cosX + p.y * sinX;
+
+            p.x = x1;
+            p.y = y2;
+            p.z = z2;
+
+            // Project
+            const scale = fov / (fov + p.z + 600); // offset depth to avoid zero division
+            const projX = cx + p.x * scale;
+            const projY = cy + p.y * scale;
+
+            if (projX >= 0 && projX <= width && projY >= 0 && projY <= height) {
+                // Fade based on depth
+                const alpha = (1 - (p.z + 500) / 1000) * 0.35 + 0.05;
+                projected.push({ x: projX, y: projY, z: p.z, size: p.size * scale * 2.2, color: p.color, alpha });
+            }
         });
 
-        // Draw connection lines
-        particles.forEach((p1, i) => {
-            particles.slice(i + 1).forEach(p2 => {
+        // Draw connection lines based on 3D depth-sorted pairs
+        for (let i = 0; i < projected.length; i++) {
+            const p1 = projected[i];
+            for (let j = i + 1; j < projected.length; j++) {
+                const p2 = projected[j];
                 const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
-                if (dist < 110) {
+                const depthDiff = Math.abs(p1.z - p2.z);
+                
+                if (dist < 130 && depthDiff < 200) {
                     ctx.beginPath();
                     ctx.moveTo(p1.x, p1.y);
                     ctx.lineTo(p2.x, p2.y);
-                    ctx.strokeStyle = `rgba(${baseColor}, ${0.06 * (1 - dist / 110)})`;
-                    ctx.lineWidth = 0.7;
+                    const lineAlpha = (1 - dist / 130) * Math.min(p1.alpha, p2.alpha) * 0.45;
+                    ctx.strokeStyle = `rgba(${p1.color}, ${lineAlpha})`;
+                    ctx.lineWidth = 0.8;
                     ctx.stroke();
                 }
-            });
+            }
+        }
+
+        // Draw projected particles
+        projected.forEach(p => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${p.color}, ${p.alpha})`;
+            ctx.fill();
         });
 
         requestAnimationFrame(drawParticles);
@@ -113,8 +166,8 @@ function initParticles() {
 
     drawParticles();
     window.addEventListener('resize', () => {
-        canvas.width  = window.innerWidth;
-        canvas.height = window.innerHeight;
+        width = canvas.width  = window.innerWidth;
+        height = canvas.height = window.innerHeight;
     });
 }
 
