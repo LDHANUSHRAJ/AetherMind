@@ -33,6 +33,7 @@
 <body>
     <!-- ═══════════════ SPLASH SCREEN ═══════════════ -->
     <div id="splashScreen" class="splash-screen">
+        <div class="splash-flash" id="splashFlash"></div>
         <canvas class="splash-particles" id="splashCanvas"></canvas>
         <div class="splash-content">
             <div class="splash-logo-container">
@@ -370,7 +371,7 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script>
-        // Self-contained Splash Screen Script
+        // Cinematic Splash Screen Script
         (function() {
             const canvas = document.getElementById('splashCanvas');
             if (!canvas) return;
@@ -385,49 +386,119 @@
             });
             
             // 3D Particles
-            const numParticles = 120;
+            const numParticles = 180;
             const particles = [];
             
             for (let i = 0; i < numParticles; i++) {
                 particles.push({
-                    x: (Math.random() - 0.5) * 2000,
-                    y: (Math.random() - 0.5) * 2000,
+                    x: (Math.random() - 0.5) * 3000,
+                    y: (Math.random() - 0.5) * 3000,
                     z: Math.random() * 2000,
-                    size: Math.random() * 2.5 + 0.8,
-                    color: Math.random() > 0.5 ? '107, 56, 212' : '96, 99, 238'
+                    size: Math.random() * 2.0 + 0.5,
+                    color: Math.random() > 0.4 ? '96, 99, 238' : '139, 92, 246'
                 });
             }
             
-            const fov = 800;
+            let progress = 0;
+            let warpSpeed = 1.0;
+            const fov = 700;
+            let time = 0;
+            
+            // Mouse Parallax
+            let mx = 0, my = 0;
+            window.addEventListener('mousemove', (e) => {
+                mx = (e.clientX - width / 2) / (width / 2) * 50;
+                my = (e.clientY - height / 2) / (height / 2) * 50;
+            });
             
             function animateSplash() {
-                ctx.fillStyle = '#06060c';
+                ctx.fillStyle = '#05050a';
                 ctx.fillRect(0, 0, width, height);
                 
-                const cx = width / 2;
-                const cy = height / 2;
+                time += 0.01;
+                const cx = width / 2 + mx;
+                const cy = height / 2 + my;
+                
+                // 1. Draw 3D wireframe mesh grid at the bottom
+                ctx.beginPath();
+                const gridY = height * 0.85;
+                const cols = 26;
+                const rows = 14;
+                const gridSpacingX = 140;
+                const gridSpacingZ = 120;
+                
+                for (let r = 0; r < rows; r++) {
+                    const z = (r * gridSpacingZ - (time * 250) % gridSpacingZ) + 100;
+                    const scale1 = fov / (fov + z);
+                    const scale2 = fov / (fov + z + gridSpacingZ);
+                    
+                    const drawY1 = gridY + Math.sin(time + r) * 20 * scale1;
+                    
+                    for (let c = -cols/2; c <= cols/2; c++) {
+                        const x = c * gridSpacingX;
+                        
+                        const sx1 = cx + x * scale1;
+                        const sy1 = drawY1;
+                        
+                        // Line to next column
+                        if (c < cols/2) {
+                            const sx2 = cx + (x + gridSpacingX) * scale1;
+                            ctx.moveTo(sx1, sy1);
+                            ctx.lineTo(sx2, sy1);
+                        }
+                        
+                        // Line to next row
+                        const sx3 = cx + x * scale2;
+                        const sy3 = gridY + Math.sin(time + r + 1) * 20 * scale2;
+                        ctx.moveTo(sx1, sy1);
+                        ctx.lineTo(sx3, sy3);
+                    }
+                }
+                ctx.strokeStyle = `rgba(96, 99, 238, ${0.08 * (1 - (progress / 180))})`;
+                ctx.lineWidth = 1.0;
+                ctx.stroke();
+                
+                // 2. Draw 3D Stars with warp speed stretching
+                // Acceleration past 60% loading
+                if (progress > 60) {
+                    warpSpeed = 1.0 + (progress - 60) * 0.9;
+                }
                 
                 particles.forEach(p => {
-                    p.z -= 6; // move forward
+                    // move forward faster based on warpSpeed
+                    p.z -= 4 * warpSpeed;
                     
                     if (p.z <= 0) {
                         p.z = 2000;
-                        p.x = (Math.random() - 0.5) * 2000;
-                        p.y = (Math.random() - 0.5) * 2000;
+                        p.x = (Math.random() - 0.5) * 3000;
+                        p.y = (Math.random() - 0.5) * 3000;
                     }
                     
-                    // 3D Projection
                     const scale = fov / (fov + p.z);
                     const x2d = cx + p.x * scale;
                     const y2d = cy + p.y * scale;
+                    
                     const size2d = p.size * scale * 2.5;
-                    const alpha = (1 - p.z / 2000) * 0.85;
+                    const alpha = (1 - p.z / 2000) * 0.9;
                     
                     if (x2d >= 0 && x2d <= width && y2d >= 0 && y2d <= height) {
                         ctx.beginPath();
-                        ctx.arc(x2d, y2d, size2d, 0, Math.PI * 2);
-                        ctx.fillStyle = `rgba(${p.color}, ${alpha})`;
-                        ctx.fill();
+                        
+                        // Draw light streak when warping
+                        if (warpSpeed > 2.0) {
+                            const prevScale = fov / (fov + p.z + (12 * warpSpeed));
+                            const px = cx + p.x * prevScale;
+                            const py = cy + p.y * prevScale;
+                            ctx.moveTo(x2d, y2d);
+                            ctx.lineTo(px, py);
+                            ctx.strokeStyle = `rgba(${p.color}, ${alpha})`;
+                            ctx.lineWidth = size2d;
+                            ctx.stroke();
+                        } else {
+                            ctx.arc(x2d, y2d, size2d, 0, Math.PI * 2);
+                            ctx.fillStyle = `rgba(${p.color}, ${alpha})`;
+                            ctx.fill();
+                        }
                     }
                 });
                 
@@ -436,20 +507,27 @@
             
             animateSplash();
             
-            // Simulating a smooth loader
-            let progress = 0;
+            // Simulating loader
             const loaderBar = document.getElementById('splashLoaderBar');
             const percentText = document.getElementById('splashPercent');
             const splashScreen = document.getElementById('splashScreen');
+            const splashFlash = document.getElementById('splashFlash');
+            const logo = document.querySelector('.splash-logo-container');
             
             const interval = setInterval(() => {
-                progress += Math.floor(Math.random() * 7) + 3;
+                progress += Math.floor(Math.random() * 5) + 2;
                 if (progress >= 100) {
                     progress = 100;
                     clearInterval(interval);
+                    
+                    // Cinematic Flash Trigger
+                    if (splashFlash) splashFlash.classList.add('active');
+                    if (logo) logo.style.transform = 'scale(1.5) rotateY(360deg)';
+                    
                     setTimeout(() => {
                         splashScreen.classList.add('hidden');
-                    }, 500);
+                        if (splashFlash) splashFlash.classList.remove('active');
+                    }, 450);
                 }
                 if (loaderBar) loaderBar.style.width = progress + '%';
                 if (percentText) percentText.textContent = progress + '%';
