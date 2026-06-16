@@ -1,350 +1,539 @@
 <!DOCTYPE html>
-<html class="light" lang="en">
+<html lang="en" data-theme="light">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>AetherMind AI - Chat Interface</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Manrope:wght@100..900&display=swap" rel="stylesheet"/>
-<style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #E2E8F0;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #cbd5e1;
-        }
-        .code-block-shadow {
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-        }
-        /* Soft Precision Shadow */
-        .soft-precision {
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-        }
-    </style>
-<script id="tailwind-config">
-        tailwind.config = {
-          darkMode: "class",
-          theme: {
-            extend: {
-              "colors": {
-                      "on-surface-variant": "#464553",
-                      "on-primary": "#ffffff",
-                      "on-primary-fixed": "#0f0069",
-                      "secondary": "#712ae2",
-                      "background": "#f9f9ff",
-                      "secondary-fixed-dim": "#d2bbff",
-                      "on-secondary-container": "#fffbff",
-                      "surface-variant": "#d8e3fb",
-                      "on-tertiary": "#ffffff",
-                      "error-container": "#ffdad6",
-                      "surface-container-lowest": "#ffffff",
-                      "on-primary-fixed-variant": "#3b35a7",
-                      "surface-bright": "#f9f9ff",
-                      "secondary-fixed": "#eaddff",
-                      "on-secondary-fixed": "#25005a",
-                      "outline": "#777584",
-                      "tertiary": "#2a2d2f",
-                      "surface-container-low": "#f0f3ff",
-                      "on-surface": "#111c2d",
-                      "surface-container-highest": "#d8e3fb",
-                      "on-tertiary-container": "#adb0b2",
-                      "on-tertiary-fixed-variant": "#444749",
-                      "on-primary-container": "#a9a7ff",
-                      "secondary-container": "#8a4cfc",
-                      "primary-container": "#3730a3",
-                      "primary": "#1f108e",
-                      "outline-variant": "#c8c4d5",
-                      "tertiary-container": "#404345",
-                      "tertiary-fixed": "#e0e3e5",
-                      "primary-fixed": "#e2dfff",
-                      "on-secondary": "#ffffff",
-                      "surface-container": "#e7eeff",
-                      "on-error": "#ffffff",
-                      "surface-tint": "#544fc0",
-                      "error": "#ba1a1a",
-                      "surface-dim": "#cfdaf2",
-                      "on-error-container": "#93000a",
-                      "inverse-on-surface": "#ecf1ff",
-                      "primary-fixed-dim": "#c3c0ff",
-                      "inverse-primary": "#c3c0ff",
-                      "on-background": "#111c2d",
-                      "surface-container-high": "#dee8ff",
-                      "surface": "#f9f9ff",
-                      "inverse-surface": "#263143",
-                      "on-tertiary-fixed": "#191c1e",
-                      "on-secondary-fixed-variant": "#5a00c6",
-                      "tertiary-fixed-dim": "#c4c7c9"
-              },
-              "borderRadius": {
-                      "DEFAULT": "0.25rem",
-                      "lg": "0.5rem",
-                      "xl": "0.75rem",
-                      "full": "9999px"
-              },
-              "spacing": {
-                      "gutter": "24px",
-                      "md": "16px",
-                      "margin-mobile": "16px",
-                      "margin-desktop": "40px",
-                      "lg": "24px",
-                      "xs": "4px",
-                      "sm": "8px",
-                      "xl": "32px",
-                      "max-width": "1280px",
-                      "base": "8px"
-              },
-              "fontFamily": {
-                      "label-lg": ["Inter"],
-                      "headline-md": ["Manrope"],
-                      "body-md": ["Inter"],
-                      "label-md": ["Inter"],
-                      "label-sm": ["Inter"],
-                      "headline-lg-mobile": ["Manrope"],
-                      "headline-sm": ["Manrope"],
-                      "body-sm": ["Inter"],
-                      "body-lg": ["Inter"],
-                      "headline-lg": ["Manrope"]
-              },
-              "fontSize": {
-                      "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600" }],
-                      "headline-md": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
-                      "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
-                      "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500" }],
-                      "label-sm": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
-                      "headline-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
-                      "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
-                      "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
-                      "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
-                      "headline-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
-              }
-            },
-          },
-        }
-      </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AetherMind — Elite Computational AI</title>
+    <meta name="description" content="AetherMind — The world's most precise computational AI for Mathematics, Statistics, Computer Science, Coding, Cybersecurity, and Web Development.">
+    <meta name="theme-color" content="#1f108e">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+    <!-- KaTeX for Math Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInDocument()"></script>
+
+    <!-- Chart.js for Stats Visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-surface font-body-md text-on-surface selection:bg-primary-fixed selection:text-on-primary-fixed">
-<div class="flex h-screen overflow-hidden">
-<!-- SIDE NAVIGATION -->
-<aside class="fixed left-0 top-0 h-full flex flex-col py-6 px-4 bg-surface dark:bg-inverse-surface border-r border-outline-variant w-64 shadow-sm dark:shadow-none z-50">
-<div class="mb-8 px-2 flex items-center gap-3">
-<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-<span class="material-symbols-outlined text-on-primary text-[20px]" style="font-variation-settings: 'FILL' 1;">psychology</span>
-</div>
-<div>
-<h1 class="text-headline-sm font-headline-sm font-black text-primary dark:text-inverse-primary leading-tight">AetherMind</h1>
-<p class="text-label-sm font-label-sm text-on-surface-variant">AI Suite</p>
-</div>
-</div>
-<button class="mb-8 w-full bg-primary-container text-on-primary py-3 px-4 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-all duration-200 shadow-sm">
-<span class="material-symbols-outlined text-[20px]">add</span>
-<span class="font-label-lg text-label-lg">New Session</span>
-</button>
-<nav class="flex-1 space-y-1">
-<!-- Chat (Active) -->
-<a class="flex items-center gap-3 py-3 px-4 text-primary dark:text-inverse-primary font-bold border-l-4 border-primary dark:border-inverse-primary bg-primary-container/10 transition-colors duration-200" href="#">
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">chat</span>
-<span class="font-label-lg text-label-lg">Chat</span>
-</a>
-<!-- Dashboard -->
-<a class="flex items-center gap-3 py-3 px-4 text-on-surface-variant dark:text-on-tertiary-container hover:text-primary dark:hover:text-inverse-primary hover:bg-surface-container-high dark:hover:bg-tertiary-container transition-colors duration-200" href="#">
-<span class="material-symbols-outlined">dashboard</span>
-<span class="font-label-lg text-label-lg">Dashboard</span>
-</a>
-<!-- Analytics -->
-<a class="flex items-center gap-3 py-3 px-4 text-on-surface-variant dark:text-on-tertiary-container hover:text-primary dark:hover:text-inverse-primary hover:bg-surface-container-high dark:hover:bg-tertiary-container transition-colors duration-200" href="#">
-<span class="material-symbols-outlined">analytics</span>
-<span class="font-label-lg text-label-lg">Analytics</span>
-</a>
-<!-- Tools -->
-<a class="flex items-center gap-3 py-3 px-4 text-on-surface-variant dark:text-on-tertiary-container hover:text-primary dark:hover:text-inverse-primary hover:bg-surface-container-high dark:hover:bg-tertiary-container transition-colors duration-200" href="#">
-<span class="material-symbols-outlined">construction</span>
-<span class="font-label-lg text-label-lg">Tools</span>
-</a>
-<!-- Settings -->
-<a class="flex items-center gap-3 py-3 px-4 text-on-surface-variant dark:text-on-tertiary-container hover:text-primary dark:hover:text-inverse-primary hover:bg-surface-container-high dark:hover:bg-tertiary-container transition-colors duration-200" href="#">
-<span class="material-symbols-outlined">settings</span>
-<span class="font-label-lg text-label-lg">Settings</span>
-</a>
-</nav>
-<div class="pt-6 border-t border-outline-variant space-y-1">
-<a class="flex items-center gap-3 py-3 px-4 text-on-surface-variant dark:text-on-tertiary-container hover:text-primary dark:hover:text-inverse-primary hover:bg-surface-container-high transition-colors duration-200" href="#">
-<span class="material-symbols-outlined">account_circle</span>
-<span class="font-label-lg text-label-lg">Profile</span>
-</a>
-<a class="flex items-center gap-3 py-3 px-4 text-on-surface-variant dark:text-on-tertiary-container hover:text-primary dark:hover:text-inverse-primary hover:bg-surface-container-high transition-colors duration-200" href="#">
-<span class="material-symbols-outlined">logout</span>
-<span class="font-label-lg text-label-lg">Logout</span>
-</a>
-</div>
-</aside>
-<!-- MAIN CONTENT AREA -->
-<main class="flex-1 ml-64 flex flex-col h-full bg-white relative">
-<!-- TOP BAR -->
-<header class="sticky top-0 z-40 bg-surface/80 backdrop-blur-md border-b border-outline-variant px-margin-desktop py-4 flex justify-between items-center">
-<div class="flex items-center gap-4">
-<span class="text-label-lg font-label-lg text-on-surface-variant uppercase tracking-widest">Active Session</span>
-<div class="h-2 w-2 bg-secondary rounded-full animate-pulse"></div>
-</div>
-<div class="flex items-center gap-6">
-<div class="flex items-center bg-surface-container-low px-4 py-2 rounded-full border border-outline-variant/30">
-<span class="material-symbols-outlined text-[18px] text-on-surface-variant mr-2">search</span>
-<input class="bg-transparent border-none focus:ring-0 text-body-sm w-48" placeholder="Search chat history..." type="text"/>
-</div>
-<div class="flex items-center gap-3">
-<button class="hover:bg-surface-container-low rounded-full p-2 transition-all">
-<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
-</button>
-<button class="hover:bg-surface-container-low rounded-full p-2 transition-all">
-<span class="material-symbols-outlined text-on-surface-variant">help</span>
-</button>
-<img alt="User Avatar" class="w-8 h-8 rounded-full border border-outline-variant shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAu3DkTlSUs6SzM1S_L1YZ5TpdjA2W9tyqGoYKBPIbuRz8NMqpP7eZn_-jSfeg_AucmjHtOvhJKRfaFJn2WSZMlrT6Sq1ahWIfXGOG0iNcOy_LWeIO3CPYxjciuWg1qbRhaIdjEcs11HKcfHy42TyvkVuQrBQzaaBdZIAj9jkKa6Q87kWJ5tEm1PK_LXNmcUP9Ck7fVPG2OwWdzda3iQXnMc9z3vjkbirhJUIwLhLqSFEUYY1z7IeDMdSD87jANABHWG46Sk7lSfQ"/>
-</div>
-</div>
-</header>
-<!-- CHAT FEED -->
-<div class="flex-1 overflow-y-auto px-margin-desktop py-12 space-y-10 max-w-4xl mx-auto w-full">
-<!-- User Message -->
-<div class="flex flex-col items-end gap-2 group">
-<div class="bg-primary text-on-primary px-6 py-4 rounded-2xl rounded-tr-none max-w-[85%] soft-precision">
-<p class="text-body-md">Can you write a Python function to calculate the Fibonacci sequence up to n terms and explain how it works? Please use recursion for the implementation.</p>
-</div>
-<span class="text-label-sm text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">Just now • Sent</span>
-</div>
-<!-- AI Response -->
-<div class="flex flex-col items-start gap-4">
-<div class="flex items-center gap-3">
-<div class="w-8 h-8 bg-secondary/10 text-secondary rounded-lg flex items-center justify-center border border-secondary/20">
-<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
-</div>
-<span class="text-label-lg font-label-lg text-primary">AetherMind</span>
-<span class="bg-secondary/10 text-secondary px-2 py-0.5 rounded text-[10px] font-bold tracking-widest border border-secondary/20">CODING</span>
-</div>
-<div class="bg-surface-container-low text-on-surface px-6 py-4 rounded-2xl rounded-tl-none max-w-[95%] border border-outline-variant/30 soft-precision">
-<p class="text-body-md mb-4 leading-relaxed">
-                            Recursion is a method where the solution to a problem depends on solutions to smaller instances of the same problem. For the Fibonacci sequence, each number is the sum of the two preceding ones.
-                        </p>
-<!-- Collapsible Code Block -->
-<div class="rounded-xl overflow-hidden border border-outline-variant bg-[#1E1E2E] code-block-shadow my-4 transition-all duration-300" id="code-container">
-<div class="flex items-center justify-between px-4 py-3 bg-[#181825] border-b border-outline/20">
-<div class="flex items-center gap-2">
-<div class="flex gap-1.5 mr-2">
-<div class="w-3 h-3 rounded-full bg-[#FF5F56]"></div>
-<div class="w-3 h-3 rounded-full bg-[#FFBD2E]"></div>
-<div class="w-3 h-3 rounded-full bg-[#27C93F]"></div>
-</div>
-<span class="text-label-sm font-mono text-[#A6ADC8]">fibonacci.py</span>
-</div>
-<button class="text-label-sm font-label-lg text-primary-fixed hover:text-white transition-colors flex items-center gap-1" onclick="toggleCode()">
-<span id="collapse-text">Collapse</span>
-<span class="material-symbols-outlined text-[16px]" id="collapse-icon">expand_less</span>
-</button>
-</div>
-<div class="p-4 overflow-x-auto font-mono text-[14px] leading-relaxed transition-all duration-300 max-h-[500px]" id="code-content">
-<pre class="text-[#CDD6F4]"><span class="text-[#CBA6F7]">def</span> <span class="text-[#89B4FA]">fibonacci</span>(n):
-    <span class="text-[#6C7086]"># Base cases</span>
-    <span class="text-[#CBA6F7]">if</span> n <= <span class="text-[#FAB387]">0</span>:
-        <span class="text-[#CBA6F7]">return</span> []
-    <span class="text-[#CBA6F7]">elif</span> n == <span class="text-[#FAB387]">1</span>:
-        <span class="text-[#CBA6F7]">return</span> [<span class="text-[#FAB387]">0</span>]
-    
-    <span class="text-[#6C7086]"># Recursive helper</span>
-    <span class="text-[#CBA6F7]">def</span> <span class="text-[#89B4FA]">fib_recursive</span>(k):
-        <span class="text-[#CBA6F7]">if</span> k <= <span class="text-[#FAB387]">1</span>:
-            <span class="text-[#CBA6F7]">return</span> k
-        <span class="text-[#CBA6F7]">return</span> fib_recursive(k-<span class="text-[#FAB387]">1</span>) + fib_recursive(k-<span class="text-[#FAB387]">2</span>)
+<body>
+    <!-- ═══════════════ SPLASH SCREEN ═══════════════ -->
+    <div id="splashScreen" class="splash-screen">
+        <div class="splash-flash" id="splashFlash"></div>
+        <canvas class="splash-particles" id="splashCanvas"></canvas>
+        <div class="splash-content">
+            <div class="splash-logo-container">
+                <img class="splash-logo" src="logo.png" alt="AetherMind Logo">
+                <div class="splash-logo-glow"></div>
+            </div>
+            <h1 class="splash-title">AetherMind</h1>
+            <p class="splash-subtitle">Elite Computational AI Workspace</p>
+            <div class="splash-loader">
+                <div class="splash-loader-bar" id="splashLoaderBar"></div>
+            </div>
+            <div class="splash-percentage" id="splashPercent">0%</div>
+        </div>
+    </div>
 
-    <span class="text-[#CBA6F7]">return</span> [fib_recursive(i) <span class="text-[#CBA6F7]">for</span> i <span class="text-[#CBA6F7]">in</span> <span class="text-[#89DCEB]">range</span>(n)]
+    <!-- Animated Background -->
+    <div class="bg-mesh" aria-hidden="true">
+        <div class="mesh-orb orb-1"></div>
+        <div class="mesh-orb orb-2"></div>
+        <div class="mesh-orb orb-3"></div>
+        <canvas class="bg-particles" id="particleCanvas"></canvas>
+    </div>
 
-<span class="text-[#6C7086]"># Example usage:</span>
-n_terms = <span class="text-[#FAB387]">10</span>
-<span class="text-[#89DCEB]">print</span>(<span class="text-[#A6E3A1]">f"First {n_terms} terms: {fibonacci(n_terms)}"</span>)</pre>
-</div>
-</div>
-<p class="text-body-md leading-relaxed mt-4">
-                            In this implementation, <code class="bg-surface-container px-1.5 py-0.5 rounded text-primary font-mono text-sm">fib_recursive(k)</code> calculates the k-th term. Note that for large values of $n$, this recursive approach can be inefficient due to redundant calculations. For production code, an iterative approach or memoization is recommended.
-                        </p>
-</div>
-</div>
-</div>
-<!-- INPUT AREA -->
-<div class="px-margin-desktop py-8 bg-gradient-to-t from-white via-white to-transparent">
-<div class="max-w-4xl mx-auto relative group">
-<!-- Domain Detection Indicator -->
-<div class="absolute -top-10 left-0 flex items-center gap-2 px-3 py-1 bg-surface-container-high border border-outline-variant rounded-full soft-precision opacity-0 group-focus-within:opacity-100 transition-opacity duration-300">
-<span class="material-symbols-outlined text-secondary text-[14px]">functions</span>
-<span class="text-label-sm font-bold text-on-surface-variant tracking-wider uppercase">Math Detected</span>
-</div>
-<div class="bg-white border-2 border-outline-variant/50 focus-within:border-secondary focus-within:ring-4 focus-within:ring-secondary/10 rounded-2xl transition-all duration-200 overflow-hidden soft-precision">
-<textarea class="w-full px-6 py-5 bg-transparent border-none focus:ring-0 text-body-md resize-none min-h-[60px]" id="chat-input" placeholder="Type your message or math formula..." rows="1"></textarea>
-<div class="flex items-center justify-between px-4 py-3 bg-surface-container-lowest border-t border-outline-variant/30">
-<div class="flex items-center gap-2">
-<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
-<span class="material-symbols-outlined">attach_file</span>
-</button>
-<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
-<span class="material-symbols-outlined">image</span>
-</button>
-<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
-<span class="material-symbols-outlined">mic</span>
-</button>
-<div class="h-4 w-px bg-outline-variant mx-2"></div>
-<span class="text-label-sm text-on-surface-variant font-medium">~420 tokens remaining</span>
-</div>
-<div class="flex items-center gap-3">
-<button class="flex items-center gap-2 bg-primary text-on-primary px-5 py-2.5 rounded-xl font-label-lg text-label-lg hover:opacity-95 transition-all shadow-md active:scale-95 duration-100">
-<span>Send</span>
-<span class="material-symbols-outlined text-[18px]">send</span>
-</button>
-</div>
-</div>
-</div>
-</div>
-<p class="text-center text-label-sm text-on-surface-variant/60 mt-4">AetherMind can make mistakes. Verify important information.</p>
-</div>
-</main>
-</div>
-<script>
-        function toggleCode() {
-            const content = document.getElementById('code-content');
-            const container = document.getElementById('code-container');
-            const icon = document.getElementById('collapse-icon');
-            const text = document.getElementById('collapse-text');
+    <div class="app" id="app">
+
+        <!-- ═══════════════ SIDEBAR ═══════════════ -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-inner">
+                <!-- Brand -->
+                <div class="sidebar-brand">
+                    <div class="brand-logo">
+                        <img src="logo.png" alt="AetherMind Logo" style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover; box-shadow: 0 4px 14px rgba(70,72,212,0.45); flex-shrink: 0; margin-right: 2px;">
+                        <span class="brand-name">AetherMind</span>
+                        <span class="brand-version">v2</span>
+                    </div>
+                    <button class="icon-btn sidebar-collapse-btn" id="sidebarCollapseBtn" title="Collapse sidebar">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+                    </button>
+                </div>
+                
+                <!-- Sidebar Navigation Menu -->
+                <div class="sidebar-menu" style="padding: 10px 14px; display: flex; flex-direction: column; gap: 4px; border-bottom: 1px solid var(--border);">
+                    <a class="sidebar-nav-item active" href="index.html">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        <span>Chat</span>
+                    </a>
+                    <a class="sidebar-nav-item" href="dashboard.html">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+                        <span>Dashboard</span>
+                    </a>
+                    <a class="sidebar-nav-item" href="analytics.html">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                        <span>Analytics</span>
+                    </a>
+                    <a class="sidebar-nav-item" href="tools.html">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                        <span>Tools</span>
+                    </a>
+                    <a class="sidebar-nav-item" href="settings.html">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+                        <span>Settings</span>
+                    </a>
+                </div>
+
+                <!-- New Chat -->
+                <div class="sidebar-actions">
+                    <button class="new-chat-btn" id="newChatBtn">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                        <span>New Chat</span>
+                    </button>
+                    <button class="icon-btn search-btn" id="searchToggle" title="Search conversations">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                    </button>
+                </div>
+
+                <!-- Search -->
+                <div class="sidebar-search" id="sidebarSearch">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                    <input type="text" id="searchInput" placeholder="Search chats...">
+                </div>
+
+                <!-- Conversations -->
+                <div class="sidebar-conversations" id="sidebarConversations">
+                    <div class="conv-group">
+                        <div class="conv-group-label">⭐ Pinned</div>
+                        <div id="starredList"></div>
+                    </div>
+                    <div class="conv-group">
+                        <div class="conv-group-label">🕐 Recent</div>
+                        <div id="recentsList"></div>
+                    </div>
+                </div>
+
+                <!-- Tools Section -->
+                <div class="sidebar-tools">
+                    <div class="tools-label">Computation Tools</div>
+                    <div class="tools-grid">
+                        <button class="tool-btn" onclick="openArtifact('matrix_calculator')" title="Matrix Calculator">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+                            <span>Matrix</span>
+                        </button>
+                        <button class="tool-btn" onclick="openArtifact('stats_sandbox')" title="Stats & Probability">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                            <span>Stats</span>
+                        </button>
+                        <button class="tool-btn" onclick="openArtifact('algo_visualizer')" title="Algorithm Visualizer">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>
+                            <span>Algo</span>
+                        </button>
+                        <button class="tool-btn" onclick="openArtifact('plotter_2d')" title="Function Plotter">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                            <span>Plotter</span>
+                        </button>
+                        <button class="tool-btn" onclick="openArtifact('crypto_sandbox')" title="Cryptography">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            <span>Crypto</span>
+                        </button>
+                        <button class="tool-btn" onclick="openArtifact('webdev_sandbox')" title="Web Dev Sandbox">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/><line x1="14" y1="4" x2="10" y2="20"/></svg>
+                            <span>WebDev</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="sidebar-divider"></div>
+
+                <!-- Bottom Actions -->
+                <div class="sidebar-bottom">
+                    <a class="sidebar-nav-item" id="settingsBtn" href="settings.html">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+                        <span>Settings</span>
+                    </a>
+                    <button class="sidebar-nav-item" id="themeToggleBtn">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="themeIcon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                        <span id="themeLabel">Light Mode</span>
+                    </button>
+
+                    <!-- User Profile -->
+                    <div class="user-profile">
+                        <div class="user-avatar" id="sidebarAvatar">D</div>
+                        <div class="user-info">
+                            <span class="user-name" id="sidebarName">Dhanush</span>
+                            <span class="user-status">
+                                <span class="conn-dot" id="connDot"></span>
+                                <span id="connLabel">Offline</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ═══════════════ MAIN ═══════════════ -->
+        <main class="main" id="main">
+            <!-- Sidebar toggle when collapsed -->
+            <button class="sidebar-open-btn" id="sidebarToggleBtn" title="Open Sidebar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+            </button>
+
+            <!-- Mobile header -->
+            <header class="mobile-header" id="mobileHeader">
+                <button class="icon-btn" id="menuToggle">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+                </button>
+                <div class="mobile-brand">
+                    <img src="logo.png" alt="AetherMind Logo" style="width: 20px; height: 20px; border-radius: 4px; object-fit: cover; margin-right: 4px;">
+                    <span>AetherMind</span>
+                </div>
+                <button class="icon-btn" id="mobileExportBtn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </button>
+            </header>
+
+            <!-- Messages Area -->
+            <div class="messages-scroll" id="messagesScroll">
+
+                <!-- Welcome Screen -->
+                <div class="welcome" id="welcomeScreen">
+                    <div class="welcome-content">
+                        <div class="welcome-orb">
+                            <div class="orb-ring orb-ring-1"></div>
+                            <div class="orb-ring orb-ring-2"></div>
+                            <div class="orb-ring orb-ring-3"></div>
+                            <div class="orb-core" style="background: none; box-shadow: none; border: none; overflow: hidden; border-radius: 50%;"><img src="logo.png" alt="AetherMind Logo" style="width: 100%; height: 100%; object-fit: contain;"></div>
+                        </div>
+                        <h1 class="welcome-title" id="welcomeHeading">Welcome</h1>
+                        <p class="welcome-sub">Elite AI for Mathematics · Statistics · CS · Cybersecurity · Web Dev</p>
+                    </div>
+                </div>
+
+                <!-- Messages injected here -->
+                <div id="messagesArea"></div>
+            </div>
+
+            <!-- Input Section -->
+            <div class="input-section" id="inputSection">
+                <input type="file" id="fileInput" style="display:none;" accept="image/*,text/*,application/json,.csv,.md,.py,.js,.html,.css">
+                <div class="input-wrapper">
+                    <!-- File Preview -->
+                    <div class="file-preview-container" id="filePreviewContainer" style="display:none;"></div>
+
+                    <!-- Input Box -->
+                    <div class="input-box" id="inputBox">
+                        <textarea id="msgInput" placeholder="Ask anything — math, code, security, web dev..." rows="1" aria-label="Message input"></textarea>
+                        <div class="input-controls">
+                            <div class="input-left">
+                                <button class="input-icon-btn" id="attachBtn" title="Attach file">
+                                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                                </button>
+                                <button class="input-icon-btn" id="exportMsgBtn" title="Export conversation">
+                                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+                                </button>
+                            </div>
+                            <div class="input-right">
+                                <div class="model-pill">
+                                    <span class="model-dot"></span>
+                                    AetherMind v2
+                                </div>
+                                <button class="send-btn" id="sendBtn" disabled title="Send message" aria-label="Send">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-footer">
+                        <span>AetherMind may make mistakes. Verify critical calculations.</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- ═══════════════ WORKSPACE PANE ═══════════════ -->
+        <aside class="workspace-pane" id="artifactPane">
+            <div class="workspace-header">
+                <div class="workspace-header-left">
+                    <div class="workspace-icon" id="workspaceIcon">⚙</div>
+                    <h3 id="artTitle">Workspace</h3>
+                </div>
+                <div class="workspace-header-right">
+                    <button class="icon-btn" id="artExportBtn" title="Export as PDF" onclick="exportArtPdf()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+                    </button>
+                    <button class="icon-btn" id="artCloseBtn" title="Close" onclick="closeArtifact()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="workspace-body" id="artBody"></div>
+        </aside>
+    </div>
+
+    <!-- ═══════════════ SETTINGS MODAL ═══════════════ -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal glass-modal">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <div class="modal-icon">⚙</div>
+                    <h3>Connection Settings</h3>
+                </div>
+                <button class="icon-btn" id="closeModal">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Gradio Server URL</label>
+                    <input type="text" id="gradioUrl" placeholder="https://xxxxx.gradio.live" class="form-input">
+                    <p class="form-hint">Paste your Gradio public URL from Google Colab.</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tavily Search API Key <span class="optional-badge">Optional</span></label>
+                    <input type="text" id="searchApiKey" placeholder="tvly-xxxxxxxx" class="form-input">
+                    <p class="form-hint">For real-time web search context in answers.</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Supabase URL <span class="optional-badge">Optional</span></label>
+                    <input type="text" id="supabaseUrl" placeholder="https://xxxxx.supabase.co" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Supabase Anon Key <span class="optional-badge">Optional</span></label>
+                    <input type="password" id="supabaseKey" placeholder="eyJh..." class="form-input">
+                    <p class="form-hint">For cloud sync and conversation backup.</p>
+                </div>
+                <button class="primary-btn" id="connectBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+                    Save &amp; Connect
+                </button>
+                <div class="modal-status" id="modalStatus"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════ EXPORT MODAL ═══════════════ -->
+    <div class="modal-overlay" id="exportModal">
+        <div class="modal glass-modal">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <div class="modal-icon">↗</div>
+                    <h3>Export &amp; Share</h3>
+                </div>
+                <button class="icon-btn" id="closeExportModal">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="export-grid">
+                    <button class="export-card" id="exportPdfBtn">
+                        <div class="export-card-icon">📄</div>
+                        <div class="export-card-label">Export PDF</div>
+                        <div class="export-card-desc">High-quality formatted document</div>
+                    </button>
+                    <button class="export-card" id="exportDocBtn">
+                        <div class="export-card-icon">📝</div>
+                        <div class="export-card-label">Export DOC</div>
+                        <div class="export-card-desc">Microsoft Word compatible</div>
+                    </button>
+                    <button class="export-card" id="exportMdBtn">
+                        <div class="export-card-icon">◈</div>
+                        <div class="export-card-label">Export Markdown</div>
+                        <div class="export-card-desc">Raw markdown text file</div>
+                    </button>
+                    <button class="export-card" id="shareCloudBtn">
+                        <div class="export-card-icon">☁</div>
+                        <div class="export-card-label">Share Link</div>
+                        <div class="export-card-desc">Cloud sync (requires Supabase)</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // Cinematic Splash Screen Script
+        (function() {
+            const canvas = document.getElementById('splashCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
             
-            if (content.classList.contains('max-h-0')) {
-                content.classList.remove('max-h-0', 'p-0', 'opacity-0');
-                content.classList.add('max-h-[500px]', 'p-4', 'opacity-100');
-                icon.innerText = 'expand_less';
-                text.innerText = 'Collapse';
-            } else {
-                content.classList.add('max-h-0', 'p-0', 'opacity-0');
-                content.classList.remove('max-h-[500px]', 'p-4', 'opacity-100');
-                icon.innerText = 'expand_more';
-                text.innerText = 'Expand';
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+            
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+            
+            // 3D Particles
+            const numParticles = 180;
+            const particles = [];
+            
+            for (let i = 0; i < numParticles; i++) {
+                particles.push({
+                    x: (Math.random() - 0.5) * 3000,
+                    y: (Math.random() - 0.5) * 3000,
+                    z: Math.random() * 2000,
+                    size: Math.random() * 2.0 + 0.5,
+                    color: Math.random() > 0.4 ? '96, 99, 238' : '139, 92, 246'
+                });
             }
-        }
-
-        // Auto-expand textarea
-        const textarea = document.getElementById('chat-input');
-        textarea.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
-            if (this.scrollHeight > 200) {
-                this.style.overflowY = 'scroll';
-            } else {
-                this.style.overflowY = 'hidden';
+            
+            let progress = 0;
+            let warpSpeed = 1.0;
+            const fov = 700;
+            let time = 0;
+            
+            // Mouse Parallax
+            let mx = 0, my = 0;
+            window.addEventListener('mousemove', (e) => {
+                mx = (e.clientX - width / 2) / (width / 2) * 50;
+                my = (e.clientY - height / 2) / (height / 2) * 50;
+            });
+            
+            function animateSplash() {
+                ctx.fillStyle = '#05050a';
+                ctx.fillRect(0, 0, width, height);
+                
+                time += 0.01;
+                const cx = width / 2 + mx;
+                const cy = height / 2 + my;
+                
+                // 1. Draw 3D wireframe mesh grid at the bottom
+                ctx.beginPath();
+                const gridY = height * 0.85;
+                const cols = 26;
+                const rows = 14;
+                const gridSpacingX = 140;
+                const gridSpacingZ = 120;
+                
+                for (let r = 0; r < rows; r++) {
+                    const z = (r * gridSpacingZ - (time * 250) % gridSpacingZ) + 100;
+                    const scale1 = fov / (fov + z);
+                    const scale2 = fov / (fov + z + gridSpacingZ);
+                    
+                    const drawY1 = gridY + Math.sin(time + r) * 20 * scale1;
+                    
+                    for (let c = -cols/2; c <= cols/2; c++) {
+                        const x = c * gridSpacingX;
+                        
+                        const sx1 = cx + x * scale1;
+                        const sy1 = drawY1;
+                        
+                        // Line to next column
+                        if (c < cols/2) {
+                            const sx2 = cx + (x + gridSpacingX) * scale1;
+                            ctx.moveTo(sx1, sy1);
+                            ctx.lineTo(sx2, sy1);
+                        }
+                        
+                        // Line to next row
+                        const sx3 = cx + x * scale2;
+                        const sy3 = gridY + Math.sin(time + r + 1) * 20 * scale2;
+                        ctx.moveTo(sx1, sy1);
+                        ctx.lineTo(sx3, sy3);
+                    }
+                }
+                ctx.strokeStyle = `rgba(96, 99, 238, ${0.08 * (1 - (progress / 180))})`;
+                ctx.lineWidth = 1.0;
+                ctx.stroke();
+                
+                // 2. Draw 3D Stars with warp speed stretching
+                // Acceleration past 60% loading
+                if (progress > 60) {
+                    warpSpeed = 1.0 + (progress - 60) * 0.9;
+                }
+                
+                particles.forEach(p => {
+                    // move forward faster based on warpSpeed
+                    p.z -= 4 * warpSpeed;
+                    
+                    if (p.z <= 0) {
+                        p.z = 2000;
+                        p.x = (Math.random() - 0.5) * 3000;
+                        p.y = (Math.random() - 0.5) * 3000;
+                    }
+                    
+                    const scale = fov / (fov + p.z);
+                    const x2d = cx + p.x * scale;
+                    const y2d = cy + p.y * scale;
+                    
+                    const size2d = p.size * scale * 2.5;
+                    const alpha = (1 - p.z / 2000) * 0.9;
+                    
+                    if (x2d >= 0 && x2d <= width && y2d >= 0 && y2d <= height) {
+                        ctx.beginPath();
+                        
+                        // Draw light streak when warping
+                        if (warpSpeed > 2.0) {
+                            const prevScale = fov / (fov + p.z + (12 * warpSpeed));
+                            const px = cx + p.x * prevScale;
+                            const py = cy + p.y * prevScale;
+                            ctx.moveTo(x2d, y2d);
+                            ctx.lineTo(px, py);
+                            ctx.strokeStyle = `rgba(${p.color}, ${alpha})`;
+                            ctx.lineWidth = size2d;
+                            ctx.stroke();
+                        } else {
+                            ctx.arc(x2d, y2d, size2d, 0, Math.PI * 2);
+                            ctx.fillStyle = `rgba(${p.color}, ${alpha})`;
+                            ctx.fill();
+                        }
+                    }
+                });
+                
+                requestAnimationFrame(animateSplash);
             }
-        });
+            
+            animateSplash();
+            
+            // Simulating loader
+            const loaderBar = document.getElementById('splashLoaderBar');
+            const percentText = document.getElementById('splashPercent');
+            const splashScreen = document.getElementById('splashScreen');
+            const splashFlash = document.getElementById('splashFlash');
+            const logo = document.querySelector('.splash-logo-container');
+            
+            const interval = setInterval(() => {
+                progress += Math.floor(Math.random() * 5) + 2;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    
+                    // Cinematic Flash Trigger
+                    if (splashFlash) splashFlash.classList.add('active');
+                    if (logo) logo.style.transform = 'scale(1.5) rotateY(360deg)';
+                    
+                    setTimeout(() => {
+                        splashScreen.classList.add('hidden');
+                        if (splashFlash) splashFlash.classList.remove('active');
+                    }, 450);
+                }
+                if (loaderBar) loaderBar.style.width = progress + '%';
+                if (percentText) percentText.textContent = progress + '%';
+            }, 60);
+        })();
     </script>
-</body></html>
+    <script src="script.js"></script>
+</body>
+</html>

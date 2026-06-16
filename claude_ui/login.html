@@ -5,22 +5,22 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Sign In - AetherMind</title>
     <meta name="description" content="Sign in to AetherMind — your premium AI-powered computational sandbox for coding, math, and web development."/>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --primary: #4648d4;
+            --primary: #1f108e;
             --primary-light: #6063ee;
-            --secondary: #6b38d4;
+            --secondary: #712ae2;
             --surface: #0a0a14;
             --surface-card: rgba(18, 18, 30, 0.6);
             --text: #f0f0fa;
             --text-muted: #9494b0;
             --border: rgba(255, 255, 255, 0.08);
             --border-hover: rgba(255, 255, 255, 0.15);
-            --font: 'Outfit', 'Inter', sans-serif;
+            --font: 'Manrope', 'Inter', sans-serif;
             --accent-glow: rgba(70, 72, 212, 0.3);
         }
 
@@ -48,14 +48,14 @@
 
         .bg-blob-1 {
             width: 600px; height: 600px;
-            background: radial-gradient(circle, #4648d4 0%, transparent 70%);
+            background: radial-gradient(circle, #1f108e 0%, transparent 70%);
             top: -200px; left: -100px;
             animation-delay: 0s;
         }
 
         .bg-blob-2 {
             width: 500px; height: 500px;
-            background: radial-gradient(circle, #6b38d4 0%, transparent 70%);
+            background: radial-gradient(circle, #712ae2 0%, transparent 70%);
             bottom: -150px; right: -100px;
             animation-delay: -7s;
         }
@@ -341,117 +341,8 @@
             .logo-title { font-size: 24px; }
         }
     </style>
-
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Manrope:wght@100..900&display=swap" rel="stylesheet"/>
-<style>
-    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-</style>
-<script id="tailwind-config">
-        tailwind.config = {
-          darkMode: "class",
-          theme: {
-            extend: {
-              "colors": {
-                      "on-surface-variant": "#464553",
-                      "on-primary": "#ffffff",
-                      "on-primary-fixed": "#0f0069",
-                      "secondary": "#712ae2",
-                      "background": "#f9f9ff",
-                      "secondary-fixed-dim": "#d2bbff",
-                      "on-secondary-container": "#fffbff",
-                      "surface-variant": "#d8e3fb",
-                      "on-tertiary": "#ffffff",
-                      "error-container": "#ffdad6",
-                      "surface-container-lowest": "#ffffff",
-                      "on-primary-fixed-variant": "#3b35a7",
-                      "surface-bright": "#f9f9ff",
-                      "secondary-fixed": "#eaddff",
-                      "on-secondary-fixed": "#25005a",
-                      "outline": "#777584",
-                      "tertiary": "#2a2d2f",
-                      "surface-container-low": "#f0f3ff",
-                      "on-surface": "#111c2d",
-                      "surface-container-highest": "#d8e3fb",
-                      "on-tertiary-container": "#adb0b2",
-                      "on-tertiary-fixed-variant": "#444749",
-                      "on-primary-container": "#a9a7ff",
-                      "secondary-container": "#8a4cfc",
-                      "primary-container": "#3730a3",
-                      "primary": "#1f108e",
-                      "outline-variant": "#c8c4d5",
-                      "tertiary-container": "#404345",
-                      "tertiary-fixed": "#e0e3e5",
-                      "primary-fixed": "#e2dfff",
-                      "on-secondary": "#ffffff",
-                      "surface-container": "#e7eeff",
-                      "on-error": "#ffffff",
-                      "surface-tint": "#544fc0",
-                      "error": "#ba1a1a",
-                      "surface-dim": "#cfdaf2",
-                      "on-error-container": "#93000a",
-                      "inverse-on-surface": "#ecf1ff",
-                      "primary-fixed-dim": "#c3c0ff",
-                      "inverse-primary": "#c3c0ff",
-                      "on-background": "#111c2d",
-                      "surface-container-high": "#dee8ff",
-                      "surface": "#f9f9ff",
-                      "inverse-surface": "#263143",
-                      "on-tertiary-fixed": "#191c1e",
-                      "on-secondary-fixed-variant": "#5a00c6",
-                      "tertiary-fixed-dim": "#c4c7c9"
-              },
-              "borderRadius": {
-                      "DEFAULT": "0.25rem",
-                      "lg": "0.5rem",
-                      "xl": "0.75rem",
-                      "full": "9999px"
-              },
-              "spacing": {
-                      "gutter": "24px",
-                      "md": "16px",
-                      "margin-mobile": "16px",
-                      "margin-desktop": "40px",
-                      "lg": "24px",
-                      "xs": "4px",
-                      "sm": "8px",
-                      "xl": "32px",
-                      "max-width": "1280px",
-                      "base": "8px"
-              },
-              "fontFamily": {
-                      "label-lg": ["Inter"],
-                      "headline-md": ["Manrope"],
-                      "body-md": ["Inter"],
-                      "label-md": ["Inter"],
-                      "label-sm": ["Inter"],
-                      "headline-lg-mobile": ["Manrope"],
-                      "headline-sm": ["Manrope"],
-                      "body-sm": ["Inter"],
-                      "body-lg": ["Inter"],
-                      "headline-lg": ["Manrope"]
-              },
-              "fontSize": {
-                      "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600" }],
-                      "headline-md": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
-                      "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
-                      "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500" }],
-                      "label-sm": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
-                      "headline-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
-                      "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
-                      "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
-                      "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
-                      "headline-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
-              }
-            },
-          },
-        }
-</script>
-
 </head>
-<body class="bg-surface font-body-md text-on-surface selection:bg-primary-fixed selection:text-on-primary-fixed">
+<body>
     <!-- Animated Background -->
     <div class="bg-blob bg-blob-1"></div>
     <div class="bg-blob bg-blob-2"></div>

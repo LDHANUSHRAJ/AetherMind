@@ -1,25 +1,25 @@
 /* ═══════════════════════════════════════════════════════
    AetherMind v2 — Liquid Glass Design System
-   Primary: #4648d4 · Secondary: #6b38d4 · iOS-style Glass
+   Primary: #1f108e · Secondary: #712ae2 · iOS-style Glass
    ═══════════════════════════════════════════════════════ */
 
 /* ── Design Tokens ── */
 :root {
     /* ── AetherMind Brand Palette ── */
-    --primary:          #4648d4;
+    --primary:          #1f108e;
     --primary-dim:      #c0c1ff;
-    --secondary:        #6b38d4;
+    --secondary:        #712ae2;
     --primary-container:#6063ee;
 
     /* ── Gradients ── */
-    --grad-primary:  linear-gradient(135deg, #4648d4 0%, #6b38d4 100%);
+    --grad-primary:  linear-gradient(135deg, #1f108e 0%, #712ae2 100%);
     --grad-soft:     linear-gradient(135deg, #c0c1ff 0%, #d0bcff 100%);
-    --grad-text:     linear-gradient(135deg, #4648d4 0%, #6b38d4 100%);
+    --grad-text:     linear-gradient(135deg, #1f108e 0%, #712ae2 100%);
     --grad-orb-1:    radial-gradient(circle, rgba(70,72,212,0.22), rgba(107,56,212,0.12), transparent 70%);
     --grad-orb-2:    radial-gradient(circle, rgba(107,56,212,0.18), rgba(192,193,255,0.08), transparent 70%);
 
     /* ── Light Mode Base ── */
-    --bg-base:          #fcf8ff;
+    --bg-base:          #f9f9ff;
     --bg-surface:       #f5f2fe;
     --bg-elevated:      #ffffff;
     --bg-card:          rgba(255,255,255,0.55);
@@ -29,8 +29,8 @@
     --bg-sidebar:       rgba(255,255,255,0.08);
 
     /* ── Text ── */
-    --text-primary:   #1b1b23;
-    --text-secondary: #464554;
+    --text-primary:   #111c2d;
+    --text-secondary: #464553;
     --text-muted:     #767586;
     --text-dim:       #c7c4d7;
 
@@ -58,7 +58,7 @@
     --shadow-xl:   0 20px 60px rgba(0,0,0,0.12);
 
     /* ── Code ── */
-    --code-bg:    #1b1b23;
+    --code-bg:    #111c2d;
 
     /* ── Layout ── */
     --sidebar-w: 256px;
@@ -69,9 +69,9 @@
     --radius-full: 9999px;
 
     /* ── Typography ── */
-    --font-serif:   'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --font-display: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --font-ui:      'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-serif:   'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-display: 'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-ui:      'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
 
     --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1179,7 +1179,7 @@ a { color: var(--primary); text-decoration: none; }
 
 /* ── Global Font Family & Branding Adjustments ── */
 * {
-    font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 code, pre, code *, pre *, .katex, .katex *, .material-symbols-outlined {
     font-family: inherit;
