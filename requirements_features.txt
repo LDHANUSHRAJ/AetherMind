@@ -1,0 +1,5 @@
+sympy
+openai-whisper
+pyaudio
+numpy
+PyMuPDF
