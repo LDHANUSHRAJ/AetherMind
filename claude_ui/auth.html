@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AetherMind — Sign In</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg-body); }
+        .auth-container { width: 100%; max-width: 440px; background: white; padding: 40px; border-radius: 24px; box-shadow: var(--shadow-lg); border: 1px solid var(--border); }
+        .auth-logo { display: flex; justify-content: center; margin-bottom: 24px; }
+        .auth-icon { width: 56px; height: 56px; background: var(--primary); color: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+        .auth-tabs { display: flex; border-bottom: 1px solid var(--border-light); margin-bottom: 24px; }
+        .auth-tab { flex: 1; text-align: center; padding: 12px; font-weight: 600; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: 0.2s; }
+        .auth-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .auth-form { display: none; }
+        .auth-form.active { display: block; }
+        .auth-input { width: 100%; padding: 12px 16px; margin-bottom: 16px; border: 1px solid var(--border); border-radius: 12px; font-family: inherit; font-size: 14px; background: #f8fafc; outline: none; transition: 0.2s; }
+        .auth-input:focus { border-color: var(--primary); background: white; }
+        .auth-btn { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer; transition: 0.2s; }
+        .auth-btn:hover { opacity: 0.9; }
+        .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .auth-google-btn { width: 100%; padding: 14px; background: white; color: var(--text-primary); border: 1px solid var(--border); border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 16px; }
+        .auth-footer { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 16px; }
+        .divider { display: flex; align-items: center; margin: 24px 0; color: var(--text-muted); font-size: 12px; }
+        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border); }
+        .divider:not(:empty)::before { margin-right: 12px; }
+        .divider:not(:empty)::after { margin-left: 12px; }
+        .auth-error { background: #fef2f2; color: #dc2626; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: none; }
+        .auth-loading { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 100; align-items: center; justify-content: center; font-weight: 600; color: var(--primary); }
+        .back-link { display: block; text-align: center; margin-top: 20px; color: var(--text-muted); font-size: 13px; text-decoration: none; }
+        .back-link:hover { color: var(--primary); }
+    </style>
+</head>
+<body>
+    <div class="auth-loading" id="authLoading">Signing in...</div>
+
+    <div class="auth-container">
+        <div class="auth-logo">
+            <div class="auth-icon"><span class="material-symbols-outlined" style="font-size: 32px;">psychiatry</span></div>
+        </div>
+        <h2 style="text-align: center; margin-bottom: 32px; font-size: 22px;">Welcome to AetherMind</h2>
+        
+        <div class="auth-error" id="authError"></div>
+
+        <div class="auth-tabs">
+            <div class="auth-tab active" onclick="switchTab('login')">Login</div>
+            <div class="auth-tab" onclick="switchTab('signup')">Sign Up</div>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginForm" class="auth-form active">
+            <input type="email" class="auth-input" id="loginEmail" placeholder="Email address" autocomplete="email">
+            <input type="password" class="auth-input" id="loginPassword" placeholder="Password" autocomplete="current-password">
+            
+            <div class="auth-footer">
+                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                    <input type="checkbox" id="rememberMe" checked>
+                    <span style="color:var(--text-secondary);">Remember me</span>
+                </label>
+                <a href="#" style="color:var(--primary); text-decoration:none; font-weight:500;">Forgot password?</a>
+            </div>
+
+            <button class="auth-btn" id="loginBtn" onclick="handleLogin()">Continue</button>
+            
+            <div class="divider">or</div>
+            
+            <button class="auth-google-btn" onclick="showToast('Google OAuth requires a live Supabase project','error')">
+                <img src="https://www.google.com/favicon.ico" width="16" height="16" alt="G">
+                Continue with Google
+            </button>
+        </div>
+
+        <!-- Sign Up Form -->
+        <div id="signupForm" class="auth-form">
+            <input type="text" class="auth-input" id="signupName" placeholder="Full Name" autocomplete="name">
+            <input type="email" class="auth-input" id="signupEmail" placeholder="Email address" autocomplete="email">
+            <input type="password" class="auth-input" id="signupPassword" placeholder="Create Password" autocomplete="new-password">
+            <input type="password" class="auth-input" id="signupConfirm" placeholder="Confirm Password">
+            
+            <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text-secondary); cursor:pointer; margin-bottom:16px;">
+                <input type="checkbox" id="termsCheck">
+                I agree to the <a href="#" style="color:var(--primary); margin-left:4px;">Terms of Service</a>
+            </label>
+
+            <button class="auth-btn" id="signupBtn" onclick="handleSignUp()">Create Account</button>
+        </div>
+
+        <a href="landing.html" class="back-link">← Back to AetherMind Home</a>
+    </div>
+
+    <script src="supabase_client.js"></script>
+    <script>
+        // If already logged in, redirect to chat immediately
+        (async function() {
+            const alreadyIn = await checkAlreadyLoggedIn();
+        })();
+
+        function switchTab(tab) {
+            hideError();
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            if (tab === 'login') {
+                document.querySelectorAll('.auth-tab')[0].classList.add('active');
+                document.getElementById('loginForm').classList.add('active');
+            } else {
+                document.querySelectorAll('.auth-tab')[1].classList.add('active');
+                document.getElementById('signupForm').classList.add('active');
+            }
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('authError');
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+        function hideError() {
+            document.getElementById('authError').style.display = 'none';
+        }
+
+        async function handleLogin() {
+            hideError();
+            const email = document.getElementById('loginEmail').value.trim();
+            const pass = document.getElementById('loginPassword').value;
+            const remember = document.getElementById('rememberMe').checked;
+
+            if (!email || !pass) return showError('Please fill in all fields.');
+            if (pass.length < 3) return showError('Password is too short.');
+
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            btn.textContent = 'Signing in...';
+
+            try {
+                const result = await login(email, pass, remember);
+                if (result.success) {
+                    document.getElementById('authLoading').style.display = 'flex';
+                    window.location.href = 'index.html';
+                }
+            } catch (e) {
+                showError(e.message || 'Login failed. Try again.');
+                btn.disabled = false;
+                btn.textContent = 'Continue';
+            }
+        }
+
+        async function handleSignUp() {
+            hideError();
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const pass = document.getElementById('signupPassword').value;
+            const conf = document.getElementById('signupConfirm').value;
+            const terms = document.getElementById('termsCheck').checked;
+
+            if (!name || !email || !pass) return showError('Please fill in all fields.');
+            if (pass !== conf) return showError('Passwords do not match.');
+            if (pass.length < 6) return showError('Password must be at least 6 characters.');
+            if (!terms) return showError('You must agree to the Terms of Service.');
+
+            const btn = document.getElementById('signupBtn');
+            btn.disabled = true;
+            btn.textContent = 'Creating account...';
+
+            try {
+                const result = await signUp(email, pass, name);
+                if (result.success) {
+                    // Auto-login after signup
+                    localStorage.setItem('am_user_by_' + email, result.user.id);
+                    await login(email, pass, true);
+                    document.getElementById('authLoading').style.display = 'flex';
+                    window.location.href = 'index.html';
+                }
+            } catch (e) {
+                showError(e.message || 'Sign up failed. Try again.');
+                btn.disabled = false;
+                btn.textContent = 'Create Account';
+            }
+        }
+
+        // Enter key support
+        document.querySelectorAll('.auth-input').forEach(input => {
+            input.addEventListener('keypress', e => {
+                if (e.key === 'Enter') {
+                    const activeForm = document.querySelector('.auth-form.active');
+                    if (activeForm.id === 'loginForm') handleLogin();
+                    else handleSignUp();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

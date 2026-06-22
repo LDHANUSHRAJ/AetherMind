@@ -3,19 +3,15 @@ import os
 from airllm import AutoModel
 from transformers import AutoTokenizer
 
-# Configuration
-# Checks for the fine-tuned 2B model or 7B model path
-model_path_2b = "../model/aethermind_gemma2_2b_lora"
-model_path_7b = "../model/aethermind_gemma2_7b_lora"
+# [DEPRECATED] Old Gemma 2 paths (not used in AetherMind V2)
+# model_path_2b = "../model/aethermind_gemma2_2b_lora"
+# model_path_7b = "../model/aethermind_gemma2_7b_lora"
 
-if os.path.exists(model_path_2b):
-    model_path = model_path_2b
-elif os.path.exists(model_path_7b):
-    model_path = model_path_7b
-else:
-    model_path = model_path_2b # Default fallback
-    print("[!] Warning: Fine-tuned model directory not found. Please place your model weights at:")
-    print(f"    {model_path_2b} or {model_path_7b}")
+# Active Model: Standardized on Llama 3 8B
+model_path = "../model/aethermind_llama3_8b_lora"
+
+if not os.path.exists(model_path):
+    print(f"[!] Warning: Fine-tuned model directory not found. Please place your model weights at: {model_path}")
 
 print(f"Loading model from: {model_path} with AirLLM...")
 # AirLLM loads layers one by one to fit in low memory (even 8GB RAM)
@@ -24,8 +20,8 @@ model = AutoModel.from_pretrained(model_path)
 tokenizer = AutoTokenizer.from_pretrained(model_path)
 
 def generate_response(prompt):
-    # Gemma 2 Instruct Template
-    formatted_prompt = f"<start_of_turn>user\n{prompt}<end_of_turn>\n<start_of_turn>model\n"
+    # Llama 3 Instruct Template
+    formatted_prompt = f"<|begin_of_text|><|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
     
     input_tokens = tokenizer(formatted_prompt, return_tensors="pt", return_attention_mask=False)
     
@@ -39,8 +35,8 @@ def generate_response(prompt):
     
     response = tokenizer.decode(output.sequences[0], skip_special_tokens=True)
     # Clean up the response to remove the prompt part
-    if "model\n" in response:
-        response = response.split("model\n")[-1]
+    if "assistant\n\n" in response:
+        response = response.split("assistant\n\n")[-1]
     return response
 
 print("\nAetherMind Computational AI Assistant (Math/Stats/CS/Coding/Cybersec/Web) is ready!")

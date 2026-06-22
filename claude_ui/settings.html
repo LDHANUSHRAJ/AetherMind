@@ -1,785 +1,436 @@
 <!DOCTYPE html>
-<html class="light" lang="en">
+<html lang="en">
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Settings - AetherMind</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-    <script id="tailwind-config">
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            "colors": {
-                    "surface": "#f9f9ff",
-                    "error-container": "#ffdad6",
-                    "surface-tint": "#494bd6",
-                    "on-tertiary-container": "#fffbff",
-                    "on-surface-variant": "#464553",
-                    "on-secondary-fixed": "#23005c",
-                    "primary": "#1f108e",
-                    "inverse-on-surface": "#f2effb",
-                    "on-primary": "#ffffff",
-                    "surface-variant": "#e4e1ed",
-                    "surface-container-low": "#f5f2fe",
-                    "on-background": "#111c2d",
-                    "tertiary-fixed-dim": "#c6c4e0",
-                    "primary-fixed-dim": "#c0c1ff",
-                    "surface-dim": "#dbd8e4",
-                    "secondary": "#712ae2",
-                    "error": "#ba1a1a",
-                    "secondary-container": "#8455ef",
-                    "inverse-primary": "#c0c1ff",
-                    "secondary-fixed": "#e9ddff",
-                    "secondary-fixed-dim": "#d0bcff",
-                    "tertiary": "#5a5a72",
-                    "tertiary-fixed": "#e2e0fc",
-                    "surface-container": "#efecf8",
-                    "surface-container-high": "#e9e6f3",
-                    "surface-container-lowest": "#ffffff",
-                    "tertiary-container": "#73728b",
-                    "on-error": "#ffffff",
-                    "outline": "#767586",
-                    "on-primary-fixed-variant": "#2f2ebe",
-                    "outline-variant": "#c7c4d7",
-                    "surface-bright": "#f9f9ff",
-                    "on-surface": "#111c2d",
-                    "background": "#f9f9ff",
-                    "on-tertiary-fixed-variant": "#45455b",
-                    "on-primary-fixed": "#07006c",
-                    "on-error-container": "#93000a",
-                    "on-secondary-fixed-variant": "#5516be",
-                    "surface-container-highest": "#e4e1ed",
-                    "on-tertiary": "#ffffff",
-                    "on-tertiary-fixed": "#19192e",
-                    "primary-container": "#6063ee",
-                    "on-secondary": "#ffffff",
-                    "primary-fixed": "#e1e0ff",
-                    "inverse-surface": "#303038",
-                    "on-secondary-container": "#fffbff",
-                    "on-primary-container": "#fffbff"
-            },
-            "borderRadius": {
-                    "DEFAULT": "1rem",
-                    "lg": "2rem",
-                    "xl": "3rem",
-                    "full": "9999px"
-            },
-            "spacing": {
-                    "gutter": "24px",
-                    "container-max": "1280px",
-                    "margin-mobile": "20px",
-                    "unit": "8px",
-                    "glass-padding": "24px",
-                    "margin-desktop": "64px"
-            },
-            "fontFamily": {
-                    "sans": ["Manrope", "Inter", "sans-serif"],
-                    "label-md": ["Manrope"],
-                    "display-lg": ["Manrope"],
-                    "display-lg-mobile": ["Manrope"],
-                    "headline-xl": ["Manrope"],
-                    "headline-lg": ["Manrope"],
-                    "body-lg": ["Manrope"],
-                    "body-md": ["Manrope"],
-                    "label-sm": ["Manrope"]
-            },
-            "fontSize": {
-                    "label-md": ["14px", {"lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "600"}],
-                    "display-lg": ["64px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700"}],
-                    "display-lg-mobile": ["40px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
-                    "headline-xl": ["36px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
-                    "headline-lg": ["28px", {"lineHeight": "1.3", "fontWeight": "600"}],
-                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
-                    "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
-                    "label-sm": ["12px", {"lineHeight": "1", "fontWeight": "500"}]
-            }
-          },
-        },
-      }
-    </script>
-    <style>
-        :root {
-            --ios-refraction: rgba(255, 255, 255, 0.05);
-            --ios-border: rgba(255, 255, 255, 0.2);
-            --ios-accent: #1f108e;
-        }
-
-        html[class="dark"] {
-            --ios-refraction: rgba(26, 26, 46, 0.45);
-            --ios-border: rgba(255, 255, 255, 0.07);
-        }
-
-        body {
-            background: radial-gradient(at 0% 0%, #f9f9ff 0%, transparent 50%),
-                        radial-gradient(at 100% 0%, #e1e0ff 0%, transparent 50%),
-                        radial-gradient(at 100% 100%, #f5f2fe 0%, transparent 50%),
-                        radial-gradient(at 0% 100%, #e9ddff 0%, transparent 50%),
-                        #f9f9ff;
-            min-height: 100vh;
-            overflow-x: hidden;
-            transition: background 0.3s ease;
-        }
-
-        html.dark body {
-            background: radial-gradient(at 0% 0%, #0e0e18 0%, transparent 50%),
-                        radial-gradient(at 100% 0%, #13131f 0%, transparent 50%),
-                        radial-gradient(at 100% 100%, #1a1a2e 0%, transparent 50%),
-                        radial-gradient(at 0% 100%, #0b0b14 0%, transparent 50%),
-                        #0e0e18;
-            color: #f0f0fa;
-        }
-
-        /* Transparent Liquid Glass Refraction */
-        .lg-card {
-            background: var(--ios-refraction);
-            backdrop-filter: blur(50px) saturate(210%);
-            -webkit-backdrop-filter: blur(50px) saturate(210%);
-            border: 1px solid var(--ios-border);
-            box-shadow: 
-                0 4px 24px -1px rgba(0, 0, 0, 0.04),
-                inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
-        }
-
-        html.dark .lg-card {
-            box-shadow: 
-                0 8px 32px -4px rgba(0, 0, 0, 0.3),
-                inset 0 1px 1px 0 rgba(255, 255, 255, 0.05);
-        }
-
-        .lg-card:hover {
-            transform: translateY(-1px);
-        }
-
-        .liquid-glass {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
-        }
-
-        .sidebar-active {
-            color: #1f108e;
-            font-weight: 700;
-            background: rgba(70, 72, 212, 0.08);
-            border-right: 3px solid #1f108e;
-        }
-        
-        html.dark .sidebar-active {
-            color: #c0c1ff;
-            background: rgba(192, 193, 255, 0.08);
-            border-right: 3px solid #c0c1ff;
-        }
-
-        .toast-container {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            z-index: 100;
-            display: flex;
-            flex-col: column;
-            gap: 8px;
-        }
-
-        .toast {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            padding: 12px 24px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border: 1px solid rgba(0,0,0,0.05);
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            animation: slideIn 0.3s ease;
-        }
-        
-        html.dark .toast {
-            background: rgba(30, 30, 46, 0.9);
-            color: #f0f0fa;
-            border-color: rgba(255,255,255,0.05);
-        }
-
-        @keyframes slideIn {
-            from { transform: translateY(100%) scale(0.9); opacity: 0; }
-            to { transform: translateY(0) scale(1); opacity: 1; }
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AetherMind Settings</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="font-sans text-on-surface">
-<div class="flex h-screen overflow-hidden">
-    <!-- SideNavBar -->
-    <aside class="hidden md:flex flex-col h-screen p-gutter h-full w-72 fixed left-0 top-0 lg-card border-none rounded-none backdrop-blur-[80px] z-50 !bg-white/10 dark:!bg-black/10">
-        <div class="mb-12 px-2">
-            <h1 class="font-display-lg text-display-lg-mobile bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent leading-none">AetherMind</h1>
-            <p class="text-on-surface-variant font-label-md text-label-md mt-1">AI Assistant</p>
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon"><span class="material-symbols-outlined">psychiatry</span></div>
+                <div><div class="brand-name">AetherMind</div><span class="brand-sub">AI Suite</span></div>
+            </div>
+            <nav class="sidebar-nav" style="margin-top:10px;">
+                <a href="index.html" class="sidebar-nav-item"><span class="material-symbols-outlined">chat</span> Chat</a>
+                <a href="dashboard.html" class="sidebar-nav-item"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
+                <a href="settings.html" class="sidebar-nav-item active"><span class="material-symbols-outlined">settings</span> Settings</a>
+            </nav>
+            <div class="sidebar-bottom">
+                <button class="new-chat-btn" style="margin-bottom:20px;" onclick="window.location.href='index.html?session=new'">
+                    <span class="material-symbols-outlined">add</span> New Session
+                </button>
+                <nav class="sidebar-nav">
+                    <a href="profile.html" class="sidebar-nav-item"><span class="material-symbols-outlined">account_circle</span> Profile</a>
+                    <a href="#" class="sidebar-nav-item" onclick="logout()"><span class="material-symbols-outlined">logout</span> Logout</a>
+                </nav>
+            </div>
         </div>
-        <nav class="flex-1 space-y-1">
-            <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant font-medium hover:text-primary hover:bg-white/20 transition-all active:scale-95" href="index.html">
-                <span class="material-symbols-outlined">chat</span>
-                <span class="font-label-md text-label-md">Chat</span>
-            </a>
-            <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant font-medium hover:text-primary hover:bg-white/20 transition-all active:scale-95" href="dashboard.html">
-                <span class="material-symbols-outlined">dashboard</span>
-                <span class="font-label-md text-label-md">Dashboard</span>
-            </a>
-            <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant font-medium hover:text-primary hover:bg-white/20 transition-all active:scale-95" href="analytics.html">
-                <span class="material-symbols-outlined">insights</span>
-                <span class="font-label-md text-label-md">Analytics</span>
-            </a>
-            <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant font-medium hover:text-primary hover:bg-white/20 transition-all active:scale-95" href="tools.html">
-                <span class="material-symbols-outlined">construction</span>
-                <span class="font-label-md text-label-md">Tools</span>
-            </a>
-            <a class="flex items-center gap-3 px-4 py-3 sidebar-active rounded-xl active:scale-95 transition-all" href="settings.html">
-                <span class="material-symbols-outlined">settings</span>
-                <span class="font-label-md text-label-md">Settings</span>
-            </a>
-        </nav>
-        <div class="mt-auto pt-8">
-            <div class="flex items-center gap-3 px-2">
-                <div id="sidebarAvatar" class="w-10 h-10 rounded-full overflow-hidden border-2 border-white/60 shadow-sm bg-primary/20 flex items-center justify-center font-bold text-white">
-                    ?
+
+        <!-- Main -->
+        <div class="main">
+            <div class="tools-header">
+                <div class="tools-title">Settings & Configuration</div>
+                <div class="search-bar">
+                    <span class="material-symbols-outlined" style="color:var(--text-muted); font-size:16px;">search</span>
+                    <input type="text" placeholder="Search settings..." oninput="filterSettings(this.value)">
                 </div>
-                <div class="flex flex-col">
-                    <span id="sidebarName" class="text-label-md font-bold text-on-surface dark:text-white">User</span>
-                    <span id="sidebarEmail" class="text-label-sm text-on-surface-variant">Not signed in</span>
+                <div class="top-bar-right">
+                    <span class="material-symbols-outlined" style="color:var(--text-secondary); cursor:pointer;">notifications</span>
+                    <img src="https://i.pravatar.cc/150?img=11" alt="Profile" class="profile-pic">
                 </div>
             </div>
-        </div>
-    </aside>
 
-    <!-- Main Content Canvas -->
-    <main class="flex-1 ml-0 md:ml-72 overflow-y-auto pt-16 md:pt-0">
-        <!-- TopNavBar -->
-        <header class="md:hidden flex justify-between items-center h-16 px-gutter w-full fixed top-0 left-0 lg-card border-none rounded-none backdrop-blur-[64px] z-40 !bg-white/10 dark:!bg-black/10">
-            <h2 class="font-headline-lg text-headline-lg-mobile font-bold text-primary">AetherMind</h2>
-            <div class="flex items-center gap-4">
-                <a href="index.html" class="material-symbols-outlined text-primary">add_comment</a>
+            <div class="tools-grid">
+                <!-- Left Column -->
+                <div style="display:flex; flex-direction:column; gap:24px;">
+
+                    <!-- Card 1: Study Planner -->
+                    <div class="tool-card" data-search="study planner topics learning">
+                        <div class="tool-header">
+                            <div class="tool-title">Study Planner</div>
+                            <span class="material-symbols-outlined" style="color:var(--text-muted);">more_horiz</span>
+                        </div>
+                        <div class="tool-desc">Organize and track your learning modules.</div>
+                        <div class="pill-group">
+                            <div class="pill active" onclick="loadStudyTab('active')"><span class="material-symbols-outlined" style="font-size:16px;">code</span> Active</div>
+                            <div class="pill" onclick="loadStudyTab('completed')"><span class="material-symbols-outlined" style="font-size:16px;">check_circle</span> Completed</div>
+                            <div class="pill" onclick="loadStudyTab('saved')"><span class="material-symbols-outlined" style="font-size:16px;">bookmark</span> Saved</div>
+                        </div>
+                        <div class="focus-box" id="focusBox">
+                            <div style="font-size:12px; color:var(--primary); font-weight:700; text-transform:uppercase; margin-bottom:8px;">Current Focus</div>
+                            <div style="font-size:15px; font-weight:600; color:var(--text-primary);" id="focusTitle">Loading...</div>
+                        </div>
+                        <div style="margin-top:20px; font-size:14px;">
+                            <div style="font-weight:600; margin-bottom:12px;">Topics</div>
+                            <div id="topicsList"></div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Data Export -->
+                    <div class="tool-card" data-search="export data csv json download">
+                        <div class="tool-header">
+                            <div class="tool-title">Data Export</div>
+                            <span class="material-symbols-outlined" style="color:var(--text-muted);">file_download</span>
+                        </div>
+                        <div class="tool-desc">Export chat history, analytics, and notes.</div>
+                        <div class="date-input-group">
+                            <div class="date-input">
+                                <label>Select Range</label>
+                                <select id="exportRange" style="padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:14px; background:white;">
+                                    <option value="7">Last 7 Days</option>
+                                    <option value="30" selected>Last 30 Days</option>
+                                    <option value="90">Last 90 Days</option>
+                                    <option value="all">All Time</option>
+                                </select>
+                            </div>
+                            <div class="date-input">
+                                <label>Format</label>
+                                <select id="exportFormat" style="padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:14px; background:white;">
+                                    <option value="json">JSON</option>
+                                    <option value="csv">CSV</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="tool-btn" id="exportBtn" onclick="doExport()">Export Data (ZIP)</button>
+                    </div>
+
+                    <!-- Card 5: Account Settings -->
+                    <div class="tool-card" data-search="account password delete profile">
+                        <div class="tool-header">
+                            <div class="tool-title">Account Settings</div>
+                            <span class="material-symbols-outlined" style="color:var(--text-muted);">manage_accounts</span>
+                        </div>
+                        <div class="tool-desc">Manage your personal profile and security.</div>
+                        <div class="date-input-group">
+                            <div class="date-input">
+                                <label>Full Name</label>
+                                <input type="text" id="accountName" value="Loading...">
+                            </div>
+                            <div class="date-input">
+                                <label>Email Address</label>
+                                <input type="email" id="accountEmail" value="Loading..." readonly style="background:#f8fafc;">
+                            </div>
+                        </div>
+                        <button class="tool-btn" style="margin-top:16px; background:var(--border-light); color:var(--text-primary);" onclick="saveAccountName()">Save Name</button>
+
+                        <div style="display:flex; gap:12px; margin-top:24px;">
+                            <button class="tool-btn" style="background:var(--border-light); color:var(--text-primary);" onclick="changePassword()">Change Password</button>
+                            <button class="tool-btn" style="background:#fef2f2; color:#ef4444; border:1px solid #fca5a5;" onclick="doDeleteAccount()">Delete Account</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div style="display:flex; flex-direction:column; gap:24px;">
+
+                    <!-- Card 2: AI Resource Controls -->
+                    <div class="tool-card" data-search="tokens temperature memory context ai controls">
+                        <div class="tool-header">
+                            <div class="tool-title">AI Resource Controls</div>
+                            <span class="material-symbols-outlined" style="color:var(--text-muted);">memory</span>
+                        </div>
+                        <div class="tool-desc">Manage computational resources during sessions.</div>
+                        <div class="slider-group">
+                            <div class="slider-header"><span>Max Completion Tokens</span><span class="slider-val" id="tokensVal">2048</span></div>
+                            <input type="range" min="512" max="4096" value="2048" id="tokensSlider">
+                            <div class="slider-hint">Limits AI response length (512–4096).</div>
+                        </div>
+                        <div class="slider-group">
+                            <div class="slider-header"><span>Temperature (Creativity)</span><span class="slider-val" id="tempVal">0.7</span></div>
+                            <input type="range" min="0" max="100" value="70" id="tempSlider">
+                            <div class="slider-hint">Higher = more random, lower = more deterministic.</div>
+                        </div>
+                        <div class="slider-group">
+                            <div class="slider-header"><span>Context Memory Limit</span><span class="slider-val" id="contextVal">16k</span></div>
+                            <input type="range" min="4" max="32" value="16" id="contextSlider">
+                            <div class="slider-hint">How far back the AI remembers (4k–32k).</div>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: UI Preferences -->
+                    <div class="tool-card" data-search="dark mode theme font compact accent color">
+                        <div class="tool-header">
+                            <div class="tool-title">UI Preferences</div>
+                            <span class="material-symbols-outlined" style="color:var(--text-muted);">palette</span>
+                        </div>
+
+                        <div class="toggle-row">
+                            <div class="toggle-info">
+                                <span class="material-symbols-outlined toggle-icon">dark_mode</span>
+                                <div><span class="toggle-title">Dark Mode</span><span class="toggle-desc">Switch to a darker interface</span></div>
+                            </div>
+                            <div class="toggle-switch" id="darkModeToggle"></div>
+                        </div>
+
+                        <div class="toggle-row">
+                            <div class="toggle-info">
+                                <span class="material-symbols-outlined toggle-icon">text_format</span>
+                                <div><span class="toggle-title">Font Size</span><span class="toggle-desc">Small / Medium / Large</span></div>
+                            </div>
+                            <select id="fontSizeSelect" style="padding:4px 8px; border:1px solid var(--border); border-radius:4px; font-size:12px;">
+                                <option value="small">Small</option>
+                                <option value="medium">Medium</option>
+                                <option value="large">Large</option>
+                            </select>
+                        </div>
+
+                        <div class="toggle-row">
+                            <div class="toggle-info">
+                                <span class="material-symbols-outlined toggle-icon">grid_view</span>
+                                <div><span class="toggle-title">Compact Layout</span><span class="toggle-desc">Show more content</span></div>
+                            </div>
+                            <div class="toggle-switch" id="compactToggle"></div>
+                        </div>
+
+                        <div class="toggle-row">
+                            <div class="toggle-info">
+                                <span class="material-symbols-outlined toggle-icon">format_color_fill</span>
+                                <div><span class="toggle-title">Accent Color</span><span class="toggle-desc">Choose primary brand color</span></div>
+                            </div>
+                            <div style="display:flex; gap:6px;" id="accentSwatches">
+                                <div class="accent-swatch" data-color="#2b1c86" style="width:20px; height:20px; border-radius:50%; background:#2b1c86; cursor:pointer;"></div>
+                                <div class="accent-swatch" data-color="#059669" style="width:20px; height:20px; border-radius:50%; background:#059669; cursor:pointer;"></div>
+                                <div class="accent-swatch" data-color="#dc2626" style="width:20px; height:20px; border-radius:50%; background:#dc2626; cursor:pointer;"></div>
+                                <div class="accent-swatch" data-color="#0284c7" style="width:20px; height:20px; border-radius:50%; background:#0284c7; cursor:pointer;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 6: Model Configuration -->
+                    <div class="tool-card" data-search="model llama cloud system prompt reset">
+                        <div class="tool-header">
+                            <div class="tool-title">Model Configuration</div>
+                            <span class="material-symbols-outlined" style="color:var(--text-muted);">smart_toy</span>
+                        </div>
+                        <div class="tool-desc">Configure the underlying intelligence engine.</div>
+                        <div class="date-input-group" style="margin-bottom:16px;">
+                            <div class="date-input">
+                                <label>Active Model</label>
+                                <select id="modelSelect" style="padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:14px; background:white;">
+                                    <option value="llama-3.1-8b">Llama 3.1 8B (Local)</option>
+                                    <option value="gpt-4o">Cloud Fallback (GPT-4o)</option>
+                                    <option value="claude-3.5">Cloud Fallback (Claude 3.5)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="margin-bottom:20px;">
+                            <label style="font-size:12px; color:var(--text-secondary); font-weight:500; display:block; margin-bottom:8px;">Local Backend URL (Ollama / FastAPI)</label>
+                            <div style="display:flex; gap:8px;">
+                                <input type="text" id="ollamaUrlInput" placeholder="http://localhost:8000" style="flex:1; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:14px; box-sizing:border-box;">
+                                <button class="tool-btn" id="saveOllamaBtn" style="margin:0; width:auto; padding:10px 16px; font-size:13px; font-weight:600;" onclick="saveOllamaUrl()">Save</button>
+                            </div>
+                            <div style="font-size:11px; color:var(--text-muted); margin-top:6px;">Start the backend: <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;">cd backend && uvicorn main:app --reload</code></div>
+                        </div>
+                        <div style="margin-bottom:20px;">
+                            <label style="font-size:12px; color:var(--text-secondary); font-weight:500; display:block; margin-bottom:8px;">System Prompt (Read-only)</label>
+                            <div style="padding:12px; background:var(--bg-body); border-radius:8px; border:1px solid var(--border); font-family:monospace; font-size:12px; color:var(--text-muted); max-height:100px; overflow-y:auto;">
+                                You are AetherMind, an advanced AI assistant specialized in mathematics, statistics, computer science, and code. You provide step-by-step solutions with formal verification. You never guess — you compute.
+                            </div>
+                        </div>
+                        <button class="tool-btn" style="background:var(--bg-body); color:var(--text-primary); border:1px solid var(--border);" onclick="resetAllSettings()">Reset All Settings to Default</button>
+                    </div>
+                </div>
             </div>
-        </header>
-
-        <div class="max-w-[720px] mx-auto px-margin-mobile md:px-8 py-12 md:py-24">
-            <header class="mb-10">
-                <h2 class="font-headline-lg text-headline-lg font-bold text-on-background tracking-tight dark:text-white">AetherMind Settings</h2>
-                <p class="text-on-surface-variant font-body-md mt-2">Manage backend Gradio configurations, Tavily Search, Supabase Sync, and generate time-limited API keys.</p>
-            </header>
-
-            <!-- Settings Content Stack -->
-            <div class="space-y-10">
-                
-                <!-- Connection & Integrations -->
-                <section>
-                    <h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest mb-4 px-2 opacity-70">Server Connections</h3>
-                    <div class="lg-card rounded-3xl overflow-hidden p-6 space-y-6">
-                        <div>
-                            <label class="block text-on-surface font-semibold mb-1">Gradio Server URL</label>
-                            <input type="text" id="gradioUrlInput" class="w-full px-4 py-2.5 rounded-2xl border border-outline-variant bg-white/5 text-on-surface outline-none focus:ring-2 focus:ring-primary/20 dark:text-white" placeholder="https://xxxxx.gradio.live">
-                            <p class="text-label-sm text-on-surface-variant mt-1">Gradio URL generated from your Colab notebook or local server.</p>
-                        </div>
-                        <div>
-                            <label class="block text-on-surface font-semibold mb-1">Tavily Search API Key (Optional)</label>
-                            <input type="text" id="tavilyKeyInput" class="w-full px-4 py-2.5 rounded-2xl border border-outline-variant bg-white/5 text-on-surface outline-none focus:ring-2 focus:ring-primary/20 dark:text-white" placeholder="tvly-xxxxxxxx">
-                            <p class="text-label-sm text-on-surface-variant mt-1">Used to fetch real-time search context for answers.</p>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-on-surface font-semibold mb-1">Supabase URL (Optional)</label>
-                                <input type="text" id="supabaseUrlInput" class="w-full px-4 py-2.5 rounded-2xl border border-outline-variant bg-white/5 text-on-surface outline-none focus:ring-2 focus:ring-primary/20 dark:text-white" placeholder="https://xxxxx.supabase.co">
-                            </div>
-                            <div>
-                                <label class="block text-on-surface font-semibold mb-1">Supabase Anon Key (Optional)</label>
-                                <input type="password" id="supabaseKeyInput" class="w-full px-4 py-2.5 rounded-2xl border border-outline-variant bg-white/5 text-on-surface outline-none focus:ring-2 focus:ring-primary/20 dark:text-white" placeholder="eyJh...">
-                            </div>
-                        </div>
-                        <div class="flex justify-between items-center pt-2">
-                            <button id="saveConfigBtn" class="px-6 py-2.5 bg-primary hover:bg-primary/90 text-white rounded-2xl font-bold transition-all active:scale-95">
-                                Save Connection Settings
-                            </button>
-                            <div class="flex items-center gap-2">
-                                <span class="w-2.5 h-2.5 rounded-full bg-red-500" id="statusDot"></span>
-                                <span class="text-label-sm font-semibold" id="statusText">Offline</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- API Key Manager -->
-                <section>
-                    <h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest mb-4 px-2 opacity-70">Gradio API Key Manager</h3>
-                    <div class="lg-card rounded-3xl overflow-hidden p-6 space-y-6">
-                        
-                        <!-- Generate key sub-section -->
-                        <div class="bg-white/5 p-4 rounded-2xl space-y-4">
-                            <h4 class="font-semibold text-on-surface dark:text-white">Generate New Access Key</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-label-sm text-on-surface-variant mb-1">Key Label</label>
-                                    <input type="text" id="keyLabelInput" class="w-full px-4 py-2 rounded-xl border border-outline-variant bg-white/5 text-on-surface outline-none focus:ring-2 focus:ring-primary/20 dark:text-white" placeholder="e.g. My Script, CLI Tool">
-                                </div>
-                                <div>
-                                    <label class="block text-label-sm text-on-surface-variant mb-1">Expiry Duration</label>
-                                    <select id="keyDurationInput" class="w-full px-4 py-2 rounded-xl border border-outline-variant bg-white/5 text-on-surface outline-none focus:ring-2 focus:ring-primary/20 dark:text-white">
-                                        <option value="1 Day">1 Day</option>
-                                        <option value="3 Days">3 Days</option>
-                                        <option value="1 Week">1 Week</option>
-                                        <option value="1 Month" selected>1 Month</option>
-                                        <option value="3 Months">3 Months</option>
-                                        <option value="Never">Never expires</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <button id="generateKeyBtn" class="px-5 py-2 bg-secondary hover:bg-secondary/90 text-white rounded-xl font-bold transition-all active:scale-95 text-label-sm">
-                                Generate Key
-                            </button>
-
-                            <!-- Single exposure box -->
-                            <div id="newKeyContainer" class="hidden bg-yellow-500/10 border border-yellow-500/30 p-4 rounded-xl space-y-2">
-                                <p class="text-yellow-600 dark:text-yellow-400 font-bold text-label-sm flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-[18px]">warning</span>
-                                    Copy this key now. It will never be shown again.
-                                </p>
-                                <div class="flex gap-2">
-                                    <input type="text" id="newKeyOutput" readonly class="flex-1 px-3 py-1.5 font-mono text-sm bg-black/10 rounded-lg text-on-surface dark:text-white border border-outline-variant outline-none">
-                                    <button id="copyKeyBtn" class="px-4 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-label-sm font-bold active:scale-95">Copy</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Active Keys List -->
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center">
-                                <h4 class="font-semibold text-on-surface dark:text-white">Active &amp; Expired Keys</h4>
-                                <button id="refreshKeysBtn" class="text-label-sm font-bold text-primary flex items-center gap-1 hover:underline">
-                                    <span class="material-symbols-outlined text-[16px]">refresh</span> Refresh
-                                </button>
-                            </div>
-                            
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left text-sm text-on-surface-variant">
-                                    <thead>
-                                        <tr class="border-b border-outline-variant/35 text-label-sm uppercase font-semibold">
-                                            <th class="py-2 px-2">Label</th>
-                                            <th class="py-2 px-2">Key Prefix</th>
-                                            <th class="py-2 px-2">Status</th>
-                                            <th class="py-2 px-2">Created</th>
-                                            <th class="py-2 px-2 text-center">Uses</th>
-                                            <th class="py-2 px-2 text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="keysTableBody">
-                                        <tr>
-                                            <td colspan="6" class="py-6 text-center text-on-surface-variant">No keys generated or backend server offline.</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- API Documentation & Usage Code Snippets -->
-                        <div class="border-t border-outline-variant/20 pt-6 space-y-4">
-                            <h4 class="font-semibold text-on-surface dark:text-white">API Integration Guide</h4>
-                            <p class="text-label-sm text-on-surface-variant">Use your generated keys to query AetherMind from external applications, scripts, or terminals.</p>
-                            
-                            <div class="flex gap-2 border-b border-outline-variant/20 pb-2">
-                                <button onclick="switchDocTab('curl')" id="tabBtn_curl" class="px-3 py-1 rounded-lg text-xs font-bold bg-white/10 text-white shadow-sm">cURL</button>
-                                <button onclick="switchDocTab('python')" id="tabBtn_python" class="px-3 py-1 rounded-lg text-xs font-medium text-gray-400 hover:text-white">Python</button>
-                                <button onclick="switchDocTab('javascript')" id="tabBtn_javascript" class="px-3 py-1 rounded-lg text-xs font-medium text-gray-400 hover:text-white">JavaScript</button>
-                            </div>
-
-                            <div id="docContent_curl" class="doc-tab-content font-mono text-xs p-4 bg-black/20 rounded-xl overflow-x-auto text-on-surface dark:text-white">
-                                <pre>curl -X POST \<br>  "<span class="api-url-placeholder">https://YOUR-GRADIO-LINK.gradio.live</span>/api/predict_with_key" \<br>  -H "Content-Type: application/json" \<br>  -d '{<br>    "data": [<br>      "What is Big O of merge sort?",<br>      "am-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"<br>    ]<br>  }'</pre>
-                            </div>
-
-                            <div id="docContent_python" class="doc-tab-content hidden font-mono text-xs p-4 bg-black/20 rounded-xl overflow-x-auto text-on-surface dark:text-white">
-                                <pre>import requests<br><br>url = "<span class="api-url-placeholder">https://YOUR-GRADIO-LINK.gradio.live</span>/api/predict_with_key"<br>payload = {<br>    "data": [<br>        "What is the integral of x² sin(x)?",<br>        "am-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"<br>    ]<br>}<br><br>res = requests.post(url, json=payload)<br>print(res.json()["data"][0])</pre>
-                            </div>
-
-                            <div id="docContent_javascript" class="doc-tab-content hidden font-mono text-xs p-4 bg-black/20 rounded-xl overflow-x-auto text-on-surface dark:text-white">
-                                <pre>const res = await fetch(<br>  "<span class="api-url-placeholder">https://YOUR-GRADIO-LINK.gradio.live</span>/api/predict_with_key",<br>  {<br>    method: "POST",<br>    headers: { "Content-Type": "application/json" },<br>    body: JSON.stringify({<br>      data: [<br>        "Solve x² - 5x + 6 = 0",<br>        "am-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"<br>      ]<br>    })<br>  }<br>);<br>const result = await res.json();<br>console.log(result.data[0]);</pre>
-                            </div>
-                        </div>
-
-                    </div>
-                </section>
-
-                <!-- Profile Section -->
-                <section>
-                    <h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest mb-4 px-2 opacity-70">Profile</h3>
-                    <div class="lg-card rounded-3xl overflow-hidden p-6 space-y-6">
-                        <div class="flex items-center gap-5">
-                            <div id="profileAvatar" class="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-2xl shadow-lg">
-                                ?
-                            </div>
-                            <div class="flex-1">
-                                <p id="profileName" class="text-on-surface dark:text-white font-bold text-lg">User</p>
-                                <p id="profileEmail" class="text-label-sm text-on-surface-variant">Not signed in</p>
-                                <p id="profileProvider" class="text-label-sm text-on-surface-variant mt-0.5 flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-[14px]">verified</span>
-                                    <span>—</span>
-                                </p>
-                            </div>
-                        </div>
-                        <div class="flex gap-3 pt-2 border-t border-outline-variant/20">
-                            <button id="logoutBtn" class="px-5 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl font-bold text-label-sm transition-all active:scale-95 flex items-center gap-2">
-                                <span class="material-symbols-outlined text-[18px]">logout</span>
-                                Sign Out
-                            </button>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Appearance Preference -->
-                <section>
-                    <h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest mb-4 px-2 opacity-70">Appearance</h3>
-                    <div class="lg-card rounded-3xl overflow-hidden p-6 space-y-6">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <p class="text-on-surface dark:text-white font-semibold">Interface Theme</p>
-                                <p class="text-label-sm text-on-surface-variant mt-0.5">Control the visual style of your workspace</p>
-                            </div>
-                            <div class="flex liquid-glass p-1 rounded-full">
-                                <button id="themeLightBtn" class="px-5 py-1.5 rounded-full text-label-sm font-bold transition-all">Light</button>
-                                <button id="themeDarkBtn" class="px-5 py-1.5 rounded-full text-label-sm font-medium transition-all">Dark</button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-            </div>
-
-            <footer class="mt-16 text-center">
-                <p class="text-label-sm text-on-surface-variant opacity-60">AetherMind v2.2.0 • Premium Computational Sandbox</p>
-            </footer>
         </div>
-    </main>
-</div>
+    </div>
 
-<div class="toast-container" id="toastContainer"></div>
+    <script src="supabase_client.js"></script>
+    <script>
+        let currentUserId = null;
+        let debounceTimer = null;
 
-<script>
-    // Config State
-    const state = {
-        gradioUrl: localStorage.getItem('am_url') || '',
-        searchApiKey: localStorage.getItem('am_search_key') || '',
-        supabaseUrl: localStorage.getItem('am_supabase_url') || '',
-        supabaseKey: localStorage.getItem('am_supabase_key') || '',
-        theme: localStorage.getItem('am_theme') || 'dark'
-    };
+        async function initSettings() {
+            const session = await checkAuth();
+            if (!session) return;
+            currentUserId = session.user.id;
+            await initTheme();
 
-    // DOM Elements
-    const $ = s => document.querySelector(s);
-    const gradioInput = $('#gradioUrlInput');
-    const tavilyInput = $('#tavilyKeyInput');
-    const supabaseUrlInput = $('#supabaseUrlInput');
-    const supabaseKeyInput = $('#supabaseKeyInput');
-    const saveBtn = $('#saveConfigBtn');
-    const statusDot = $('#statusDot');
-    const statusText = $('#statusText');
+            // Load saved settings into UI
+            const s = await loadSettings(currentUserId);
+            document.getElementById('tokensSlider').value = s.max_tokens;
+            document.getElementById('tokensVal').textContent = s.max_tokens;
+            document.getElementById('tempSlider').value = Math.round(s.temperature * 100);
+            document.getElementById('tempVal').textContent = s.temperature.toFixed(1);
+            document.getElementById('contextSlider').value = s.context_limit / 1000;
+            document.getElementById('contextVal').textContent = (s.context_limit / 1000) + 'k';
 
-    // Init Theme and Values
-    function init() {
-        // Session guard
-        const userSession = localStorage.getItem('am_user');
-        if (!userSession) {
-            window.location.href = 'login.html';
-            return;
+            if (s.dark_mode) document.getElementById('darkModeToggle').classList.add('on');
+            if (s.compact_mode) document.getElementById('compactToggle').classList.add('on');
+            document.getElementById('fontSizeSelect').value = s.font_size;
+
+            // Load Ollama URL
+            document.getElementById('ollamaUrlInput').value = s.ollama_url || 'http://localhost:8000';
+
+            // Highlight active accent
+            document.querySelectorAll('.accent-swatch').forEach(sw => {
+                sw.style.border = sw.dataset.color === s.accent_color ? '2px solid black' : 'none';
+            });
+
+            // Load profile info
+            const profile = await loadProfileData(currentUserId);
+            document.getElementById('accountName').value = profile.full_name || '';
+            document.getElementById('accountEmail').value = profile.email || '';
+
+            // Load study planner
+            loadStudyTab('active');
+
+            // Wire slider events
+            wireSliders();
+            wireToggles();
+        }
+        initSettings();
+
+        // ─── Slider Wiring ──────────────────────────
+        function wireSliders() {
+            document.getElementById('tokensSlider').addEventListener('input', e => {
+                document.getElementById('tokensVal').textContent = e.target.value;
+                debounceSave('max_tokens', parseInt(e.target.value));
+            });
+            document.getElementById('tempSlider').addEventListener('input', e => {
+                const val = (e.target.value / 100).toFixed(1);
+                document.getElementById('tempVal').textContent = val;
+                debounceSave('temperature', parseFloat(val));
+            });
+            document.getElementById('contextSlider').addEventListener('input', e => {
+                document.getElementById('contextVal').textContent = e.target.value + 'k';
+                debounceSave('context_limit', parseInt(e.target.value) * 1000);
+            });
+            document.getElementById('fontSizeSelect').addEventListener('change', e => {
+                debounceSave('font_size', e.target.value);
+            });
+            document.getElementById('modelSelect').addEventListener('change', e => {
+                showToast('Model set to ' + e.target.selectedOptions[0].text);
+            });
         }
 
-        applyTheme(state.theme);
-        if (gradioInput) gradioInput.value = state.gradioUrl;
-        if (tavilyInput) tavilyInput.value = state.searchApiKey;
-        if (supabaseUrlInput) supabaseUrlInput.value = state.supabaseUrl;
-        if (supabaseKeyInput) supabaseKeyInput.value = state.supabaseKey;
-
-        updateDocUrls();
-        loadProfile();
-
-        // Test connection
-        if (state.gradioUrl) {
-            testConnection(state.gradioUrl);
+        function debounceSave(key, value) {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(async () => {
+                await updateSetting(currentUserId, key, value);
+                showToast('Settings updated');
+            }, 400);
         }
-    }
 
-    function loadProfile() {
-        try {
-            const user = JSON.parse(localStorage.getItem('am_user'));
-            if (!user) return;
-
-            const initial = user.name ? user.name.charAt(0).toUpperCase() : '?';
-            const sideAvatar = document.getElementById('sidebarAvatar');
-            const sideName = document.getElementById('sidebarName');
-            const sideEmail = document.getElementById('sidebarEmail');
-            const profAvatar = document.getElementById('profileAvatar');
-            const profName = document.getElementById('profileName');
-            const profEmail = document.getElementById('profileEmail');
-            const profProvider = document.getElementById('profileProvider');
-
-            if (sideAvatar) sideAvatar.textContent = initial;
-            if (sideName) sideName.textContent = user.name || 'User';
-            if (sideEmail) sideEmail.textContent = user.email || '';
-            if (profAvatar) profAvatar.textContent = initial;
-            if (profName) profName.textContent = user.name || 'User';
-            if (profEmail) profEmail.textContent = user.email || '';
-            if (profProvider) {
-                const provText = user.provider === 'google' ? 'Google Account' : 'Email Account';
-                profProvider.querySelector('span:last-child').textContent = provText;
-            }
-        } catch(e) {}
-    }
-
-    function updateDocUrls() {
-        const url = state.gradioUrl || 'https://YOUR-GRADIO-LINK.gradio.live';
-        document.querySelectorAll('.api-url-placeholder').forEach(el => {
-            el.textContent = url;
-        });
-    }
-
-    window.switchDocTab = function(tab) {
-        document.querySelectorAll('.doc-tab-content').forEach(el => el.classList.add('hidden'));
-        $(`#docContent_${tab}`).classList.remove('hidden');
-
-        // Reset button classes
-        ['curl', 'python', 'javascript'].forEach(t => {
-            const btn = $(`#tabBtn_${t}`);
-            if (btn) {
-                if (t === tab) {
-                    btn.className = "px-3 py-1 rounded-lg text-xs font-bold bg-white/10 text-white shadow-sm";
-                } else {
-                    btn.className = "px-3 py-1 rounded-lg text-xs font-medium text-gray-400 hover:text-white";
-                }
-            }
-        });
-    }
-
-    function applyTheme(t) {
-        document.documentElement.className = t;
-        state.theme = t;
-        localStorage.setItem('am_theme', t);
-        
-        const lightBtn = $('#themeLightBtn');
-        const darkBtn = $('#themeDarkBtn');
-        
-        if (t === 'dark') {
-            darkBtn.className = "px-5 py-1.5 rounded-full text-label-sm font-bold bg-white/10 text-white shadow-sm";
-            lightBtn.className = "px-5 py-1.5 rounded-full text-label-sm font-medium text-gray-400 hover:text-white";
-        } else {
-            lightBtn.className = "px-5 py-1.5 rounded-full text-label-sm font-bold bg-white/80 text-primary shadow-sm";
-            darkBtn.className = "px-5 py-1.5 rounded-full text-label-sm font-medium text-gray-500 hover:text-primary";
-        }
-    }
-
-    function showToast(msg, isError = false) {
-        const container = $('#toastContainer');
-        const el = document.createElement('div');
-        el.className = 'toast';
-        el.innerHTML = `<span class="material-symbols-outlined ${isError ? 'text-red-500' : 'text-green-500'}">${isError ? 'cancel' : 'check_circle'}</span> ${msg}`;
-        container.appendChild(el);
-        setTimeout(() => el.remove(), 3000);
-    }
-
-    async function testConnection(url) {
-        statusDot.className = 'w-2.5 h-2.5 rounded-full bg-yellow-500';
-        statusText.textContent = 'Connecting...';
-        try {
-            const cleanUrl = url.replace(/\/$/, '');
-            const res = await fetch(cleanUrl, { mode: 'no-cors', signal: AbortSignal.timeout(3000) });
-            statusDot.className = 'w-2.5 h-2.5 rounded-full bg-green-500';
-            statusText.textContent = 'Connected';
-            loadAPIKeys();
-        } catch(e) {
-            statusDot.className = 'w-2.5 h-2.5 rounded-full bg-red-500';
-            statusText.textContent = 'Offline';
-        }
-    }
-
-    // Save Configurations
-    saveBtn.addEventListener('click', () => {
-        const url = gradioInput.value.trim().replace(/\/$/, '');
-        localStorage.setItem('am_url', url);
-        localStorage.setItem('am_search_key', tavilyInput.value.trim());
-        localStorage.setItem('am_supabase_url', supabaseUrlInput.value.trim());
-        localStorage.setItem('am_supabase_key', supabaseKeyInput.value.trim());
-        
-        state.gradioUrl = url;
-        state.searchApiKey = tavilyInput.value.trim();
-        state.supabaseUrl = supabaseUrlInput.value.trim();
-        state.supabaseKey = supabaseKeyInput.value.trim();
-
-        showToast('Settings saved successfully!');
-        updateDocUrls();
-        testConnection(url);
-    });
-
-    $('#themeLightBtn').addEventListener('click', () => applyTheme('light'));
-    $('#themeDarkBtn').addEventListener('click', () => applyTheme('dark'));
-
-    // --- API Key Manager Operations ---
-    async function gradioCall(endpoint, payload) {
-        if (!state.gradioUrl) return null;
-        const cleanUrl = state.gradioUrl.replace(/\/$/, '');
-        
-        // 1. Try direct synchronous predict endpoints (highly reliable fallback)
-        const syncPrefixes = ['/gradio_api/api/predict', '/api/predict'];
-        for (const prefix of syncPrefixes) {
-            try {
-                const res = await fetch(`${cleanUrl}${prefix}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ data: payload, fn_index: getFnIndex(endpoint) }),
-                    signal: AbortSignal.timeout(8000)
+        // ─── Toggle Wiring ──────────────────────────
+        function wireToggles() {
+            document.getElementById('darkModeToggle').addEventListener('click', async function() {
+                this.classList.toggle('on');
+                const isDark = this.classList.contains('on');
+                await updateSetting(currentUserId, 'dark_mode', isDark);
+                applyTheme(isDark);
+                showToast(isDark ? 'Dark mode enabled' : 'Dark mode disabled');
+            });
+            document.getElementById('compactToggle').addEventListener('click', async function() {
+                this.classList.toggle('on');
+                await updateSetting(currentUserId, 'compact_mode', this.classList.contains('on'));
+                showToast('Settings updated');
+            });
+            document.querySelectorAll('.accent-swatch').forEach(sw => {
+                sw.addEventListener('click', async function() {
+                    document.querySelectorAll('.accent-swatch').forEach(s => s.style.border = 'none');
+                    this.style.border = '2px solid black';
+                    await updateSetting(currentUserId, 'accent_color', this.dataset.color);
+                    showToast('Accent color updated');
                 });
-                if (res.ok) {
-                    const j = await res.json();
-                    if (j.data) return j.data;
-                }
-            } catch(e) {}
+            });
         }
 
-        // Helper to map endpoint strings to typical Gradio function indexes
-        function getFnIndex(ep) {
-            if (ep === 'generate_key') return 1;
-            if (ep === 'list_keys') return 2;
-            if (ep === 'revoke_key') return 3;
-            return 0;
-        }
+        // ─── Study Planner ──────────────────────────
+        async function loadStudyTab(status) {
+            document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+            event?.target?.closest('.pill')?.classList.add('active');
+            if (!event) document.querySelector('.pill').classList.add('active');
 
-        // 2. Fall back to standard asynchronous event stream flow
-        const prefixes = ['/gradio_api/call/', '/call/'];
-        for (const prefix of prefixes) {
-            try {
-                const res = await fetch(`${cleanUrl}${prefix}${endpoint}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ data: payload }),
-                    signal: AbortSignal.timeout(10000)
-                });
-                if (res.ok) {
-                    const j = await res.json();
-                    if (j.event_id) {
-                        const statusRes = await fetch(`${cleanUrl}${prefix}${endpoint}/${j.event_id}`);
-                        if (statusRes.ok) {
-                            const sse = await statusRes.text();
-                            const lines = sse.split('\n');
-                            for (const line of lines) {
-                                if (line.trim().startsWith('data:')) {
-                                    const data = line.substring(5).trim();
-                                    try {
-                                        const parsed = JSON.parse(data);
-                                        if (Array.isArray(parsed)) return parsed;
-                                    } catch(e) {}
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch(e) {
-                console.warn(`Gradio prefix ${prefix} failed for ${endpoint}`, e);
-            }
-        }
-        return null;
-    }
-
-    async function loadAPIKeys() {
-        const result = await gradioCall('list_keys', []);
-        const body = $('#keysTableBody');
-        if (!result || !result[0]) {
-            body.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-on-surface-variant">No keys or server offline.</td></tr>`;
-            return;
-        }
-
-        try {
-            const keys = JSON.parse(result[0]);
-            if (!keys.length) {
-                body.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-on-surface-variant">No API keys created yet.</td></tr>`;
-                return;
+            const topics = await loadStudyTopics(currentUserId, status);
+            const focus = topics.find(t => t.is_focus);
+            const focusBox = document.getElementById('focusBox');
+            if (focus) {
+                focusBox.style.display = 'block';
+                document.getElementById('focusTitle').textContent = focus.title;
+            } else {
+                focusBox.style.display = 'none';
             }
 
-            body.innerHTML = keys.map(k => {
-                const active = k.status.startsWith('Active');
-                const statusColor = active ? 'text-green-500 bg-green-500/10' : 'text-red-500 bg-red-500/10';
-                return `<tr class="border-b border-outline-variant/20 hover:bg-white/5 transition-colors">
-                    <td class="py-3 px-2 font-semibold text-on-surface dark:text-white">${k.label}</td>
-                    <td class="py-3 px-2 font-mono text-xs">${k.prefix}</td>
-                    <td class="py-3 px-2">
-                        <span class="px-2 py-0.5 rounded-full text-xs font-bold ${statusColor}">${k.status}</span>
-                    </td>
-                    <td class="py-3 px-2 text-xs">${k.created}</td>
-                    <td class="py-3 px-2 text-center font-bold">${k.uses}</td>
-                    <td class="py-3 px-2 text-right">
-                        ${active ? `<button onclick="revokeKey('${k.prefix}')" class="text-xs font-bold text-red-500 hover:underline">Revoke</button>` : `<span class="text-xs text-on-surface-variant opacity-50">-</span>`}
-                    </td>
-                </tr>`;
-            }).join('');
-        } catch(e) {
-            body.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-red-500">Error parsing API keys list.</td></tr>`;
-        }
-    }
-
-    // Generate Key handler
-    $('#generateKeyBtn').addEventListener('click', async () => {
-        const label = $('#keyLabelInput').value.trim();
-        const duration = $('#keyDurationInput').value;
-
-        if (!state.gradioUrl) {
-            showToast('Please configure and save Gradio URL first.', true);
-            return;
+            const list = document.getElementById('topicsList');
+            list.innerHTML = topics.filter(t => !t.is_focus).map(t => `
+                <div style="display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border-light);" draggable="true" data-id="${t.id}">
+                    <span class="material-symbols-outlined" style="color:var(--text-muted); cursor:grab;">drag_indicator</span>
+                    <span style="flex:1;">${t.title}</span>
+                    <span class="material-symbols-outlined" style="color:var(--text-muted); cursor:pointer;" onclick="editTopic('${t.id}')">edit</span>
+                </div>
+            `).join('') || '<div style="padding:16px; color:var(--text-muted); text-align:center;">No topics in this category.</div>';
         }
 
-        const res = await gradioCall('generate_key', [label, duration]);
-        if (res && res[0]) {
-            const [key, prefix, outLabel, expiry, created] = res;
-            if (key.startsWith('Error:')) {
-                showToast(key, true);
-                return;
+        async function editTopic(topicId) {
+            const newTitle = prompt('Edit topic title:');
+            if (newTitle && newTitle.trim()) {
+                await updateStudyTopic(currentUserId, topicId, { title: newTitle.trim() });
+                showToast('Topic updated');
+                loadStudyTab(document.querySelector('.pill.active')?.textContent.trim().toLowerCase() || 'active');
             }
-            $('#newKeyOutput').value = key;
-            $('#newKeyContainer').classList.remove('hidden');
-            $('#keyLabelInput').value = '';
-            showToast('API Key generated!');
-            loadAPIKeys();
-        } else {
-            showToast('Failed to generate key. Ensure server is online.', true);
         }
-    });
 
-    // Copy Key handler
-    $('#copyKeyBtn').addEventListener('click', () => {
-        const output = $('#newKeyOutput');
-        navigator.clipboard.writeText(output.value);
-        showToast('API key copied to clipboard!');
-    });
-
-    // Revoke Key Handler
-    window.revokeKey = async function(prefix) {
-        if (!confirm(`Are you sure you want to revoke key ending in "${prefix}"?`)) return;
-        const res = await gradioCall('revoke_key', [prefix]);
-        if (res && res[0] === 'success') {
-            showToast('Key revoked successfully!');
-            loadAPIKeys();
-        } else {
-            showToast('Failed to revoke key.', true);
+        // ─── Data Export ────────────────────────────
+        async function doExport() {
+            const btn = document.getElementById('exportBtn');
+            btn.textContent = 'Exporting...';
+            btn.disabled = true;
+            const range = document.getElementById('exportRange').value;
+            const format = document.getElementById('exportFormat').value;
+            const result = await exportData(currentUserId, format, range);
+            if (result.success) showToast(`Downloaded ${result.filename}`);
+            btn.textContent = 'Export Data (ZIP)';
+            btn.disabled = false;
         }
-    }
 
-    $('#refreshKeysBtn').addEventListener('click', () => {
-        loadAPIKeys();
-        showToast('API keys list refreshed.');
-    });
+        // ─── Account Actions ────────────────────────
+        async function saveAccountName() {
+            const name = document.getElementById('accountName').value.trim();
+            if (!name) return showToast('Name cannot be empty', 'error');
+            await updateProfile(currentUserId, { full_name: name });
+            showToast('Name updated');
+        }
+        async function changePassword() {
+            const newPass = prompt('Enter new password (min 6 characters):');
+            if (!newPass || newPass.length < 6) return showToast('Password must be at least 6 characters', 'error');
+            await updatePassword(newPass);
+            showToast('Password changed successfully');
+        }
+        async function doDeleteAccount() {
+            const confirm1 = prompt('Type DELETE to permanently delete your account:');
+            if (confirm1 !== 'DELETE') return showToast('Account deletion cancelled', 'error');
+            await deleteAccount();
+        }
+        async function resetAllSettings() {
+            if (!confirm('Reset all settings to defaults?')) return;
+            const defaults = { max_tokens: 2048, temperature: 0.7, context_limit: 16000, dark_mode: false, font_size: 'medium', compact_mode: false, accent_color: '#2b1c86', ollama_url: 'http://localhost:8000' };
+            for (const [key, value] of Object.entries(defaults)) {
+                await updateSetting(currentUserId, key, value);
+            }
+            showToast('All settings reset to defaults');
+            setTimeout(() => location.reload(), 500);
+        }
 
-    // Logout Handler
-    $('#logoutBtn')?.addEventListener('click', () => {
-        localStorage.removeItem('am_user');
-        window.location.href = 'login.html';
-    });
+        async function saveOllamaUrl() {
+            const val = document.getElementById('ollamaUrlInput').value.trim() || 'http://localhost:8000';
+            await updateSetting(currentUserId, 'ollama_url', val);
+            showToast('Backend URL saved');
+        }
 
-    // Run init
-    init();
-</script>
+        // ─── Search Filter ──────────────────────────
+        function filterSettings(query) {
+            const q = query.toLowerCase();
+            document.querySelectorAll('.tool-card').forEach(card => {
+                const searchText = (card.dataset.search || '') + ' ' + card.textContent.toLowerCase();
+                card.style.display = !q || searchText.includes(q) ? '' : 'none';
+            });
+        }
+    </script>
 </body>
 </html>

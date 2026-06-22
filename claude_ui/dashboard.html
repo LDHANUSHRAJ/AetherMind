@@ -1,527 +1,290 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>AetherMind | Dashboard</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="analytics-data.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-tailwind.config = {
-  darkMode: "class",
-  theme: {
-    extend: {
-      colors: {
-        "on-tertiary": "#ffffff", "glass-border": "rgba(255,255,255,0.4)", "on-surface": "#111c2d", "surface": "#f9f9ff",
-        "on-primary": "#ffffff", "glass-specular": "rgba(255,255,255,0.6)", "on-surface-variant": "#464553",
-        "secondary": "#712ae2", "secondary-container": "#8455ee", "surface-bright": "#f9f9ff",
-        "primary": "#2c2abc", "ai-bubble-accent": "rgba(70,72,212,0.12)", "outline": "#767586",
-        "tertiary": "#44444d", "inverse-surface": "#303038", "surface-container-highest": "#e4e1ed",
-        "tertiary-container": "#5c5b65", "glass-surface": "rgba(255,255,255,0.03)",
-        "surface-container": "#efecf8", "primary-container": "#1f108e", "on-secondary": "#ffffff",
-        "error": "#ba1a1a", "surface-container-lowest": "#ffffff",
-      },
-      borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "full": "9999px" },
-      spacing: { "sidebar-width": "18rem", "glass-padding": "20px", "gutter": "24px" },
-      fontFamily: { "label-md": ["Inter"], "code-sm": ["JetBrains Mono"], "display-lg": ["Inter"], "label-sm-caps": ["Inter"], "body-md": ["Inter"], "headline-md": ["Inter"] },
-      fontSize: {
-        "label-md": ["0.75rem", {"lineHeight":"1rem","fontWeight":"600"}],
-        "code-sm": ["14px", {"lineHeight":"1.5","fontWeight":"400"}],
-        "display-lg": ["24px", {"lineHeight":"32px","letterSpacing":"-0.02em","fontWeight":"700"}],
-        "label-sm-caps": ["10px", {"lineHeight":"12px","letterSpacing":"0.15em","fontWeight":"800"}],
-        "body-md": ["0.875rem", {"lineHeight":"1.6","fontWeight":"400"}],
-        "headline-md": ["1.25rem", {"lineHeight":"1.75rem","fontWeight":"600"}]
-      }
-    }
-  }
-}
-</script>
-<style>
-  .liquid-glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(28px); border: 1px solid rgba(255,255,255,0.4); box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.6); }
-  .sidebar-blur { backdrop-filter: blur(40px); }
-  .header-blur { backdrop-filter: blur(20px); }
-  .atmospheric-bg { background: radial-gradient(circle at 0% 0%, #f9f9ff 0%, #e1e0ff 30%, #f2effb 60%, #fff 100%); min-height: 100vh; }
-  .dark .atmospheric-bg { background: radial-gradient(circle at 0% 0%, #0e0e18 0%, #13131f 30%, #1a1a2e 60%, #0e0e18 100%); }
-  .dark .liquid-glass { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.08); box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.05); }
-  .mastery-bar { height: 4px; border-radius: 2px; background: rgba(44,42,188,0.1); overflow: hidden; }
-  .mastery-progress { height: 100%; background: linear-gradient(90deg,#1f108e,#712ae2); transition: width 0.9s ease; }
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(44,42,188,0.2); border-radius: 10px; }
-  .heatmap-cell { aspect-ratio:1/1; border-radius:2px; transition:transform 0.15s; cursor:pointer; }
-  .heatmap-cell:hover { transform:scale(1.4); z-index:10; position:relative; }
-  .chart-wrap { position:relative; width:100%; height:240px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AetherMind Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="atmospheric-bg text-on-surface dark:text-white selection:bg-primary-container selection:text-white">
-
-<!-- Sidebar -->
-<aside class="fixed left-0 top-0 h-full w-sidebar-width sidebar-blur border-r border-glass-border flex flex-col p-glass-padding z-50 !bg-white/10 dark:!bg-black/10">
-  <div class="mb-10">
-    <h1 class="font-display-lg text-display-lg text-on-surface dark:text-white tracking-tight">AetherMind</h1>
-    <p id="strategistTier" class="font-label-sm-caps text-label-sm-caps text-on-surface-variant opacity-60">STRATEGIST TIER</p>
-  </div>
-  <nav class="flex-grow space-y-2">
-    <a class="flex items-center gap-3 text-on-surface-variant dark:text-zinc-400 px-4 py-2 hover:bg-glass-specular/10 transition-all duration-200 rounded-lg" href="index.html">
-      <span class="material-symbols-outlined">chat</span><span class="font-label-md text-label-md">Chat</span>
-    </a>
-    <a class="flex items-center gap-3 bg-ai-bubble-accent text-primary dark:text-white border border-glass-border font-bold px-4 py-2 rounded-lg -translate-y-0.5 transition-transform shadow-[inset_1px_1px_0px_0px_rgba(255,255,255,0.4)]" href="dashboard.html">
-      <span class="material-symbols-outlined">dashboard</span><span class="font-label-md text-label-md">Dashboard</span>
-    </a>
-    <a class="flex items-center gap-3 text-on-surface-variant dark:text-zinc-400 px-4 py-2 hover:bg-glass-specular/10 transition-all duration-200 rounded-lg" href="analytics.html">
-      <span class="material-symbols-outlined">insights</span><span class="font-label-md text-label-md">Analytics</span>
-    </a>
-    <a class="flex items-center gap-3 text-on-surface-variant dark:text-zinc-400 px-4 py-2 hover:bg-glass-specular/10 transition-all duration-200 rounded-lg" href="tools.html">
-      <span class="material-symbols-outlined">construction</span><span class="font-label-md text-label-md">Tools</span>
-    </a>
-    <a class="flex items-center gap-3 text-on-surface-variant dark:text-zinc-400 px-4 py-2 hover:bg-glass-specular/10 transition-all duration-200 rounded-lg" href="settings.html">
-      <span class="material-symbols-outlined">settings</span><span class="font-label-md text-label-md">Settings</span>
-    </a>
-  </nav>
-  <div class="mt-auto pt-6 border-t border-glass-border">
-    <button onclick="window.location.href='index.html'" class="w-full bg-primary-container text-on-primary py-3 rounded-full font-label-md text-label-md mb-6 hover:shadow-lg hover:shadow-primary/30 transition-all">New Session</button>
-    <div class="space-y-2">
-      <a class="flex items-center gap-3 text-on-surface-variant dark:text-zinc-400 px-4 py-2 hover:bg-glass-specular/10 transition-all duration-200 rounded-lg" href="#">
-        <span class="material-symbols-outlined">help</span><span class="font-label-md text-label-md">Help</span>
-      </a>
-      <a id="logoutBtn" class="flex items-center gap-3 text-on-surface-variant dark:text-zinc-400 px-4 py-2 hover:bg-glass-specular/10 transition-all duration-200 rounded-lg cursor-pointer" href="#">
-        <span class="material-symbols-outlined">logout</span><span class="font-label-md text-label-md">Logout</span>
-      </a>
-    </div>
-  </div>
-</aside>
-
-<!-- Header -->
-<header class="fixed top-0 right-0 left-sidebar-width h-16 header-blur border-b border-glass-border flex justify-between items-center px-gutter z-40 !bg-white/10 dark:!bg-black/10">
-  <div class="flex items-center gap-6">
-    <span class="font-label-sm-caps text-label-sm-caps text-on-surface-variant dark:text-zinc-400">AETHERMIND V3</span>
-    <div class="flex gap-4">
-      <span id="headerSessions" class="text-primary border-b-2 border-primary font-label-md text-label-md pb-1">— sessions</span>
-      <span id="headerTokens" class="text-on-surface-variant dark:text-zinc-400 font-label-md text-label-md opacity-60">Tokens: —</span>
-    </div>
-  </div>
-  <div class="flex items-center gap-4">
-    <button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors cursor-pointer">notifications</button>
-    <button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors cursor-pointer" onclick="window.location.href='settings.html'">settings</button>
-    <div class="w-8 h-8 rounded-full overflow-hidden border border-glass-border bg-primary/20 flex items-center justify-center font-bold text-white text-xs" id="avatarContainer">
-      <span id="avatarLetter">U</span>
-    </div>
-  </div>
-</header>
-
-<!-- Main -->
-<main class="ml-sidebar-width pt-24 pb-12 px-gutter max-w-[1200px] mx-auto">
-
-  <!-- KPI Cards -->
-  <section class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-    <div class="liquid-glass p-glass-padding rounded-lg">
-      <div class="flex justify-between items-start mb-4">
-        <span class="material-symbols-outlined text-primary">query_stats</span>
-        <span id="kpiBadgeQueries" class="text-green-500 font-label-md text-[10px]">Today: 0</span>
-      </div>
-      <p class="text-on-surface-variant dark:text-zinc-400 font-label-sm-caps text-label-sm-caps">TOTAL QUERIES</p>
-      <h2 id="kpiQueries" class="font-display-lg text-display-lg text-on-surface dark:text-white">0</h2>
-    </div>
-    <div class="liquid-glass p-glass-padding rounded-lg">
-      <div class="flex justify-between items-start mb-4">
-        <span class="material-symbols-outlined text-secondary">database</span>
-        <span id="kpiBadgeTokens" class="text-on-surface-variant dark:text-zinc-400 font-label-md text-[10px]">Today: 0</span>
-      </div>
-      <p class="text-on-surface-variant dark:text-zinc-400 font-label-sm-caps text-label-sm-caps">TOKENS USED</p>
-      <h2 id="kpiTokens" class="font-display-lg text-display-lg text-on-surface dark:text-white">0</h2>
-    </div>
-    <div class="liquid-glass p-glass-padding rounded-lg">
-      <div class="flex justify-between items-start mb-4">
-        <span class="material-symbols-outlined text-primary">hub</span>
-        <span class="text-on-surface-variant dark:text-zinc-400 font-label-md text-[10px]">Top Pick</span>
-      </div>
-      <p class="text-on-surface-variant dark:text-zinc-400 font-label-sm-caps text-label-sm-caps">ACTIVE DOMAIN</p>
-      <h2 id="kpiDomain" class="font-display-lg text-display-lg text-on-surface dark:text-white truncate">—</h2>
-    </div>
-    <div class="liquid-glass p-glass-padding rounded-lg">
-      <div class="flex justify-between items-start mb-4">
-        <span class="material-symbols-outlined text-orange-500" style="font-variation-settings:'FILL' 1;">local_fire_department</span>
-        <span id="streakBadge" class="text-orange-500 font-label-md text-[10px]">Start Today</span>
-      </div>
-      <p class="text-on-surface-variant dark:text-zinc-400 font-label-sm-caps text-label-sm-caps">STREAK</p>
-      <h2 id="kpiStreak" class="font-display-lg text-display-lg text-on-surface dark:text-white">0 DAYS</h2>
-    </div>
-  </section>
-
-  <!-- Usage Chart + Domain Donut -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-    <div class="lg:col-span-2 liquid-glass p-glass-padding rounded-lg flex flex-col">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="font-headline-md text-headline-md text-on-surface dark:text-white">Usage Over Time</h3>
-        <div class="flex gap-2">
-          <button id="btn30d" onclick="loadUsageChart(30)" class="px-3 py-1 rounded-full bg-ai-bubble-accent text-primary font-label-md text-[10px] border border-glass-border transition-all">30D</button>
-          <button id="btn90d" onclick="loadUsageChart(90)" class="px-3 py-1 rounded-full text-on-surface-variant dark:text-zinc-400 font-label-md text-[10px] transition-all">90D</button>
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon"><span class="material-symbols-outlined">psychiatry</span></div>
+                <div><div class="brand-name">AetherMind</div><span class="brand-sub">AI Suite</span></div>
+            </div>
+            <nav class="sidebar-nav" style="margin-top: 10px;">
+                <a href="index.html" class="sidebar-nav-item"><span class="material-symbols-outlined">chat</span> Chat</a>
+                <a href="dashboard.html" class="sidebar-nav-item active"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
+                <a href="settings.html" class="sidebar-nav-item"><span class="material-symbols-outlined">settings</span> Settings</a>
+            </nav>
+            <div class="sidebar-bottom">
+                <button class="new-chat-btn" style="margin-bottom:20px;" onclick="window.location.href='index.html?session=new'">
+                    <span class="material-symbols-outlined">add</span> New Session
+                </button>
+                <nav class="sidebar-nav">
+                    <a href="profile.html" class="sidebar-nav-item"><span class="material-symbols-outlined">account_circle</span> Profile</a>
+                    <a href="#" class="sidebar-nav-item" onclick="logout()"><span class="material-symbols-outlined">logout</span> Logout</a>
+                </nav>
+            </div>
         </div>
-      </div>
-      <div class="flex-grow">
-        <div class="chart-wrap"><canvas id="usageChart"></canvas></div>
-      </div>
-    </div>
-    <div class="liquid-glass p-glass-padding rounded-lg flex flex-col">
-      <h3 class="font-headline-md text-headline-md text-on-surface dark:text-white mb-6">Domain Breakdown</h3>
-      <div class="flex-grow flex items-center justify-center relative">
-        <div style="position:relative;width:192px;height:192px;">
-          <canvas id="domainChart" width="192" height="192"></canvas>
-          <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span id="donutCenter" class="font-display-lg text-display-lg text-on-surface dark:text-white">—</span>
-            <span class="text-on-surface-variant dark:text-zinc-400 font-label-sm-caps text-[10px]">DOMAINS</span>
-          </div>
-        </div>
-      </div>
-      <div class="grid grid-cols-2 gap-2 mt-6">
-        <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-primary shrink-0"></div><span class="font-label-md text-[11px] text-on-surface-variant dark:text-zinc-300">Coding</span></div>
-        <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-secondary shrink-0"></div><span class="font-label-md text-[11px] text-on-surface-variant dark:text-zinc-300">Math</span></div>
-        <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-tertiary shrink-0"></div><span class="font-label-md text-[11px] text-on-surface-variant dark:text-zinc-300">Stats</span></div>
-        <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-outline shrink-0"></div><span class="font-label-md text-[11px] text-on-surface-variant dark:text-zinc-300">Web Dev</span></div>
-        <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-primary-container shrink-0"></div><span class="font-label-md text-[11px] text-on-surface-variant dark:text-zinc-300">Security</span></div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Topic Tracker -->
-  <section class="liquid-glass p-glass-padding rounded-lg mb-8 overflow-hidden">
-    <div class="flex justify-between items-center mb-6">
-      <h3 class="font-headline-md text-headline-md text-on-surface dark:text-white">Topic Tracker</h3>
-      <div class="flex items-center gap-4">
-        <div class="relative">
-          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
-          <input id="topicSearch" class="bg-surface/50 dark:bg-black/20 border border-glass-border rounded-full pl-9 pr-4 py-1 font-label-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white" placeholder="Filter topics..." type="text"/>
-        </div>
-      </div>
-    </div>
-    <div class="overflow-x-auto">
-      <table class="w-full text-left">
-        <thead>
-          <tr class="border-b border-glass-border">
-            <th class="py-4 font-label-sm-caps text-label-sm-caps text-on-surface-variant dark:text-zinc-400">TOPIC</th>
-            <th class="py-4 font-label-sm-caps text-label-sm-caps text-on-surface-variant dark:text-zinc-400">DOMAIN</th>
-            <th class="py-4 font-label-sm-caps text-label-sm-caps text-on-surface-variant dark:text-zinc-400">TIMES ASKED</th>
-            <th class="py-4 font-label-sm-caps text-label-sm-caps text-on-surface-variant dark:text-zinc-400">LAST STUDIED</th>
-            <th class="py-4 font-label-sm-caps text-label-sm-caps text-on-surface-variant dark:text-zinc-400">MASTERY</th>
-          </tr>
-        </thead>
-        <tbody id="topicTbody" class="divide-y divide-glass-border/30">
-          <tr><td colspan="5" class="py-10 text-center text-on-surface-variant dark:text-zinc-500 font-label-md opacity-60">Loading…</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
+        <!-- Main -->
+        <div class="main">
+            <div class="top-bar">
+                <div class="search-bar">
+                    <span class="material-symbols-outlined" style="color:var(--text-muted); font-size:16px;">search</span>
+                    <input type="text" placeholder="Search analytics..." id="analyticsSearch" oninput="filterAnalytics(this.value)">
+                </div>
+                <div class="top-bar-right">
+                    <span class="material-symbols-outlined" style="color:red; cursor:pointer;">notifications</span>
+                    <img src="https://i.pravatar.cc/150?img=11" alt="Profile" class="profile-pic">
+                </div>
+            </div>
 
-  <!-- Token Analytics + Activity Heatmap -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-    <div class="liquid-glass p-glass-padding rounded-lg">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="font-headline-md text-headline-md text-on-surface dark:text-white">Token Analytics</h3>
-        <div class="flex items-center gap-2 bg-surface/50 dark:bg-black/20 px-3 py-1 rounded-full border border-glass-border">
-          <span class="text-[10px] font-label-sm-caps text-on-surface-variant dark:text-zinc-400">RATE: $</span>
-          <input id="rateInput" class="w-12 bg-transparent border-none p-0 text-[10px] font-bold focus:ring-0 text-on-surface dark:text-white" step="0.001" type="number" value="0.002" min="0"/>
+            <div class="dashboard-grid">
+                <!-- Zone A: Stats -->
+                <div class="metrics-row" id="metricsRow">
+                    <div class="metric-card">
+                        <div class="metric-header"><div class="metric-icon"><span class="material-symbols-outlined" style="font-size:18px;">analytics</span></div><div class="metric-badge" id="queryBadge">-</div></div>
+                        <div style="margin-top:auto;"><div class="metric-title">Total Queries</div><div class="metric-value" id="metricTotalQueries">—</div></div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header"><div class="metric-icon"><span class="material-symbols-outlined" style="font-size:18px;">token</span></div><div class="metric-badge" style="background:#f3e8ff; color:#7e22ce;">Peak</div></div>
+                        <div style="margin-top:auto;"><div class="metric-title">Tokens Used</div><div class="metric-value" id="metricTokensUsed">—</div></div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header"><div class="metric-icon"><span class="material-symbols-outlined" style="font-size:18px;">language</span></div><div></div></div>
+                        <div style="margin-top:auto;"><div class="metric-title">Active Domain</div><div class="metric-value" id="metricActiveDomain">—</div></div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header"><div class="metric-icon"><span class="material-symbols-outlined" style="font-size:18px;">local_fire_department</span></div><div class="metric-badge" style="background:#e0e7ff; color:#4338ca;" id="streakBadge">-</div></div>
+                        <div style="margin-top:auto;"><div class="metric-title">Learning Streak</div><div class="metric-value" id="metricLearningStreak">—</div></div>
+                    </div>
+                </div>
+
+                <!-- Zone B: Charts -->
+                <div class="charts-row">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <div><div class="chart-title">30-Day Usage</div><div class="chart-subtitle">Interactive trend analysis</div></div>
+                            <div style="display:flex; border:1px solid var(--border); border-radius:20px; padding:2px;">
+                                <button id="toggleDaily" class="chart-toggle active" onclick="setChartMode('daily')">Daily</button>
+                                <button id="toggleMonthly" class="chart-toggle" onclick="setChartMode('monthly')">Monthly</button>
+                            </div>
+                        </div>
+                        <div style="height:240px; position:relative;" id="usageChart"></div>
+                    </div>
+                    <div class="chart-card" style="display:flex; flex-direction:column;">
+                        <div class="chart-title">Domain Breakdown</div>
+                        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:24px; margin-top:20px;">
+                            <div id="donutChart" style="width:140px; height:140px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                                <div style="width:100px; height:100px; border-radius:50%; background:white; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                                    <span style="font-weight:700; font-size:24px;" id="donutCenter">—</span>
+                                    <span style="font-size:11px; color:var(--text-muted);">Domains</span>
+                                </div>
+                            </div>
+                            <div style="width:100%; display:flex; flex-direction:column; gap:8px;" id="breakdownList"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Zone C: Analytics Deep Dive -->
+                <div class="charts-row" id="zoneC">
+                    <div class="activity-card">
+                        <div class="chart-title">Activity Intensity</div>
+                        <div class="chart-subtitle">Yearly interaction density</div>
+                        <div style="display:flex; gap:4px; margin-top:20px; flex-wrap:wrap;" id="heatmapGrid"></div>
+                        <div style="display:flex; justify-content:flex-end; align-items:center; gap:6px; margin-top:16px; font-size:11px; color:var(--text-muted);">
+                            Less
+                            <div style="display:flex; gap:2px;">
+                                <div style="width:10px; height:10px; border-radius:2px; background:#f1f5f9;"></div>
+                                <div style="width:10px; height:10px; border-radius:2px; background:#c7d2fe;"></div>
+                                <div style="width:10px; height:10px; border-radius:2px; background:#818cf8;"></div>
+                                <div style="width:10px; height:10px; border-radius:2px; background:#4f46e5;"></div>
+                                <div style="width:10px; height:10px; border-radius:2px; background:#312e81;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:20px;">
+                        <div class="chart-card">
+                            <div class="chart-title">Response Quality</div>
+                            <div style="margin-top:20px; display:flex; flex-direction:column; gap:12px;" id="qualityBars"></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-title">Mistake Patterns</div>
+                            <div class="chart-subtitle">Top recurring errors</div>
+                            <ul style="margin-top:16px; padding-left:20px; font-size:13px; color:var(--text-secondary); display:flex; flex-direction:column; gap:8px;" id="mistakeList"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accuracy by Domain -->
+                <div class="chart-card" id="accuracySection">
+                    <div class="chart-title">Accuracy by Domain</div>
+                    <div style="margin-top:20px; display:flex; gap:20px; height:120px; align-items:flex-end; padding-bottom:20px;" id="accuracyChart"></div>
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="space-y-6">
-        <div>
-          <div class="flex justify-between font-label-sm-caps text-[10px] text-on-surface-variant dark:text-zinc-400 mb-2">
-            <span>DOMAIN USAGE (TOKENS)</span>
-            <span id="tokenTotal">TOTAL: 0</span>
-          </div>
-          <div class="flex gap-[2px] h-8 rounded-lg overflow-hidden bg-surface/20 dark:bg-black/10">
-            <div id="tokenBarCoding" class="bg-primary h-full transition-all duration-700 cursor-pointer" style="width:0%" title="Coding"></div>
-            <div id="tokenBarMath" class="bg-secondary h-full transition-all duration-700 cursor-pointer" style="width:0%" title="Math"></div>
-            <div id="tokenBarStats" class="bg-tertiary h-full transition-all duration-700 cursor-pointer" style="width:0%" title="Stats"></div>
-            <div id="tokenBarOther" class="bg-outline h-full transition-all duration-700 cursor-pointer" style="width:0%" title="Other"></div>
-          </div>
-          <div class="flex gap-4 mt-2 flex-wrap">
-            <span id="barLabelCoding" class="text-[9px] font-label-sm-caps text-primary opacity-80"></span>
-            <span id="barLabelMath" class="text-[9px] font-label-sm-caps text-secondary opacity-80"></span>
-            <span id="barLabelStats" class="text-[9px] font-label-sm-caps text-tertiary opacity-80"></span>
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div class="p-4 bg-surface/30 dark:bg-black/10 border border-glass-border rounded-lg">
-            <span class="text-[10px] font-label-sm-caps text-on-surface-variant dark:text-zinc-400">EST. COST</span>
-            <p id="tokenCost" class="font-display-lg text-headline-md text-primary dark:text-indigo-300 mt-1">$0.00</p>
-          </div>
-          <div class="p-4 bg-surface/30 dark:bg-black/10 border border-glass-border rounded-lg">
-            <span class="text-[10px] font-label-sm-caps text-on-surface-variant dark:text-zinc-400">EFFICIENCY</span>
-            <p id="tokenEfficiency" class="font-display-lg text-headline-md text-secondary dark:text-purple-300 mt-1">—%</p>
-          </div>
-        </div>
-      </div>
     </div>
 
-    <!-- Heatmap -->
-    <div class="liquid-glass p-glass-padding rounded-lg">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="font-headline-md text-headline-md text-on-surface dark:text-white">Activity Heatmap</h3>
-        <span id="heatmapTotal" class="text-[10px] font-label-sm-caps text-on-surface-variant dark:text-zinc-400">LAST 12 MONTHS</span>
-      </div>
-      <div class="flex gap-2">
-        <div class="flex flex-col justify-between py-3 text-[9px] font-label-sm-caps text-on-surface-variant dark:text-zinc-400 opacity-40 shrink-0">
-          <span>Mon</span><span>Wed</span><span>Fri</span>
-        </div>
-        <div id="heatmapGrid" class="flex-grow grid grid-cols-[repeat(52,1fr)] gap-[2px]"></div>
-      </div>
-      <div class="mt-4 flex items-center justify-end gap-2">
-        <span class="text-[9px] font-label-sm-caps text-on-surface-variant dark:text-zinc-400">Less</span>
-        <div class="flex gap-1">
-          <div class="w-2 h-2 rounded-sm bg-surface/30 dark:bg-zinc-800"></div>
-          <div class="w-2 h-2 rounded-sm bg-primary/20"></div>
-          <div class="w-2 h-2 rounded-sm bg-primary/60"></div>
-          <div class="w-2 h-2 rounded-sm bg-primary"></div>
-        </div>
-        <span class="text-[9px] font-label-sm-caps text-on-surface-variant dark:text-zinc-400">More</span>
-      </div>
-    </div>
-  </div>
-</main>
-
-<script>
-const A = window.AetherAnalytics;
-let usageChartInst = null;
-let domainChartInst = null;
-
-/* ── Usage Line Chart ── */
-function loadUsageChart(days) {
-  const isDark = document.documentElement.classList.contains('dark');
-  const data = A.getUsageOverTime(days);
-  ['btn30d','btn90d'].forEach(id => {
-    document.getElementById(id).className = 'px-3 py-1 rounded-full text-on-surface-variant dark:text-zinc-400 font-label-md text-[10px] transition-all';
-  });
-  const activeId = days === 30 ? 'btn30d' : 'btn90d';
-  document.getElementById(activeId).className = 'px-3 py-1 rounded-full bg-ai-bubble-accent text-primary font-label-md text-[10px] border border-glass-border transition-all';
-  if (usageChartInst) usageChartInst.destroy();
-  const ctx = document.getElementById('usageChart').getContext('2d');
-  const grad = ctx.createLinearGradient(0, 0, 0, 240);
-  grad.addColorStop(0, 'rgba(70,72,212,0.18)');
-  grad.addColorStop(1, 'rgba(70,72,212,0)');
-  usageChartInst = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: data.labels,
-      datasets: [{
-        label: 'Queries',
-        data: data.queries,
-        fill: true,
-        backgroundColor: grad,
-        borderColor: '#1f108e',
-        borderWidth: 2.5,
-        tension: 0.42,
-        pointRadius: 3,
-        pointBackgroundColor: isDark ? '#13131f' : '#fff',
-        pointBorderColor: '#1f108e',
-        pointBorderWidth: 2,
-        pointHoverRadius: 5,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: { duration: 700, easing: 'easeInOutCubic' },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          mode: 'index', intersect: false,
-          backgroundColor: isDark ? 'rgba(15,15,24,0.95)' : 'rgba(255,255,255,0.95)',
-          titleColor: isDark ? '#fff' : '#111c2d',
-          bodyColor: isDark ? '#9ca3af' : '#464553',
-          borderColor: 'rgba(70,72,212,0.25)', borderWidth: 1, padding: 10,
-          callbacks: { label: c => ` ${c.parsed.y} ${c.parsed.y === 1 ? 'query' : 'queries'}` }
+    <style>
+        .chart-toggle {
+            background: transparent; border: none; padding: 4px 12px;
+            font-size: 12px; font-weight: 600; color: var(--text-secondary);
+            cursor: pointer; border-radius: 16px; transition: 0.2s;
         }
-      },
-      scales: {
-        y: {
-          beginAtZero: true, ticks: { stepSize: 1, color: isDark ? '#4b5563' : '#767586', font: { size: 10 } },
-          grid: { color: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(70,72,212,0.05)' }
-        },
-        x: { grid: { display: false }, ticks: { color: isDark ? '#4b5563' : '#767586', font: { size: 9 }, maxTicksLimit: 9, maxRotation: 0 } }
-      }
-    }
-  });
-}
+        .chart-toggle.active {
+            background: var(--primary); color: white;
+        }
+    </style>
 
-/* ── Domain Donut ── */
-function buildDonut() {
-  const isDark = document.documentElement.classList.contains('dark');
-  const bd = A.getDomainBreakdown();
-  const vals = [bd.CODING, bd.MATH, bd.STATS, bd.WEB_DEV, bd.SECURITY];
-  const hasData = vals.some(v => v > 0);
-  const active = vals.filter(v => v > 0).length;
-  document.getElementById('donutCenter').textContent = hasData ? active : '—';
-  if (domainChartInst) domainChartInst.destroy();
-  domainChartInst = new Chart(document.getElementById('domainChart'), {
-    type: 'doughnut',
-    data: {
-      labels: ['Coding','Math','Stats','Web Dev','Security'],
-      datasets: [{
-        data: hasData ? vals : [1,1,1,1,1],
-        backgroundColor: hasData
-          ? ['#2c2abc','#712ae2','#44444d','#767586','#1f108e']
-          : Array(5).fill('rgba(70,72,212,0.08)'),
-        borderWidth: 0, hoverOffset: hasData ? 5 : 0,
-      }]
-    },
-    options: {
-      responsive: false, cutout: '72%',
-      animation: { animateRotate: true, duration: 800 },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          enabled: hasData,
-          backgroundColor: isDark ? 'rgba(15,15,24,0.95)' : 'rgba(255,255,255,0.95)',
-          titleColor: isDark ? '#fff' : '#111c2d', bodyColor: isDark ? '#9ca3af' : '#464553',
-          borderColor: 'rgba(70,72,212,0.25)', borderWidth: 1,
-          callbacks: {
-            label: ctx => {
-              const total = ctx.dataset.data.reduce((s,v) => s+v, 0) || 1;
-              return ` ${ctx.label}: ${ctx.parsed} (${Math.round(ctx.parsed/total*100)}%)`;
+    <script src="supabase_client.js"></script>
+    <script>
+        let dashData = null;
+        let chartMode = 'daily';
+
+        async function initDashboard() {
+            const session = await checkAuth();
+            if (!session) return;
+            await initTheme();
+            dashData = await loadDashboardData(session.user.id);
+            renderAll();
+        }
+        initDashboard();
+
+        function renderAll() {
+            if (!dashData) return;
+            const d = dashData;
+
+            // Metrics
+            document.getElementById('metricTotalQueries').textContent = d.totalQueries.toLocaleString();
+            document.getElementById('metricTokensUsed').textContent = d.tokensUsed > 999999 ? (d.tokensUsed / 1000000).toFixed(1) + 'M' : (d.tokensUsed / 1000).toFixed(0) + 'K';
+            document.getElementById('metricActiveDomain').textContent = d.activeDomain.charAt(0).toUpperCase() + d.activeDomain.slice(1);
+            document.getElementById('metricLearningStreak').textContent = d.learningStreak + ' Days';
+            document.getElementById('queryBadge').textContent = d.totalQueries > 0 ? '+' + Math.round(d.totalQueries * 0.12) : '0';
+            document.getElementById('streakBadge').textContent = d.learningStreak > 7 ? 'High' : 'Low';
+
+            // Usage chart
+            renderUsageChart();
+
+            // Donut
+            if (d.domains.length) {
+                const grad = d.domains.map((dm, i) => {
+                    const start = d.domains.slice(0, i).reduce((s, x) => s + x.percent, 0);
+                    return `${dm.color} ${start}% ${start + dm.percent}%`;
+                }).join(', ');
+                document.getElementById('donutChart').style.background = `conic-gradient(${grad})`;
+                document.getElementById('donutCenter').textContent = d.domains.length;
+
+                const list = document.getElementById('breakdownList');
+                list.innerHTML = d.domains.map(dm => `
+                    <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:500;">
+                        <span style="display:flex; align-items:center; gap:6px;">
+                            <div style="width:8px; height:8px; border-radius:50%; background:${dm.color};"></div> ${dm.name}
+                        </span>
+                        <span>${dm.percent}%</span>
+                    </div>
+                `).join('');
             }
-          }
+
+            // Heatmap — built from real daily query data
+            const heatColors = ['#f1f5f9', '#c7d2fe', '#818cf8', '#4f46e5', '#312e81'];
+            const grid = document.getElementById('heatmapGrid');
+            grid.innerHTML = '';
+            // Build a day-count map from the last 300 days of dailyData
+            const dayCountMap = {};
+            (d.dailyData || []).forEach(entry => { dayCountMap[entry.date] = entry.count; });
+            const today2 = new Date(); today2.setHours(0,0,0,0);
+            for (let i = 299; i >= 0; i--) {
+                const dayStr = new Date(today2 - i * 86400000).toISOString().split('T')[0];
+                const count = dayCountMap[dayStr] || 0;
+                const maxCount = Math.max(...Object.values(dayCountMap), 1);
+                const intensity = count / maxCount;
+                const ci = count === 0 ? 0 : intensity < 0.25 ? 1 : intensity < 0.5 ? 2 : intensity < 0.75 ? 3 : 4;
+                grid.innerHTML += `<div title="${dayStr}: ${count} queries" style="width:12px; height:12px; border-radius:2px; background:${heatColors[ci]};"></div>`;
+            }
+
+            // Quality bars
+            const total = d.qualityCounts.excellent + d.qualityCounts.good + d.qualityCounts.poor || 1;
+            const qData = [
+                { label: 'Excellent', pct: Math.round(d.qualityCounts.excellent / total * 100), color: '#10b981' },
+                { label: 'Good', pct: Math.round(d.qualityCounts.good / total * 100), color: '#f59e0b' },
+                { label: 'Needs Work', pct: Math.round(d.qualityCounts.poor / total * 100), color: '#ef4444' }
+            ];
+            document.getElementById('qualityBars').innerHTML = qData.map(q => `
+                <div>
+                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;"><span>${q.label}</span><span>${q.pct}%</span></div>
+                    <div style="height:6px; background:var(--border); border-radius:3px; overflow:hidden;"><div style="height:100%; width:${q.pct}%; background:${q.color}; transition:width 0.5s;"></div></div>
+                </div>
+            `).join('');
+
+            // Mistakes (from loadDashboardData)
+            const mistakes = d.mistakes || [];
+            document.getElementById('mistakeList').innerHTML = (mistakes.length ? mistakes : [
+                { error: 'Index out of bounds', count: 12 },
+                { error: 'Type mismatch', count: 8 },
+                { error: 'Missing await', count: 5 }
+            ]).map(m => `<li>${m.error} <span style="float:right; font-weight:bold; color:${m.count > 10 ? '#ef4444' : m.count > 6 ? '#f59e0b' : '#10b981'};">${m.count}</span></li>`).join('');
+
+            // Accuracy
+            const acc = d.domainAccuracy || {};
+            const domColors = { math: 'var(--primary)', stats: '#9333ea', coding: '#3b82f6', webdev: '#10b981', security: '#f59e0b' };
+            document.getElementById('accuracyChart').innerHTML = Object.entries(acc).map(([name, pct]) => `
+                <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:8px;">
+                    <span style="font-size:11px; font-weight:bold;">${pct}%</span>
+                    <div style="width:40px; height:${pct}px; background:${domColors[name] || '#cbd5e1'}; border-radius:4px 4px 0 0; transition:height 0.5s;"></div>
+                    <span style="font-size:12px; font-weight:500;">${name.charAt(0).toUpperCase() + name.slice(1)}</span>
+                </div>
+            `).join('');
         }
-      }
-    }
-  });
-}
 
-/* ── Topic Table ── */
-function buildTopics(filter) {
-  const all = A.getTopics(20);
-  const topics = filter ? all.filter(t => t.topic.toLowerCase().includes(filter.toLowerCase())) : all;
-  const tbody = document.getElementById('topicTbody');
-  const dc = { CODING:'bg-primary/10 text-primary dark:text-indigo-400', MATH:'bg-secondary/10 text-secondary dark:text-purple-400', STATS:'bg-tertiary/10 text-tertiary dark:text-zinc-300', WEB_DEV:'bg-blue-500/10 text-blue-600 dark:text-blue-400', SECURITY:'bg-orange-500/10 text-orange-600 dark:text-orange-400' };
-  const dl = { CODING:'Coding', MATH:'Math', STATS:'Stats', WEB_DEV:'Web Dev', SECURITY:'Security' };
-  if (!topics.length) {
-    tbody.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-on-surface-variant dark:text-zinc-500 font-label-md opacity-60">${all.length ? 'No matching topics.' : 'No topics yet — start chatting to see data here.'}</td></tr>`;
-    return;
-  }
-  tbody.innerHTML = topics.map(t => `
-    <tr class="hover:bg-glass-specular/5 transition-colors">
-      <td class="py-4"><span class="font-label-md text-on-surface dark:text-zinc-200 block max-w-[200px] truncate" title="${t.topic}">${t.topic}</span></td>
-      <td class="py-4"><span class="${dc[t.domain]||dc.CODING} px-2 py-1 rounded text-[10px] font-label-md">${dl[t.domain]||t.domain}</span></td>
-      <td class="py-4 font-code-sm text-code-sm text-on-surface dark:text-zinc-300">${t.timesAsked}</td>
-      <td class="py-4 font-label-md text-on-surface-variant dark:text-zinc-400 text-xs">${t.lastStudied}</td>
-      <td class="py-4">
-        <div class="w-28">
-          <div class="flex justify-between mb-1"><span class="text-[10px] font-label-md text-on-surface-variant dark:text-zinc-400">${t.mastery}%</span></div>
-          <div class="mastery-bar"><div class="mastery-progress" style="width:${t.mastery}%"></div></div>
-        </div>
-      </td>
-    </tr>`).join('');
-}
+        function renderUsageChart() {
+            const data = chartMode === 'daily' ? dashData.dailyData : dashData.monthlyData;
+            if (!data || !data.length) { document.getElementById('usageChart').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);">No data yet</div>'; return; }
+            const maxCount = Math.max(...data.map(d => d.count), 1);
+            const w = 500, h = 200;
+            const points = data.map((d, i) => {
+                const x = (i / (data.length - 1)) * w;
+                const y = h - (d.count / maxCount) * (h - 20);
+                return `${x},${y}`;
+            });
+            const polyline = points.join(' ');
+            const polygon = `0,${h} ${polyline} ${w},${h}`;
 
-/* ── Token Analytics Bar ── */
-function buildTokenAnalytics(rate) {
-  const r = parseFloat(rate) || 0.002;
-  const ta = A.getTokenAnalytics();
-  const total = ta.total || 1;
-  const c = Math.round(ta.domainTokens.CODING / total * 100);
-  const m = Math.round(ta.domainTokens.MATH / total * 100);
-  const s = Math.round(ta.domainTokens.STATS / total * 100);
-  const o = Math.max(0, 100 - c - m - s);
-  document.getElementById('tokenBarCoding').style.width = c + '%';
-  document.getElementById('tokenBarMath').style.width = m + '%';
-  document.getElementById('tokenBarStats').style.width = s + '%';
-  document.getElementById('tokenBarOther').style.width = o + '%';
-  document.getElementById('tokenTotal').textContent = 'TOTAL: ' + A.formatTokens(ta.total);
-  document.getElementById('tokenCost').textContent = '$' + ((ta.total / 1000) * r).toFixed(2);
-  document.getElementById('tokenEfficiency').textContent = A.getEfficiency() + '%';
-  if (c) document.getElementById('barLabelCoding').textContent = `CODING ${c}%`;
-  if (m) document.getElementById('barLabelMath').textContent = `MATH ${m}%`;
-  if (s) document.getElementById('barLabelStats').textContent = `STATS ${s}%`;
-}
+            document.getElementById('usageChart').innerHTML = `
+                <svg width="100%" height="100%" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+                    <line x1="0" y1="50" x2="${w}" y2="50" stroke="var(--border)" stroke-width="1" stroke-dasharray="4,4"/>
+                    <line x1="0" y1="100" x2="${w}" y2="100" stroke="var(--border)" stroke-width="1" stroke-dasharray="4,4"/>
+                    <line x1="0" y1="150" x2="${w}" y2="150" stroke="var(--border)" stroke-width="1" stroke-dasharray="4,4"/>
+                    <polygon points="${polygon}" fill="var(--primary-light)" opacity="0.3"/>
+                    <polyline points="${polyline}" fill="none" stroke="var(--primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            `;
+        }
 
-/* ── Activity Heatmap ── */
-function buildHeatmap() {
-  const cells = A.getActivityHeatmap();
-  const grid = document.getElementById('heatmapGrid');
-  grid.innerHTML = '';
-  let totalActive = 0;
-  cells.forEach(cell => {
-    if (cell.count > 0) totalActive++;
-    const div = document.createElement('div');
-    div.className = 'heatmap-cell ';
-    if (cell.count === 0) div.className += 'bg-surface/30 dark:bg-zinc-800/50';
-    else if (cell.count <= 2) div.className += 'bg-primary/25';
-    else if (cell.count <= 5) div.className += 'bg-primary/60';
-    else div.className += 'bg-primary';
-    div.title = `${cell.date}: ${cell.count} ${cell.count === 1 ? 'query' : 'queries'}`;
-    grid.appendChild(div);
-  });
-  if (totalActive > 0) {
-    document.getElementById('heatmapTotal').textContent = `${totalActive} ACTIVE DAYS`;
-  }
-}
+        function setChartMode(mode) {
+            chartMode = mode;
+            document.getElementById('toggleDaily').classList.toggle('active', mode === 'daily');
+            document.getElementById('toggleMonthly').classList.toggle('active', mode === 'monthly');
+            renderUsageChart();
+        }
 
-/* ══ Main Init ══ */
-document.addEventListener('DOMContentLoaded', () => {
-  const session = localStorage.getItem('am_user');
-  if (!session) { window.location.href = 'login.html'; return; }
-  const user = JSON.parse(session);
-
-  const theme = localStorage.getItem('am_theme') || 'dark';
-  document.documentElement.classList.toggle('dark', theme === 'dark');
-
-  // User hydration
-  if (user.name) {
-    document.getElementById('avatarLetter').textContent = user.name.charAt(0).toUpperCase();
-    document.getElementById('strategistTier').textContent = `${(user.provider||'FREE').toUpperCase()} TIER`;
-  }
-  if (user.avatar) {
-    const img = document.createElement('img');
-    img.src = user.avatar; img.className = 'w-full h-full object-cover'; img.alt = 'Avatar';
-    const ac = document.getElementById('avatarContainer'); ac.innerHTML = ''; ac.appendChild(img);
-  }
-
-  // KPI values
-  document.getElementById('kpiQueries').textContent = A.getTotalQueries();
-  document.getElementById('kpiBadgeQueries').textContent = 'Today: ' + A.getQueriesToday();
-  document.getElementById('kpiTokens').textContent = A.formatTokens(A.getTotalTokens());
-  document.getElementById('kpiBadgeTokens').textContent = 'Today: ' + A.formatTokens(A.getTokensToday());
-  document.getElementById('kpiDomain').textContent = A.getActiveDomain();
-  const streak = A.getStreak();
-  document.getElementById('kpiStreak').textContent = streak + ' DAYS';
-  document.getElementById('streakBadge').textContent = streak >= 7 ? '🔥 On Fire!' : streak > 0 ? `${streak} day run` : 'Start today';
-
-  // Header
-  const s = A.getTotalSessions();
-  document.getElementById('headerSessions').textContent = `${s} session${s !== 1 ? 's' : ''} total`;
-  document.getElementById('headerTokens').textContent = 'Tokens: ' + A.formatTokens(A.getTotalTokens());
-
-  // Charts
-  loadUsageChart(30);
-  buildDonut();
-  buildTopics();
-  buildTokenAnalytics(0.002);
-  buildHeatmap();
-
-  // Topic filter
-  document.getElementById('topicSearch').addEventListener('input', e => buildTopics(e.target.value));
-
-  // Rate recalc
-  document.getElementById('rateInput').addEventListener('change', e => buildTokenAnalytics(e.target.value));
-
-  // Logout
-  document.getElementById('logoutBtn').addEventListener('click', e => {
-    e.preventDefault();
-    localStorage.removeItem('am_user');
-    window.location.href = 'login.html';
-  });
-
-  // Glass hover shimmer
-  document.querySelectorAll('.liquid-glass').forEach(el => {
-    el.addEventListener('mousemove', e => {
-      const r = el.getBoundingClientRect();
-      el.style.setProperty('--mouse-x', `${e.clientX - r.left}px`);
-      el.style.setProperty('--mouse-y', `${e.clientY - r.top}px`);
-    });
-  });
-});
-</script>
+        function filterAnalytics(query) {
+            const q = query.toLowerCase();
+            // Simple visual filter — hide sections that don't match
+            ['metricsRow', 'zoneC', 'accuracySection'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!q || el.textContent.toLowerCase().includes(q)) {
+                    el.style.display = '';
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+        }
+    </script>
 </body>
 </html>

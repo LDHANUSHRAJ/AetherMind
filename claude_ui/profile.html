@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AetherMind Profile</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="app">
+        <div class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon"><span class="material-symbols-outlined">psychiatry</span></div>
+                <div><div class="brand-name">AetherMind</div><span class="brand-sub">AI Suite</span></div>
+            </div>
+            <nav class="sidebar-nav" style="margin-top:10px;">
+                <a href="index.html" class="sidebar-nav-item"><span class="material-symbols-outlined">chat</span> Chat</a>
+                <a href="dashboard.html" class="sidebar-nav-item"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
+                <a href="settings.html" class="sidebar-nav-item"><span class="material-symbols-outlined">settings</span> Settings</a>
+            </nav>
+            <div class="sidebar-bottom">
+                <button class="new-chat-btn" style="margin-bottom:20px;" onclick="window.location.href='index.html?session=new'">
+                    <span class="material-symbols-outlined">add</span> New Session
+                </button>
+                <nav class="sidebar-nav">
+                    <a href="profile.html" class="sidebar-nav-item active"><span class="material-symbols-outlined">account_circle</span> Profile</a>
+                    <a href="#" class="sidebar-nav-item" onclick="logout()"><span class="material-symbols-outlined">logout</span> Logout</a>
+                </nav>
+            </div>
+        </div>
+
+        <div class="main">
+            <div class="tools-header">
+                <div class="tools-title">User Profile</div>
+            </div>
+
+            <div style="padding:32px; overflow-y:auto; display:flex; flex-direction:column; align-items:center; gap:24px;">
+                <div style="width:100%; max-width:680px; display:flex; flex-direction:column; gap:24px;">
+
+                    <!-- Card 1: Identity -->
+                    <div class="tool-card" style="margin-bottom:0;">
+                        <div style="display:flex; align-items:center; gap:24px;">
+                            <div id="avatarCircle" style="width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg, var(--primary) 0%, #9333ea 100%); color:white; display:flex; align-items:center; justify-content:center; font-size:32px; font-weight:bold; flex-shrink:0;">
+                                ?
+                            </div>
+                            <div style="flex:1;">
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+                                    <div>
+                                        <div style="font-size:24px; font-weight:700;" id="profName">Loading...</div>
+                                        <div style="color:var(--text-secondary);" id="profEmail">...</div>
+                                    </div>
+                                    <button class="tool-btn" style="width:auto; padding:8px 16px; background:white; color:var(--text-primary); border:1px solid var(--border);" onclick="changePhoto()">
+                                        <span class="material-symbols-outlined" style="font-size:16px;">photo_camera</span> Change Photo
+                                    </button>
+                                </div>
+                                <div style="display:flex; gap:24px; margin-top:16px; font-size:13px; color:var(--text-muted); flex-wrap:wrap;">
+                                    <span>Joined: <strong style="color:var(--text-primary);" id="profJoined">...</strong></span>
+                                    <span>Member ID: <strong style="color:var(--text-primary);" id="profId">...</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Learning Profile -->
+                    <div class="tool-card" style="margin-bottom:0;">
+                        <div class="tool-header"><div class="tool-title">Learning Profile</div></div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+                            <div style="background:var(--bg-body); padding:16px; border-radius:12px;">
+                                <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Learning Streak</div>
+                                <div style="font-size:20px; font-weight:700;"><span id="profStreak">0</span> days 🔥</div>
+                            </div>
+                            <div style="background:var(--bg-body); padding:16px; border-radius:12px;">
+                                <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Total Queries</div>
+                                <div style="font-size:20px; font-weight:700;" id="profQueries">0</div>
+                            </div>
+                            <div style="background:var(--bg-body); padding:16px; border-radius:12px;">
+                                <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Strongest Domain</div>
+                                <div style="font-size:16px; font-weight:600; color:#10b981;" id="profStrong">N/A</div>
+                            </div>
+                            <div style="background:var(--bg-body); padding:16px; border-radius:12px;">
+                                <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Needs Improvement</div>
+                                <div style="font-size:16px; font-weight:600; color:#ef4444;" id="profWeak">N/A</div>
+                            </div>
+                        </div>
+                        <div style="font-weight:600; margin-bottom:12px;">Top 3 Recurring Mistakes</div>
+                        <ul style="padding-left:20px; font-size:14px; color:var(--text-secondary); display:flex; flex-direction:column; gap:8px;" id="profMistakes">
+                            <li style="color:var(--text-muted);">Loading...</li>
+                        </ul>
+                    </div>
+
+                    <!-- Card 3: Account & Security -->
+                    <div class="tool-card" style="margin-bottom:0;">
+                        <div class="tool-header"><div class="tool-title">Account & Security</div></div>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 0; border-bottom:1px solid var(--border-light);">
+                            <div><div style="font-weight:600;">Password</div><div style="font-size:12px; color:var(--text-secondary);">Change your account password</div></div>
+                            <button class="tool-btn" style="width:auto; padding:8px 16px; background:var(--bg-body); color:var(--text-primary);" onclick="doChangePassword()">Change Password</button>
+                        </div>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 0; border-bottom:1px solid var(--border-light);">
+                            <div><div style="font-weight:600;">Two-Factor Auth</div><div style="font-size:12px; color:var(--text-secondary);">Add an extra layer of security</div></div>
+                            <div class="toggle-switch" id="twoFaToggle"></div>
+                        </div>
+
+                        <div style="padding:16px 0; border-bottom:1px solid var(--border-light);">
+                            <div style="font-weight:600; margin-bottom:12px;">Connected Sessions</div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; margin-bottom:12px;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span class="material-symbols-outlined">computer</span> This device — Chrome (active)
+                                </div>
+                            </div>
+                            <div style="font-size:13px; color:var(--primary); font-weight:600; cursor:pointer;" onclick="doSignOutAll()">Sign out all other devices</div>
+                        </div>
+
+                        <div style="padding:16px 0; margin-top:16px;">
+                            <div style="font-weight:600; color:#ef4444; margin-bottom:12px;">Danger Zone</div>
+                            <div style="display:flex; gap:12px;">
+                                <input type="text" id="deleteConfirmInput" placeholder="Type 'DELETE' to confirm" style="padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-family:inherit; flex:1;">
+                                <button class="tool-btn" style="width:auto; padding:10px 20px; background:#fef2f2; color:#ef4444; border:1px solid #fca5a5;" onclick="doDeleteAccount()">Delete Account</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="supabase_client.js"></script>
+    <script>
+        let currentUserId = null;
+
+        async function initProfile() {
+            const session = await checkAuth();
+            if (!session) return;
+            currentUserId = session.user.id;
+            await initTheme();
+
+            const data = await loadProfileData(currentUserId);
+
+            document.getElementById('profName').textContent = data.full_name || 'User';
+            document.getElementById('profEmail').textContent = (data.email || '...') + ' (read-only)';
+            document.getElementById('profJoined').textContent = data.joined || 'N/A';
+            document.getElementById('profId').textContent = data.member_id || 'N/A';
+            document.getElementById('profStreak').textContent = data.learningStreak || 0;
+            document.getElementById('profQueries').textContent = (data.totalQueries || 0).toLocaleString();
+            document.getElementById('profStrong').textContent = data.strongestDomain || 'N/A';
+            document.getElementById('profWeak').textContent = data.needsImprovement || 'N/A';
+
+            // Avatar initial
+            const initial = (data.full_name || 'U')[0].toUpperCase();
+            document.getElementById('avatarCircle').textContent = initial;
+
+            // Mistakes
+            const mList = document.getElementById('profMistakes');
+            mList.innerHTML = '';
+            (data.mistakes || []).forEach(m => {
+                mList.innerHTML += `<li>${m.error} <span style="color:var(--primary); font-weight:600;">(${m.count}x)</span></li>`;
+            });
+        }
+        initProfile();
+
+        // ─── Actions ────────────────────────────────
+        function changePhoto() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                // In real app: upload to Supabase Storage
+                showToast('Photo uploaded: ' + file.name);
+            };
+            input.click();
+        }
+
+        async function doChangePassword() {
+            const newPass = prompt('Enter new password (min 6 characters):');
+            if (!newPass || newPass.length < 6) return showToast('Password must be at least 6 characters', 'error');
+            await updatePassword(newPass);
+            showToast('Password changed successfully');
+        }
+
+        async function doSignOutAll() {
+            await signOutAllDevices();
+            showToast('All other sessions signed out');
+        }
+
+        async function doDeleteAccount() {
+            const val = document.getElementById('deleteConfirmInput').value;
+            if (val !== 'DELETE') return showToast('Type DELETE to confirm', 'error');
+            await deleteAccount();
+        }
+
+        // 2FA toggle (mock)
+        document.getElementById('twoFaToggle').addEventListener('click', function() {
+            this.classList.toggle('on');
+            showToast(this.classList.contains('on') ? '2FA Enabled (mock)' : '2FA Disabled');
+        });
+    </script>
+</body>
+</html>
