@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Sign in to AetherMind — the only AI workspace that never phones home.">
+<title>AetherMind · Sign In</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -20,8 +22,8 @@
   --violet:#7c5cff; --violet-2:#a78bfa; --violet-soft:rgba(124,92,255,.16);
   --aether:#5eead4; --aether-soft:rgba(94,234,212,.14);
   --glow-1:rgba(124,92,255,.55); --glow-2:rgba(124,92,255,.18);
-  --grid:rgba(255,255,255,.04); --danger:#ff6b6b; --danger-soft:rgba(255,107,107,.12);
-  --shadow:0 24px 60px -20px rgba(0,0,0,.7);
+  --grid:rgba(255,255,255,.035); --danger:#ff6b6b; --danger-soft:rgba(255,107,107,.12);
+  --shadow:0 32px 80px -24px rgba(0,0,0,.8);
 }
 :root[data-theme="light"]{
   --bg:#f4f2fb; --bg-2:#ebe8f6; --surface:#ffffff; --surface-2:#f6f4fc;
@@ -30,105 +32,417 @@
   --violet:#6d4bf0; --violet-2:#7c5cff; --violet-soft:rgba(109,75,240,.10);
   --aether:#0fb89a; --aether-soft:rgba(15,184,154,.12);
   --glow-1:rgba(124,92,255,.30); --glow-2:rgba(124,92,255,.10);
-  --grid:rgba(24,18,48,.05); --danger:#d63a3a; --danger-soft:rgba(214,58,58,.10);
+  --grid:rgba(24,18,48,.04); --danger:#d63a3a; --danger-soft:rgba(214,58,58,.10);
   --shadow:0 24px 60px -28px rgba(60,40,120,.35);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);font-family:'Hanken Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+html,body{height:100%}
+body{background:var(--bg);font-family:'Hanken Grotesk',sans-serif;-webkit-font-smoothing:antialiased;color:var(--text)}
 ::selection{background:var(--violet);color:#fff}
 input::placeholder{color:var(--text-faint)}
-@keyframes auroraPulse{0%,100%{opacity:.85;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.06)}}
+
+/* ── Keyframes ── */
+@keyframes auroraPulse{0%,100%{opacity:.7;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes subtleDrift{0%,100%{transform:translate(0,0)}50%{transform:translate(-12px,8px)}}
+
+/* ── Root layout: two columns ── */
+.auth-root{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  min-height:100vh;
+}
+@media(max-width:820px){
+  .auth-root{grid-template-columns:1fr}
+  .auth-hero{display:none!important}
+}
+
+/* ══════════════════ LEFT HERO PANEL ══════════════════ */
+.auth-hero{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  padding:36px 48px;
+  overflow:hidden;
+  background:var(--bg-2);
+  border-right:1px solid var(--border);
+}
+
+/* grid overlay */
+.hero-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:56px 56px;
+  -webkit-mask-image:radial-gradient(ellipse 90% 80% at 30% 40%,#000 20%,transparent 80%);
+  mask-image:radial-gradient(ellipse 90% 80% at 30% 40%,#000 20%,transparent 80%);
+  pointer-events:none;
+}
+
+/* glow blobs */
+.hero-glow-a{
+  position:absolute;top:10%;left:20%;width:420px;height:420px;
+  background:radial-gradient(circle,rgba(124,92,255,.35),transparent 65%);
+  filter:blur(48px);animation:subtleDrift 12s ease-in-out infinite;pointer-events:none;
+}
+.hero-glow-b{
+  position:absolute;bottom:15%;right:5%;width:280px;height:280px;
+  background:radial-gradient(circle,rgba(94,234,212,.18),transparent 65%);
+  filter:blur(40px);animation:subtleDrift 16s ease-in-out infinite reverse;pointer-events:none;
+}
+
+.hero-logo{
+  position:relative;z-index:2;
+  display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text);
+}
+.hero-logo-icon{
+  width:38px;height:38px;border-radius:12px;
+  background:linear-gradient(140deg,var(--violet),var(--violet-2));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 24px var(--glow-2);flex-shrink:0;
+}
+.hero-logo-dot{width:13px;height:13px;border-radius:50%;background:#fff}
+.hero-logo-name{font-family:'Space Grotesk';font-weight:700;font-size:17px;letter-spacing:.04em}
+
+.hero-body{
+  position:relative;z-index:2;
+  animation:fadeUp .7s ease both;
+}
+.hero-pill{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 14px;border-radius:100px;
+  background:var(--aether-soft);border:1px solid rgba(94,234,212,.22);
+  font-family:'JetBrains Mono';font-size:12px;color:var(--aether);
+  margin-bottom:28px;
+}
+.hero-pill-dot{width:7px;height:7px;border-radius:50%;background:var(--aether);flex-shrink:0}
+.hero-headline{
+  font-family:'Space Grotesk';font-size:40px;font-weight:700;line-height:1.15;
+  letter-spacing:-.02em;margin-bottom:20px;
+}
+.hero-headline em{font-style:normal;color:var(--violet-2)}
+.hero-sub{
+  font-size:15px;line-height:1.7;color:var(--text-dim);max-width:380px;
+}
+
+.hero-stats{
+  position:relative;z-index:2;
+  display:flex;gap:28px;flex-wrap:wrap;
+}
+.stat-chip{
+  display:flex;align-items:center;gap:8px;
+  font-family:'JetBrains Mono';font-size:12px;color:var(--text-faint);
+}
+.stat-chip::before{
+  content:'';width:6px;height:6px;border-radius:50%;
+  background:var(--text-faint);flex-shrink:0;
+}
+
+/* ══════════════════ RIGHT AUTH PANEL ══════════════════ */
+.auth-panel{
+  position:relative;
+  display:flex;align-items:center;justify-content:center;
+  padding:36px 48px;overflow:hidden;
+  background:var(--bg);
+}
+.auth-panel-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 60% at 60% 40%,var(--glow-2),transparent 70%);
+  pointer-events:none;
+}
+
+/* theme toggle */
+.theme-toggle{
+  position:absolute;top:28px;right:28px;z-index:10;
+  width:40px;height:40px;border-radius:50%;
+  background:var(--surface);border:1px solid var(--border);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:16px;transition:border-color .2s,background .2s;color:var(--text-dim);
+}
+.theme-toggle:hover{border-color:var(--border-strong);background:var(--surface-2)}
+
+/* card */
+.auth-card{
+  position:relative;z-index:2;
+  width:100%;max-width:420px;
+  animation:fadeUp .6s .1s ease both;
+}
+
+/* tab row — pill style like the reference */
+.tab-row{
+  display:flex;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:4px;
+  margin-bottom:28px;
+  gap:4px;
+}
+.tab-btn{
+  flex:1;padding:10px 0;font-size:14px;font-weight:600;
+  font-family:'Hanken Grotesk';
+  border:none;border-radius:10px;cursor:pointer;
+  transition:all .22s ease;
+}
+.tab-btn.active{
+  background:linear-gradient(140deg,var(--violet),var(--violet-2));
+  color:#fff;box-shadow:0 4px 16px -4px var(--glow-1);
+}
+.tab-btn.inactive{background:transparent;color:var(--text-faint)}
+.tab-btn.inactive:hover{color:var(--text-dim);background:var(--surface-2)}
+
+/* headings */
+.auth-heading{font-family:'Space Grotesk';font-size:26px;font-weight:700;margin-bottom:4px}
+.auth-sub{font-size:13.5px;color:var(--text-dim);margin-bottom:24px}
+
+/* error */
+.error-box{
+  background:var(--danger-soft);
+  border:1px solid color-mix(in srgb,var(--danger) 30%,transparent);
+  color:var(--danger);padding:11px 14px;border-radius:10px;
+  font-size:13px;margin-bottom:18px;line-height:1.4;
+}
+
+/* google btn */
+.google-btn{
+  width:100%;padding:13px;
+  background:var(--surface);
+  border:1px solid var(--border-strong);
+  border-radius:12px;font-weight:600;font-size:14.5px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  gap:12px;font-family:'Hanken Grotesk';color:var(--text);
+  transition:border-color .2s,background .2s;margin-bottom:20px;
+}
+.google-btn:hover{border-color:var(--violet);background:var(--surface-2)}
+.google-icon{width:18px;height:18px}
+
+/* divider */
+.divider{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:20px;color:var(--text-faint);
+  font-size:12px;font-family:'JetBrains Mono';
+}
+.divider-line{flex:1;height:1px;background:var(--border)}
+
+/* inputs */
+.field-label{font-size:13px;font-weight:500;color:var(--text-dim);margin-bottom:6px;display:block}
+.input-wrap{margin-bottom:14px}
+.auth-input{
+  width:100%;padding:12px 16px;
+  border:1px solid var(--border);border-radius:12px;
+  font-size:14.5px;background:var(--bg-2);color:var(--text);
+  outline:none;transition:border-color .2s,box-shadow .2s;
+  font-family:'Hanken Grotesk';display:block;
+}
+.auth-input:focus{border-color:var(--violet);box-shadow:0 0 0 3px var(--violet-soft)}
+
+/* row: remember + forgot */
+.row-between{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:20px;font-size:13px;
+}
+.checkbox-label{display:inline-flex;align-items:center;gap:7px;cursor:pointer;color:var(--text-dim)}
+.auth-link{color:var(--violet-2);text-decoration:none;font-weight:600}
+.auth-link:hover{text-decoration:underline}
+
+/* primary btn */
+.primary-btn{
+  width:100%;padding:14px;
+  background:linear-gradient(140deg,var(--violet),var(--violet-2));
+  color:#fff;border:none;border-radius:12px;
+  font-weight:700;font-size:15px;cursor:pointer;
+  font-family:'Hanken Grotesk';
+  box-shadow:0 8px 28px -8px var(--glow-1);
+  transition:opacity .2s,transform .15s,box-shadow .2s;
+  letter-spacing:.01em;
+}
+.primary-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 12px 32px -8px var(--glow-1)}
+.primary-btn:active:not(:disabled){transform:translateY(0)}
+.primary-btn:disabled{opacity:.6;cursor:not-allowed;box-shadow:none}
+
+/* terms checkbox */
+.terms-label{
+  display:inline-flex;align-items:flex-start;gap:8px;
+  font-size:13px;color:var(--text-dim);cursor:pointer;
+  margin-bottom:20px;line-height:1.5;
+}
+
+/* back link */
+.back-link{
+  display:block;text-align:center;margin-top:22px;
+  color:var(--text-faint);font-size:13px;text-decoration:none;
+  transition:color .2s;
+}
+.back-link:hover{color:var(--text-dim)}
 </style>
 </helmet>
 
-<div style="background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden">
-  
-  <!-- ambient grid + glow -->
-  <div style="position:absolute;inset:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:64px 64px;-webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 50%,#000 30%,transparent 75%);mask-image:radial-gradient(ellipse 80% 60% at 50% 50%,#000 30%,transparent 75%);pointer-events:none"></div>
-  <div style="position:absolute;top:50%;left:50%;width:600px;height:600px;background:radial-gradient(circle,var(--glow-2),transparent 65%);filter:blur(30px);animation:auroraPulse 8s ease-in-out infinite;pointer-events:none;transform:translate(-50%,-50%)"></div>
+<div class="auth-root">
 
-  <!-- card -->
-  <div style="position:relative;width:100%;max-width:440px;background:var(--surface);border:1px solid var(--border-strong);border-radius:24px;padding:36px;box-shadow:var(--shadow);z-index:10">
-    
-    <!-- logo -->
-    <div style="display:flex;justify-content:center;margin-bottom:24px">
-      <a href="landing.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)">
-        <div style="width:36px;height:36px;border-radius:11px;background:linear-gradient(140deg,var(--violet),var(--violet-2));display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px var(--glow-2)">
-          <div style="width:12px;height:12px;border-radius:50%;background:#fff"></div>
-        </div>
-        <span style="font-family:'Space Grotesk';font-weight:700;font-size:20px;letter-spacing:-.01em">AETHERMIND</span>
-      </a>
+  <!-- ══ LEFT HERO ══ -->
+  <div class="auth-hero">
+    <div class="hero-grid"></div>
+    <div class="hero-glow-a"></div>
+    <div class="hero-glow-b"></div>
+
+    <!-- top: logo -->
+    <a href="landing.html" class="hero-logo">
+      <div class="hero-logo-icon"><div class="hero-logo-dot"></div></div>
+      <span class="hero-logo-name">AETHERMIND</span>
+    </a>
+
+    <!-- middle: headline -->
+    <div class="hero-body">
+      <div class="hero-pill">
+        <div class="hero-pill-dot"></div>
+        End-to-end on your machine
+      </div>
+      <h1 class="hero-headline">The only AI workspace<br>that <em>never phones</em><br>home.</h1>
+      <p class="hero-sub">Verified math, compilable code, and a private analytics dashboard — all running locally. Sign in to pick up where you left off.</p>
     </div>
 
-    <!-- title -->
-    <h2 style="font-family:'Space Grotesk';font-size:22px;font-weight:700;text-align:center;margin-bottom:28px">Local-first AI suite</h2>
-
-    <!-- error banner -->
-    <sc-if value="{{ hasError }}" hint-placeholder-val="">
-      <div style="background:var(--danger-soft);border:1px solid color-mix(in srgb,var(--danger) 30%,transparent);color:var(--danger);padding:11px 14px;border-radius:10px;font-size:13px;margin-bottom:20px;line-height:1.4">
-        {{ errorMsg }}
-      </div>
-    </sc-if>
-
-    <!-- tabs -->
-    <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:24px">
-      <button onClick="{{ setLoginTab }}" style="{{ loginTabStyle }}">Log In</button>
-      <button onClick="{{ setSignupTab }}" style="{{ signupTabStyle }}">Sign Up</button>
+    <!-- bottom: stats -->
+    <div class="hero-stats">
+      <div class="stat-chip">100% offline</div>
+      <div class="stat-chip">0 cloud calls</div>
+      <div class="stat-chip">30-day sessions</div>
     </div>
-
-    <!-- Login Form -->
-    <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
-      <div>
-        <input value="{{ loginEmail }}" onChange="{{ onLoginEmail }}" placeholder="Email address" style="{{ inputStyle }}">
-        <input type="password" value="{{ loginPassword }}" onChange="{{ onLoginPassword }}" onKeyDown="{{ onLoginKey }}" placeholder="Password" style="{{ inputStyle }}">
-
-        <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;margin-bottom:24px">
-          <label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;color:var(--text-dim)">
-            <input type="checkbox" checked="{{ rememberMe }}" onChange="{{ toggleRemember }}" style="accent-color:var(--violet)">
-            Remember me
-          </label>
-          <a href="#" onClick="{{ forgotPassword }}" style="color:var(--violet-2);text-decoration:none;font-weight:600">Forgot password?</a>
-        </div>
-
-        <button onClick="{{ handleLogin }}" disabled="{{ submitting }}" style="{{ btnStyle }}">
-          {{ loginBtnText }}
-        </button>
-
-        <div style="display:flex;align-items:center;margin:24px 0;color:var(--text-faint);font-size:12px;font-family:'JetBrains Mono'">
-          <div style="flex:1;border-bottom:1px solid var(--border)"></div>
-          <span style="padding:0 12px">OR</span>
-          <div style="flex:1;border-bottom:1px solid var(--border)"></div>
-        </div>
-
-        <button onClick="{{ handleGoogle }}" style="{{ googleBtnStyle }}">
-          <img src="https://www.google.com/favicon.ico" width="16" height="16" alt="G" style="flex:none">
-          Continue with Google
-        </button>
-      </div>
-    </sc-if>
-
-    <!-- Sign Up Form -->
-    <sc-if value="{{ isSignup }}" hint-placeholder-val="">
-      <div>
-        <input value="{{ signupName }}" onChange="{{ onSignupName }}" placeholder="Full Name" style="{{ inputStyle }}">
-        <input value="{{ signupEmail }}" onChange="{{ onSignupEmail }}" placeholder="Email address" style="{{ inputStyle }}">
-        <input type="password" value="{{ signupPassword }}" onChange="{{ onSignupPassword }}" placeholder="Create Password (min. 6 chars)" style="{{ inputStyle }}">
-        <input type="password" value="{{ signupConfirm }}" onChange="{{ onSignupConfirm }}" onKeyDown="{{ onSignupKey }}" placeholder="Confirm Password" style="{{ inputStyle }}">
-
-        <label style="display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--text-dim);cursor:pointer;margin-bottom:24px;line-height:1.4">
-          <input type="checkbox" checked="{{ termsAgree }}" onChange="{{ toggleTerms }}" style="accent-color:var(--violet)">
-          I agree to the <a href="#" style="color:var(--violet-2);text-decoration:none;font-weight:600;margin-left:4px">Terms of Service</a>
-        </label>
-
-        <button onClick="{{ handleSignUp }}" disabled="{{ submitting }}" style="{{ btnStyle }}">
-          {{ signupBtnText }}
-        </button>
-      </div>
-    </sc-if>
-
-    <a href="landing.html" style="display:block;text-align:center;margin-top:24px;color:var(--text-faint);font-size:13px;text-decoration:none" style-hover="color:var(--text-dim)">← Back to landing page</a>
-
   </div>
+
+  <!-- ══ RIGHT AUTH PANEL ══ -->
+  <div class="auth-panel">
+    <div class="auth-panel-bg"></div>
+
+    <!-- theme toggle -->
+    <button class="theme-toggle" onClick="{{ toggleTheme }}" title="Toggle theme">{{ themeIcon }}</button>
+
+    <div class="auth-card">
+
+      <!-- error -->
+      <sc-if value="{{ hasError }}" hint-placeholder-val="">
+        <div class="error-box">{{ errorMsg }}</div>
+      </sc-if>
+
+      <!-- pill tabs -->
+      <div class="tab-row">
+        <button class="{{ loginTabClass }}" onClick="{{ setLoginTab }}">Log in</button>
+        <button class="{{ signupTabClass }}" onClick="{{ setSignupTab }}">Sign up</button>
+      </div>
+
+      <!-- Login form -->
+      <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <h2 class="auth-heading">Welcome back</h2>
+          <p class="auth-sub">Sign in to your local AetherMind instance.</p>
+
+          <!-- Google -->
+          <button class="google-btn" onClick="{{ handleGoogle }}">
+            <svg class="google-icon" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Continue with Google
+          </button>
+
+          <div class="divider">
+            <div class="divider-line"></div>
+            <span>or</span>
+            <div class="divider-line"></div>
+          </div>
+
+          <div class="input-wrap">
+            <label class="field-label" for="login-email">Email</label>
+            <input id="login-email" class="auth-input" value="{{ loginEmail }}" onChange="{{ onLoginEmail }}" placeholder="you@local.host" type="email" autocomplete="email">
+          </div>
+
+          <div class="input-wrap">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <label class="field-label" for="login-password" style="margin-bottom:0">Password</label>
+              <a href="#" class="auth-link" onClick="{{ forgotPassword }}" style="font-size:13px">Forgot?</a>
+            </div>
+            <input id="login-password" class="auth-input" type="password" value="{{ loginPassword }}" onChange="{{ onLoginPassword }}" onKeyDown="{{ onLoginKey }}" placeholder="••••••••" autocomplete="current-password">
+          </div>
+
+          <div class="row-between">
+            <label class="checkbox-label">
+              <input type="checkbox" checked="{{ rememberMe }}" onChange="{{ toggleRemember }}" style="accent-color:var(--violet)">
+              Keep me signed in for 30 days
+            </label>
+          </div>
+
+          <button class="primary-btn" onClick="{{ handleLogin }}" disabled="{{ submitting }}">
+            {{ loginBtnText }}
+          </button>
+
+          <div style="text-align:center;margin-top:18px;font-size:13px;color:var(--text-faint)">
+            Don't have an account? <a href="#" class="auth-link" onClick="{{ setSignupTab }}">Sign up free</a>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- Sign Up form -->
+      <sc-if value="{{ isSignup }}" hint-placeholder-val="">
+        <div>
+          <h2 class="auth-heading">Create your account</h2>
+          <p class="auth-sub">Free forever. Runs entirely on your hardware.</p>
+
+          <!-- Google -->
+          <button class="google-btn" onClick="{{ handleGoogle }}">
+            <svg class="google-icon" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Continue with Google
+          </button>
+
+          <div class="divider">
+            <div class="divider-line"></div>
+            <span>or</span>
+            <div class="divider-line"></div>
+          </div>
+
+          <div class="input-wrap">
+            <label class="field-label" for="signup-name">Full name</label>
+            <input id="signup-name" class="auth-input" value="{{ signupName }}" onChange="{{ onSignupName }}" placeholder="Ada Lovelace" autocomplete="name">
+          </div>
+          <div class="input-wrap">
+            <label class="field-label" for="signup-email">Email</label>
+            <input id="signup-email" class="auth-input" value="{{ signupEmail }}" onChange="{{ onSignupEmail }}" placeholder="you@local.host" type="email" autocomplete="email">
+          </div>
+          <div class="input-wrap">
+            <label class="field-label" for="signup-password">Password</label>
+            <input id="signup-password" class="auth-input" type="password" value="{{ signupPassword }}" onChange="{{ onSignupPassword }}" placeholder="Min. 6 characters" autocomplete="new-password">
+          </div>
+          <div class="input-wrap">
+            <label class="field-label" for="signup-confirm">Confirm password</label>
+            <input id="signup-confirm" class="auth-input" type="password" value="{{ signupConfirm }}" onChange="{{ onSignupConfirm }}" onKeyDown="{{ onSignupKey }}" placeholder="Repeat password" autocomplete="new-password">
+          </div>
+
+          <label class="terms-label">
+            <input type="checkbox" checked="{{ termsAgree }}" onChange="{{ toggleTerms }}" style="accent-color:var(--violet);margin-top:2px;flex-shrink:0">
+            I agree to the <a href="#" class="auth-link" style="margin-left:4px">Terms of Service</a>
+          </label>
+
+          <button class="primary-btn" onClick="{{ handleSignUp }}" disabled="{{ submitting }}">
+            {{ signupBtnText }}
+          </button>
+
+          <div style="text-align:center;margin-top:18px;font-size:13px;color:var(--text-faint)">
+            Already have an account? <a href="#" class="auth-link" onClick="{{ setLoginTab }}">Log in</a>
+          </div>
+        </div>
+      </sc-if>
+
+      <a href="landing.html" class="back-link">← Back to home</a>
+    </div>
+  </div>
+
 </div>
 
 <script type="text/x-dc" data-dc-script>
@@ -144,22 +458,30 @@ class Component extends DCLogic {
     signupEmail: '',
     signupPassword: '',
     signupConfirm: '',
-    termsAgree: false
+    termsAgree: false,
+    theme: (() => { try { return localStorage.getItem('aether-theme') || 'dark'; } catch(e) { return 'dark'; } })()
   };
 
   setTab = (tab) => this.setState({ activeTab: tab, errorMsg: '' });
-  setLoginTab = () => this.setTab('login');
-  setSignupTab = () => this.setTab('signup');
+  setLoginTab = (e) => { if(e) e.preventDefault(); this.setTab('login'); };
+  setSignupTab = (e) => { if(e) e.preventDefault(); this.setTab('signup'); };
 
-  onLoginEmail = (e) => this.setState({ loginEmail: e.target.value });
+  onLoginEmail    = (e) => this.setState({ loginEmail: e.target.value });
   onLoginPassword = (e) => this.setState({ loginPassword: e.target.value });
-  toggleRemember = (e) => this.setState({ rememberMe: e.target.checked });
+  toggleRemember  = (e) => this.setState({ rememberMe: e.target.checked });
 
-  onSignupName = (e) => this.setState({ signupName: e.target.value });
-  onSignupEmail = (e) => this.setState({ signupEmail: e.target.value });
-  onSignupPassword = (e) => this.setState({ signupPassword: e.target.value });
+  onSignupName    = (e) => this.setState({ signupName: e.target.value });
+  onSignupEmail   = (e) => this.setState({ signupEmail: e.target.value });
+  onSignupPassword= (e) => this.setState({ signupPassword: e.target.value });
   onSignupConfirm = (e) => this.setState({ signupConfirm: e.target.value });
-  toggleTerms = (e) => this.setState({ termsAgree: e.target.checked });
+  toggleTerms     = (e) => this.setState({ termsAgree: e.target.checked });
+
+  toggleTheme = () => {
+    const next = this.state.theme === 'dark' ? 'light' : 'dark';
+    this.setState({ theme: next });
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('aether-theme', next); } catch(e) {}
+  };
 
   forgotPassword = (e) => {
     e.preventDefault();
@@ -170,7 +492,7 @@ class Component extends DCLogic {
     this.setState({ errorMsg: 'Google sign-in is not configured for this local instance.' });
   };
 
-  onLoginKey = (e) => { if (e.key === 'Enter') this.handleLogin(); };
+  onLoginKey  = (e) => { if (e.key === 'Enter') this.handleLogin(); };
   onSignupKey = (e) => { if (e.key === 'Enter') this.handleSignUp(); };
 
   handleLogin = async () => {
@@ -179,14 +501,10 @@ class Component extends DCLogic {
       return this.setState({ errorMsg: 'Please enter both email and password.' });
     }
     this.setState({ submitting: true, errorMsg: '' });
-
     try {
       if (typeof window.login === 'function') {
         const res = await window.login(loginEmail.trim(), loginPassword, rememberMe);
-        if (res && res.success) {
-          window.location.href = 'index.html';
-          return;
-        }
+        if (res && res.success) { window.location.href = 'index.html'; return; }
       }
       window.location.href = 'index.html';
     } catch (err) {
@@ -209,16 +527,12 @@ class Component extends DCLogic {
       return this.setState({ errorMsg: 'You must agree to the Terms of Service.' });
     }
     this.setState({ submitting: true, errorMsg: '' });
-
     try {
       if (typeof window.signUp === 'function') {
         const res = await window.signUp(signupEmail.trim(), signupPassword, signupName.trim());
         if (res && res.success) {
-          if (typeof window.login === 'function') {
-            await window.login(signupEmail.trim(), signupPassword, true);
-          }
-          window.location.href = 'index.html';
-          return;
+          if (typeof window.login === 'function') await window.login(signupEmail.trim(), signupPassword, true);
+          window.location.href = 'index.html'; return;
         }
       }
       window.location.href = 'index.html';
@@ -229,28 +543,18 @@ class Component extends DCLogic {
 
   renderVals() {
     const st = this.state;
-    const isLogin = st.activeTab === 'login';
+    const isLogin  = st.activeTab === 'login';
     const isSignup = st.activeTab === 'signup';
-
-    const tabBaseStyle = {
-      flex: 1,
-      textAlign: 'center',
-      padding: '12px',
-      fontSize: '14.5px',
-      fontWeight: 600,
-      cursor: 'pointer',
-      background: 'transparent',
-      border: 'none',
-      borderBottom: '2px solid transparent',
-      transition: 'all 0.2s ease',
-      fontFamily: 'Hanken Grotesk'
-    };
-
     return {
       hasError: st.errorMsg.length > 0,
       errorMsg: st.errorMsg,
       isLogin,
       isSignup,
+      themeIcon: st.theme === 'dark' ? '☀️' : '🌙',
+
+      loginTabClass:  'tab-btn ' + (isLogin  ? 'active' : 'inactive'),
+      signupTabClass: 'tab-btn ' + (isSignup ? 'active' : 'inactive'),
+
       loginEmail: st.loginEmail,
       loginPassword: st.loginPassword,
       rememberMe: st.rememberMe,
@@ -260,79 +564,27 @@ class Component extends DCLogic {
       signupConfirm: st.signupConfirm,
       termsAgree: st.termsAgree,
       submitting: st.submitting,
-      loginBtnText: st.submitting ? 'Signing in...' : 'Sign In',
-      signupBtnText: st.submitting ? 'Creating account...' : 'Create Account',
-      
-      setLoginTab: this.setLoginTab,
-      setSignupTab: this.setSignupTab,
-      onLoginEmail: this.onLoginEmail,
-      onLoginPassword: this.onLoginPassword,
-      onLoginKey: this.onLoginKey,
-      toggleRemember: this.toggleRemember,
-      onSignupName: this.onSignupName,
-      onSignupEmail: this.onSignupEmail,
-      onSignupPassword: this.onSignupPassword,
-      onSignupConfirm: this.onSignupConfirm,
-      onSignupKey: this.onSignupKey,
-      toggleTerms: this.toggleTerms,
-      forgotPassword: this.forgotPassword,
-      handleLogin: this.handleLogin,
-      handleSignUp: this.handleSignUp,
-      handleGoogle: this.handleGoogle,
 
-      loginTabStyle: {
-        ...tabBaseStyle,
-        color: isLogin ? 'var(--violet-2)' : 'var(--text-faint)',
-        borderBottomColor: isLogin ? 'var(--violet)' : 'transparent'
-      },
-      signupTabStyle: {
-        ...tabBaseStyle,
-        color: isSignup ? 'var(--violet-2)' : 'var(--text-faint)',
-        borderBottomColor: isSignup ? 'var(--violet)' : 'transparent'
-      },
-      inputStyle: {
-        width: '100%',
-        padding: '12px 16px',
-        marginBottom: '16px',
-        border: '1px solid var(--border)',
-        borderRadius: '12px',
-        fontSize: '14.5px',
-        background: 'var(--bg-2)',
-        color: 'var(--text)',
-        outline: 'none',
-        transition: 'border-color 0.2s',
-        fontFamily: 'Hanken Grotesk'
-      },
-      btnStyle: {
-        width: '100%',
-        padding: '14px',
-        background: 'linear-gradient(140deg,var(--violet),var(--violet-2))',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '12px',
-        fontWeight: 600,
-        fontSize: '15px',
-        cursor: st.submitting ? 'not-allowed' : 'pointer',
-        opacity: st.submitting ? 0.7 : 1,
-        fontFamily: 'Hanken Grotesk',
-        boxShadow: st.submitting ? 'none' : '0 8px 24px -8px var(--glow-1)'
-      },
-      googleBtnStyle: {
-        width: '100%',
-        padding: '14px',
-        background: 'var(--bg-2)',
-        color: 'var(--text-dim)',
-        border: '1px solid var(--border)',
-        borderRadius: '12px',
-        fontWeight: 600,
-        fontSize: '15px',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '12px',
-        fontFamily: 'Hanken Grotesk'
-      }
+      loginBtnText:  st.submitting ? 'Signing in…'        : 'Log in',
+      signupBtnText: st.submitting ? 'Creating account…'  : 'Create account',
+
+      setLoginTab:       this.setLoginTab,
+      setSignupTab:      this.setSignupTab,
+      onLoginEmail:      this.onLoginEmail,
+      onLoginPassword:   this.onLoginPassword,
+      onLoginKey:        this.onLoginKey,
+      toggleRemember:    this.toggleRemember,
+      onSignupName:      this.onSignupName,
+      onSignupEmail:     this.onSignupEmail,
+      onSignupPassword:  this.onSignupPassword,
+      onSignupConfirm:   this.onSignupConfirm,
+      onSignupKey:       this.onSignupKey,
+      toggleTerms:       this.toggleTerms,
+      forgotPassword:    this.forgotPassword,
+      handleLogin:       this.handleLogin,
+      handleSignUp:      this.handleSignUp,
+      handleGoogle:      this.handleGoogle,
+      toggleTheme:       this.toggleTheme,
     };
   }
 }
