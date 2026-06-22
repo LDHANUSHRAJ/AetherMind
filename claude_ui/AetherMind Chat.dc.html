@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script>try{var t=localStorage.getItem('aether-theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<style>
+:root{
+  --bg:#0b0a11; --bg-2:#100e18; --surface:#15121f; --surface-2:#1c1828;
+  --border:rgba(255,255,255,.08); --border-strong:rgba(255,255,255,.14);
+  --text:#ece9f5; --text-dim:#a39fb5; --text-faint:#6f6b80;
+  --violet:#7c5cff; --violet-2:#a78bfa; --violet-soft:rgba(124,92,255,.16);
+  --aether:#5eead4; --aether-soft:rgba(94,234,212,.14);
+  --glow-1:rgba(124,92,255,.55); --glow-2:rgba(124,92,255,.18);
+  --grid:rgba(255,255,255,.04); --danger:#ff6b6b; --danger-soft:rgba(255,107,107,.12);
+  --amber:#f5b942; --amber-soft:rgba(245,185,66,.12);
+}
+:root[data-theme="light"]{
+  --bg:#f4f2fb; --bg-2:#ebe8f6; --surface:#ffffff; --surface-2:#f6f4fc;
+  --border:rgba(24,18,48,.10); --border-strong:rgba(24,18,48,.18);
+  --text:#191427; --text-dim:#5b5570; --text-faint:#8b8699;
+  --violet:#6d4bf0; --violet-2:#7c5cff; --violet-soft:rgba(109,75,240,.10);
+  --aether:#0fb89a; --aether-soft:rgba(15,184,154,.12);
+  --glow-1:rgba(124,92,255,.30); --glow-2:rgba(124,92,255,.10);
+  --grid:rgba(24,18,48,.05); --danger:#d63a3a; --danger-soft:rgba(214,58,58,.10);
+  --amber:#b8821a; --amber-soft:rgba(184,130,26,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:'Hanken Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+::selection{background:var(--violet);color:#fff}
+textarea::placeholder{color:var(--text-faint)}
+.scroll::-webkit-scrollbar{width:9px}.scroll::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:9px}.scroll::-webkit-scrollbar-track{background:transparent}
+.katex{font-size:1.05em}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+@media(max-width:880px){.chat-shell{grid-template-columns:1fr !important}.chat-sidebar{display:none !important}}
+</style>
+</helmet>
+
+<div class="chat-shell" style="background:var(--bg);color:var(--text);height:100vh;display:grid;grid-template-columns:282px 1fr;overflow:hidden">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="chat-sidebar" style="display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--bg-2);min-height:0">
+    <div style="padding:18px 16px 12px;display:flex;align-items:center;justify-content:space-between">
+      <a href="AetherMind Landing.dc.html" style="display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--text)">
+        <div style="width:26px;height:26px;border-radius:8px;background:linear-gradient(140deg,var(--violet),var(--violet-2));display:flex;align-items:center;justify-content:center;box-shadow:0 0 18px var(--glow-2)"><div style="width:9px;height:9px;border-radius:50%;background:#fff"></div></div>
+        <span style="font-family:'Space Grotesk';font-weight:700;font-size:15px;letter-spacing:-.01em">AETHERMIND</span>
+      </a>
+    </div>
+
+    <div style="padding:0 16px 12px">
+      <button onClick="{{ newSession }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:9px;padding:11px;border-radius:11px;border:none;cursor:pointer;font-family:'Hanken Grotesk';font-size:14px;font-weight:600;color:#fff;background:linear-gradient(140deg,var(--violet),var(--violet-2));box-shadow:0 8px 22px -10px var(--glow-1)"><span style="font-size:16px;line-height:1">+</span> New session</button>
+    </div>
+
+    <div style="padding:0 16px 14px">
+      <div style="display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--border)">
+        <span style="color:var(--text-faint);font-size:13px">⌕</span>
+        <input value="{{ search }}" onChange="{{ onSearch }}" placeholder="Search sessions" style="flex:1;border:none;background:transparent;color:var(--text);font-size:13px;outline:none;font-family:'Hanken Grotesk'">
+      </div>
+    </div>
+
+    <div class="scroll" style="flex:1;overflow-y:auto;padding:0 10px 12px;min-height:0">
+      <sc-if value="{{ hasPinned }}" hint-placeholder-val="">
+        <div style="font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.12em;color:var(--text-faint);padding:6px 8px 8px">PINNED</div>
+      </sc-if>
+      <sc-for list="{{ pinnedList }}" as="it" hint-placeholder-count="2">
+        <div onMouseLeave="{{ it.closeMenu }}" style="{{ it.rowStyle }}">
+          <span onClick="{{ it.select }}" style="color:var(--violet-2);font-size:11px;flex:none">★</span>
+          <sc-if value="{{ it.renaming }}" hint-placeholder-val="">
+            <input value="{{ it.renameVal }}" onChange="{{ it.onRename }}" onKeyDown="{{ it.commitKey }}" onBlur="{{ it.commit }}" autoFocus="{{ true }}" style="flex:1;min-width:0;border:1px solid var(--violet);background:var(--bg);color:var(--text);border-radius:6px;padding:3px 7px;font-size:13px;outline:none;font-family:'Hanken Grotesk'">
+          </sc-if>
+          <sc-if value="{{ it.notRenaming }}" hint-placeholder-val="{{ true }}">
+            <span onClick="{{ it.select }}" style="flex:1;min-width:0;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ it.title }}</span>
+          </sc-if>
+          <button onClick="{{ it.openMenu }}" style="flex:none;border:none;background:transparent;color:var(--text-faint);cursor:pointer;font-size:15px;padding:2px 4px;border-radius:6px">⋯</button>
+          <sc-if value="{{ it.menuOpen }}" hint-placeholder-val="">
+            <div style="position:absolute;top:34px;right:6px;z-index:20;width:150px;padding:5px;border-radius:11px;background:var(--surface);border:1px solid var(--border-strong);box-shadow:0 16px 40px -12px rgba(0,0,0,.6)">
+              <div onClick="{{ it.rename }}" style="padding:8px 10px;border-radius:7px;font-size:13px;cursor:pointer" style-hover="background:var(--surface-2)">✎ Rename</div>
+              <div onClick="{{ it.share }}" style="padding:8px 10px;border-radius:7px;font-size:13px;cursor:pointer" style-hover="background:var(--surface-2)">↗ Share</div>
+              <div onClick="{{ it.togglePin }}" style="padding:8px 10px;border-radius:7px;font-size:13px;cursor:pointer" style-hover="background:var(--surface-2)">{{ it.pinLabel }}</div>
+              <div onClick="{{ it.del }}" style="padding:8px 10px;border-radius:7px;font-size:13px;cursor:pointer;color:var(--danger)" style-hover="background:var(--danger-soft)">🗑 Delete</div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+
+      <div style="font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.12em;color:var(--text-faint);padding:14px 8px 8px">RECENT</div>
+      <sc-for list="{{ recentList }}" as="it" hint-placeholder-count="4">
+        <div onMouseLeave="{{ it.closeMenu }}" style="{{ it.rowStyle }}">
+          <sc-if value="{{ it.renaming }}" hint-placeholder-val="">
+            <input value="{{ it.renameVal }}" onChange="{{ it.onRename }}" onKeyDown="{{ it.commitKey }}" onBlur="{{ it.commit }}" autoFocus="{{ true }}" style="flex:1;min-width:0;border:1px solid var(--violet);background:var(--bg);color:var(--text);border-radius:6px;padding:3px 7px;font-size:13px;outline:none;font-family:'Hanken Grotesk'">
+          </sc-if>
+          <sc-if value="{{ it.notRenaming }}" hint-placeholder-val="{{ true }}">
+            <span onClick="{{ it.select }}" style="flex:1;min-width:0;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ it.title }}</span>
+          </sc-if>
+          <button onClick="{{ it.openMenu }}" style="flex:none;border:none;background:transparent;color:var(--text-faint);cursor:pointer;font-size:15px;padding:2px 4px;border-radius:6px">⋯</button>
+          <sc-if value="{{ it.menuOpen }}" hint-placeholder-val="">
+            <div style="position:absolute;top:34px;right:6px;z-index:20;width:150px;padding:5px;border-radius:11px;background:var(--surface);border:1px solid var(--border-strong);box-shadow:0 16px 40px -12px rgba(0,0,0,.6)">
+              <div onClick="{{ it.rename }}" style="padding:8px 10px;border-radius:7px;font-size:13px;cursor:pointer" style-hover="background:var(--surface-2)">✎ Rename</div>
+              <div onClick="{{ it.share }}" style="padding:8px 10px;border-radius:7px;font-size:13px;cursor:pointer" style-hover="background:var(--surface-2)">↗ Share</div>
+              <div onClick="{{ it.togglePin }}" style="padding:8px 10px;border-radius:7px;font-size:13px;cursor:pointer" style-hover="background:var(--surface-2)">{{ it.pinLabel }}</div>
+              <div onClick="{{ it.del }}" style="padding:8px 10px;border-radius:7px;font-size:13px;cursor:pointer;color:var(--danger)" style-hover="background:var(--danger-soft)">🗑 Delete</div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- sidebar footer / app nav -->
+    <div style="border-top:1px solid var(--border);padding:10px 12px">
+      <div style="display:flex;gap:4px;margin-bottom:8px">
+        <a href="AetherMind Dashboard.dc.html" style="flex:1;text-align:center;text-decoration:none;color:var(--text-dim);font-size:12px;font-weight:500;padding:8px;border-radius:8px;background:var(--surface);border:1px solid var(--border)">Dashboard</a>
+        <a href="AetherMind Settings.dc.html" style="flex:1;text-align:center;text-decoration:none;color:var(--text-dim);font-size:12px;font-weight:500;padding:8px;border-radius:8px;background:var(--surface);border:1px solid var(--border)">Settings</a>
+      </div>
+      <a href="AetherMind Profile.dc.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;padding:8px;border-radius:10px" style-hover="background:var(--surface)">
+        <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(140deg,var(--violet),var(--aether));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:13px;flex:none">AL</div>
+        <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Ada Lovelace</div><div style="font-size:11px;color:var(--text-faint)">Local instance</div></div>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main style="display:flex;flex-direction:column;min-width:0;min-height:0;position:relative">
+    <!-- topbar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 22px;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(10px)">
+      <div style="min-width:0">
+        <div style="font-family:'Space Grotesk';font-weight:600;font-size:16px;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ activeTitle }}</div>
+        <div style="font-size:11.5px;color:var(--text-faint);font-family:'JetBrains Mono'">{{ modelLine }}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button onClick="{{ cycleConn }}" title="Click to preview connection states" style="{{ connPillStyle }}"><span style="{{ connDotStyle }}"></span>{{ connLabel }}</button>
+        <button onClick="{{ toggleTheme }}" aria-label="Toggle theme" style="width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:14px;flex:none">{{ themeIcon }}</button>
+      </div>
+    </div>
+
+    <!-- connection banner -->
+    <sc-if value="{{ showBanner }}" hint-placeholder-val="">
+      <div style="{{ bannerStyle }}">
+        <span style="font-size:15px">{{ bannerIcon }}</span>
+        <span style="flex:1;font-size:13.5px">{{ bannerText }}</span>
+        <sc-if value="{{ bannerRetry }}" hint-placeholder-val=""><button onClick="{{ retryConn }}" style="border:1px solid currentColor;background:transparent;color:inherit;border-radius:8px;padding:5px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Hanken Grotesk'">Retry</button></sc-if>
+      </div>
+    </sc-if>
+
+    <!-- messages -->
+    <div class="scroll" id="msgScroll" style="flex:1;overflow-y:auto;min-height:0;padding:26px 0">
+      <div style="max-width:760px;margin:0 auto;padding:0 24px">
+
+        <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ true }}">
+          <div style="padding-top:8vh;text-align:center">
+            <div style="width:54px;height:54px;border-radius:16px;margin:0 auto 22px;background:linear-gradient(140deg,var(--violet),var(--violet-2));display:flex;align-items:center;justify-content:center;box-shadow:0 0 40px var(--glow-1)"><div style="width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 0 14px #fff"></div></div>
+            <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:30px;letter-spacing:-.02em;margin-bottom:8px">{{ greeting }}</h2>
+            <p style="font-size:15px;color:var(--text-dim);margin-bottom:34px">What can I help you solve today? Everything stays on your machine.</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:left">
+              <sc-for list="{{ starters }}" as="st" hint-placeholder-count="4">
+                <div onClick="{{ st.go }}" style="padding:16px;border-radius:14px;background:var(--surface);border:1px solid var(--border);cursor:pointer" style-hover="border-color:var(--border-strong)">
+                  <div style="font-size:13px;font-family:'JetBrains Mono';color:var(--violet-2);margin-bottom:7px">{{ st.tag }}</div>
+                  <div style="font-size:14px;color:var(--text);line-height:1.45">{{ st.text }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-for list="{{ msgs }}" as="m" hint-placeholder-count="0">
+          <div style="{{ m.rowStyle }}">
+            <div style="{{ m.bubbleStyle }}">{{ m.body }}</div>
+          </div>
+        </sc-for>
+
+        <sc-if value="{{ thinking }}" hint-placeholder-val="">
+          <div style="display:flex;gap:6px;align-items:center;padding:6px 4px 4px">
+            <span style="width:7px;height:7px;border-radius:50%;background:var(--violet-2);animation:blink 1.2s infinite"></span>
+            <span style="width:7px;height:7px;border-radius:50%;background:var(--violet-2);animation:blink 1.2s infinite .2s"></span>
+            <span style="width:7px;height:7px;border-radius:50%;background:var(--violet-2);animation:blink 1.2s infinite .4s"></span>
+            <span style="font-size:12.5px;color:var(--text-faint);margin-left:6px;font-family:'JetBrains Mono'">verifying locally…</span>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <!-- input bar -->
+    <div style="padding:16px 24px 22px">
+      <div style="max-width:760px;margin:0 auto">
+        <sc-if value="{{ toast }}" hint-placeholder-val="">
+          <div style="display:inline-flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 13px;border-radius:10px;background:var(--aether-soft);border:1px solid color-mix(in srgb,var(--aether) 40%,transparent);font-size:12.5px;color:var(--aether)">✓ {{ toast }}</div>
+        </sc-if>
+        <div style="display:flex;align-items:flex-end;gap:10px;padding:10px 10px 10px 14px;border-radius:16px;background:var(--surface);border:1px solid var(--border-strong);box-shadow:0 10px 30px -16px rgba(0,0,0,.5)">
+          <button onClick="{{ ocrUpload }}" title="Upload image for OCR" style="flex:none;width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text-dim);cursor:pointer;font-size:16px">⎙</button>
+          <textarea value="{{ input }}" onChange="{{ onInput }}" onKeyDown="{{ onKey }}" rows="1" placeholder="Ask a math, code, or stats question…" style="flex:1;resize:none;border:none;background:transparent;color:var(--text);font-size:15px;font-family:'Hanken Grotesk';outline:none;max-height:140px;line-height:1.5;padding:9px 0"></textarea>
+          <button onClick="{{ send }}" disabled="{{ sendDisabled }}" aria-label="Send" style="{{ sendStyle }}">↑</button>
+        </div>
+        <div style="text-align:center;font-size:11px;color:var(--text-faint);margin-top:9px;font-family:'JetBrains Mono'">Responses are symbolically verified · nothing is sent to the cloud</div>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    theme:'dark', search:'', input:'', thinking:false, conn:'ok',
+    openMenuId:null, renamingId:null, renameVal:'', toast:'', copiedKey:null, libs:false,
+    activeId:'s1',
+    sessions:[
+      { id:'s1', pinned:true, title:'Eigenvalue decomposition proof', messages:[
+        {role:'user', text:'Show that a symmetric matrix has real eigenvalues, and solve ∫ x·eˣ dx as a warm-up.'},
+        {role:'ai', segs:[
+          {t:'p', text:'For a real symmetric matrix A, take eigenpair (λ, v). Then v*Av = λ‖v‖², and taking conjugate transpose shows λ = λ̄, so λ is real. Here is the warm-up integral by parts (u = x, dv = eˣ dx):'},
+          {t:'math', tex:'\\int x\\,e^{x}\\,dx = x e^{x} - \\int e^{x}\\,dx = (x-1)e^{x} + C'},
+          {t:'p', text:'Symbolic check with SymPy — runs locally:'},
+          {t:'code', lang:'python', code:"from sympy import symbols, integrate, exp\\nx = symbols('x')\\nprint(integrate(x*exp(x), x))   # (x - 1)*exp(x)"}
+        ]}
+      ]},
+      { id:'s2', pinned:true, title:'Big-O of quicksort', messages:[] },
+      { id:'s3', pinned:false, title:'Bayesian A/B test', messages:[] },
+      { id:'s4', pinned:false, title:'Gradient descent intuition', messages:[] },
+      { id:'s5', pinned:false, title:'Regex for email validation', messages:[] },
+      { id:'s6', pinned:false, title:'Matrix rank, explained', messages:[] },
+    ],
+  };
+
+  componentDidMount(){
+    try{ const t=localStorage.getItem('aether-theme'); if(t){ this.setState({theme:t}); document.documentElement.dataset.theme=t; } }catch(e){}
+    const check=()=>{ if(window.katex && window.hljs){ this.setState({libs:true}); } else { this._lt=setTimeout(check,120); } };
+    check();
+  }
+  componentDidUpdate(){ const el=document.getElementById('msgScroll'); if(el) el.scrollTop=el.scrollHeight; }
+
+  toggleTheme=()=>{ const n=this.state.theme==='dark'?'light':'dark'; this.setState({theme:n}); document.documentElement.dataset.theme=n; try{localStorage.setItem('aether-theme',n);}catch(e){} };
+  onSearch=(e)=>this.setState({search:e.target.value});
+  onInput=(e)=>this.setState({input:e.target.value});
+  onKey=(e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); this.send(); } };
+  cycleConn=()=>{ const o=['ok','ollama','supabase']; const i=o.indexOf(this.state.conn); this.setState({conn:o[(i+1)%3]}); };
+  retryConn=()=>this.setState({conn:'ok'});
+  flash=(m)=>{ this.setState({toast:m}); clearTimeout(this._tt); this._tt=setTimeout(()=>this.setState({toast:''}),2200); };
+
+  active(){ return this.state.sessions.find(s=>s.id===this.state.activeId) || this.state.sessions[0]; }
+  selectSession=(id)=>this.setState({activeId:id, openMenuId:null});
+  newSession=()=>{ const id='s'+Date.now(); this.setState(st=>({ sessions:[{id,pinned:false,title:'New session',messages:[]},...st.sessions], activeId:id, input:'' })); };
+  openMenu=(id)=>(e)=>{ e.stopPropagation(); this.setState(st=>({openMenuId:st.openMenuId===id?null:id})); };
+  closeMenu=(id)=>()=>{ this.setState(st=>st.openMenuId===id?{openMenuId:null}:{}); };
+  startRename=(id,title)=>(e)=>{ e.stopPropagation(); this.setState({renamingId:id,renameVal:title,openMenuId:null}); };
+  onRename=(e)=>this.setState({renameVal:e.target.value});
+  commitRename=()=>{ const {renamingId,renameVal}=this.state; if(!renamingId)return; this.setState(st=>({ sessions:st.sessions.map(s=>s.id===renamingId?{...s,title:renameVal.trim()||s.title}:s), renamingId:null })); };
+  renameKey=(e)=>{ if(e.key==='Enter'){ e.preventDefault(); this.commitRename(); } if(e.key==='Escape'){ this.setState({renamingId:null}); } };
+  share=(id)=>(e)=>{ e.stopPropagation(); try{navigator.clipboard.writeText('aethermind://session/'+id);}catch(_){}; this.setState({openMenuId:null}); this.flash('Share link copied to clipboard'); };
+  togglePin=(id)=>(e)=>{ e.stopPropagation(); this.setState(st=>({ sessions:st.sessions.map(s=>s.id===id?{...s,pinned:!s.pinned}:s), openMenuId:null })); };
+  del=(id)=>(e)=>{ e.stopPropagation(); this.setState(st=>{ const sessions=st.sessions.filter(s=>s.id!==id); const activeId=st.activeId===id?(sessions[0]&&sessions[0].id):st.activeId; return {sessions,activeId,openMenuId:null}; }); };
+
+  ocrUpload=()=>{ this.flash('Reading equation from image (OCR)…'); setTimeout(()=>this.setState({input:'Solve the quadratic 3x² − 5x − 2 = 0 from my screenshot'}),650); };
+  copy=(key,code)=>{ try{navigator.clipboard.writeText(code);}catch(e){} this.setState({copiedKey:key}); clearTimeout(this._c); this._c=setTimeout(()=>this.setState({copiedKey:null}),1500); };
+
+  pickResponse(text){
+    const t=(text||'').toLowerCase();
+    if(/code|function|sort|algorithm|python|regex|loop|implement|quicksort/.test(t)) return [
+      {t:'p', text:'Quicksort partitions around a pivot and recurses on each half. Average-case complexity:'},
+      {t:'math', tex:'T(n) = 2T(n/2) + O(n) \\;\\Rightarrow\\; O(n \\log n)'},
+      {t:'p', text:'A clean, local implementation:'},
+      {t:'code', lang:'python', code:"def quicksort(a):\n    if len(a) <= 1:\n        return a\n    pivot = a[len(a)//2]\n    lo = [x for x in a if x < pivot]\n    eq = [x for x in a if x == pivot]\n    hi = [x for x in a if x > pivot]\n    return quicksort(lo) + eq + quicksort(hi)"}
+    ];
+    if(/integr|∫|deriv|solve|eigen|matrix|quadratic|equation|=\s*0/.test(t)) return [
+      {t:'p', text:'Using the quadratic formula for ax² + bx + c = 0:'},
+      {t:'math', tex:'x = \\frac{-b \\pm \\sqrt{b^{2}-4ac}}{2a} \\;=\\; \\frac{5 \\pm \\sqrt{25+24}}{6} \\;=\\; 2,\\; -\\tfrac{1}{3}'},
+      {t:'p', text:'Verified symbolically on your machine:'},
+      {t:'code', lang:'python', code:"from sympy import symbols, solve\nx = symbols('x')\nprint(solve(3*x**2 - 5*x - 2, x))   # [-1/3, 2]"}
+    ];
+    return [
+      {t:'p', text:'Here is the core idea, kept rigorous. The result follows directly from the definition:'},
+      {t:'math', tex:'\\lim_{n \\to \\infty}\\left(1+\\tfrac{1}{n}\\right)^{n} = e'},
+      {t:'p', text:'Ask a follow-up and I will go deeper — all computed locally.'}
+    ];
+  }
+
+  send=()=>{
+    const text=this.state.input.trim(); if(!text) return;
+    const id=this.state.activeId;
+    this.setState(st=>({ sessions:st.sessions.map(s=>s.id===id?{...s,messages:[...s.messages,{role:'user',text}]}:s), input:'' }));
+    if(this.state.conn==='ollama'){
+      setTimeout(()=>this.setState(st=>({ sessions:st.sessions.map(s=>s.id===id?{...s,messages:[...s.messages,{role:'err',text:'Could not reach the local model at localhost:11434. Start Ollama and retry.'}]}:s) })),300);
+      return;
+    }
+    this.setState({thinking:true});
+    const segs=this.pickResponse(text);
+    clearTimeout(this._r);
+    this._r=setTimeout(()=>{ this.setState(st=>({ thinking:false, sessions:st.sessions.map(s=>s.id===id?{...s,messages:[...s.messages,{role:'ai',segs}]}:s) })); }, 1300);
+  };
+
+  mathNode(tex){
+    let html=tex;
+    try{ if(window.katex) html=window.katex.renderToString(tex,{displayMode:true,throwOnError:false}); }catch(e){}
+    return React.createElement('div',{key:'m',style:{overflowX:'auto',padding:'10px 0',color:'var(--text)'},dangerouslySetInnerHTML:{__html:html}});
+  }
+  codeNode(seg,key){
+    let html=seg.code;
+    try{ if(window.hljs) html=window.hljs.highlight(seg.code,{language:seg.lang}).value; else html=seg.code.replace(/&/g,'&amp;').replace(/</g,'&lt;'); }catch(e){ html=seg.code.replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+    const copied=this.state.copiedKey===key;
+    return React.createElement('div',{key,style:{margin:'10px 0',borderRadius:'12px',overflow:'hidden',border:'1px solid rgba(255,255,255,.1)',background:'#1a1b26'}},
+      React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 13px',borderBottom:'1px solid rgba(255,255,255,.08)'}},
+        React.createElement('span',{style:{fontFamily:'JetBrains Mono',fontSize:'11.5px',color:'#9aa0b4'}},seg.lang),
+        React.createElement('button',{onClick:()=>this.copy(key,seg.code),style:{border:'none',background:'transparent',color:copied?'#5eead4':'#9aa0b4',cursor:'pointer',fontSize:'12px',fontWeight:600,fontFamily:'Hanken Grotesk'}},copied?'Copied ✓':'Copy')
+      ),
+      React.createElement('pre',{style:{margin:0,padding:'13px 15px',overflowX:'auto'}},
+        React.createElement('code',{className:'hljs',style:{fontFamily:'JetBrains Mono',fontSize:'12.8px',lineHeight:1.6,background:'transparent'},dangerouslySetInnerHTML:{__html:html}})
+      )
+    );
+  }
+  aiBody(segs){
+    return React.createElement('div',{},
+      React.createElement('div',{key:'h',style:{display:'flex',alignItems:'center',gap:'8px',marginBottom:'10px'}},
+        React.createElement('span',{style:{fontFamily:'Space Grotesk',fontWeight:600,fontSize:'12.5px',color:'var(--violet-2)'}},'AetherMind'),
+        React.createElement('span',{style:{fontFamily:'JetBrains Mono',fontSize:'10.5px',color:'var(--aether)',border:'1px solid color-mix(in srgb,var(--aether) 35%,transparent)',borderRadius:'999px',padding:'1px 8px'}},'✓ verified')
+      ),
+      segs.map((s,i)=> s.t==='p' ? React.createElement('p',{key:i,style:{fontSize:'14.5px',lineHeight:1.65,color:'var(--text)',margin:'4px 0'}},s.text)
+        : s.t==='math' ? this.mathNode(s.tex)
+        : this.codeNode(s,'c'+i+'-'+s.code.length) )
+    );
+  }
+
+  renderVals(){
+    const st=this.state, act=this.active();
+    const matches=(s)=> s.title.toLowerCase().includes(st.search.toLowerCase());
+    const decorate=(s)=>{
+      const id=s.id;
+      const activeRow = id===st.activeId;
+      return {
+        id, title:s.title, pinned:s.pinned,
+        renaming:st.renamingId===id, notRenaming:st.renamingId!==id,
+        renameVal:st.renameVal, menuOpen:st.openMenuId===id,
+        rowStyle: {
+          position:'relative', display:'flex', alignItems:'center', gap:'9px', padding:'9px 12px', borderRadius:'10px',
+          background:activeRow?'var(--surface)':'transparent', color:activeRow?'var(--text)':'var(--text-dim)',
+          cursor:'pointer', marginBottom:'2px'
+        },
+        select: ()=>this.selectSession(id),
+        openMenu: this.openMenu(id),
+        closeMenu: this.closeMenu(id),
+        rename: this.startRename(id,s.title),
+        onRename: this.onRename,
+        commitKey: this.renameKey,
+        commit: this.commitRename,
+        share: this.share(id),
+        togglePin: this.togglePin(id),
+        pinLabel: s.pinned?'★ Unpin':'☆ Pin',
+        del: this.del(id),
+      };
+    };
+
+    const conn = st.conn;
+    let cm = { dot: 'var(--aether)', label: 'Connected' };
+    if (conn === 'ollama') cm = { dot: 'var(--danger)', label: 'Ollama Offline' };
+    if (conn === 'supabase') cm = { dot: 'var(--amber)', label: 'Offline Mode' };
+
+    const formatTime = () => {
+      const hour = new Date().getHours();
+      if (hour < 5) return 'Still up?';
+      if (hour < 12) return 'Good morning';
+      if (hour < 17) return 'Good afternoon';
+      if (hour < 21) return 'Good evening';
+      return 'Working late?';
+    };
+
+    return {
+      activeTitle: act.title,
+      modelLine: conn==='ollama' ? 'Local model offline' : 'Llama 3 8B (Local)',
+      toggleTheme: this.toggleTheme,
+      themeIcon: st.theme === 'dark' ? '☾' : '☀',
+      cycleConn: this.cycleConn,
+      retryConn: this.retryConn,
+      connLabel: cm.label,
+      connDotStyle:{width:'7px',height:'7px',borderRadius:'50%',background:cm.dot,boxShadow:'0 0 8px '+cm.dot,display:'inline-block',marginRight:'8px'},
+      connPillStyle:{display:'inline-flex',alignItems:'center',padding:'8px 13px',borderRadius:'999px',border:'1px solid var(--border)',background:'var(--surface)',color:'var(--text-dim)',cursor:'pointer',fontSize:'12.5px',fontWeight:500,fontFamily:'Hanken Grotesk'},
+      showBanner:conn!=='ok',
+      bannerRetry:conn==='ollama',
+      bannerIcon:conn==='ollama'?'⚠':'☁',
+      bannerText:conn==='ollama'?'Can’t reach your local model at localhost:11434. Check that Ollama is running.':'Supabase is unreachable — you’re in offline mode. Changes will sync automatically when the connection returns.',
+      bannerStyle:{display:'flex',alignItems:'center',gap:'12px',padding:'11px 22px',background:conn==='ollama'?'var(--danger-soft)':'var(--amber-soft)',borderBottom:'1px solid '+(conn==='ollama'?'color-mix(in srgb,var(--danger) 35%,transparent)':'color-mix(in srgb,var(--amber) 35%,transparent)'),color:conn==='ollama'?'var(--danger)':'var(--amber)'},
+      isEmpty: act.messages.length===0,
+      greeting: formatTime(),
+      starters:[
+        {tag:'∑ math', text:'Prove the derivative of sin(x) is cos(x) from first principles', go:()=>{this.setState({input:'Prove the derivative of sin(x) is cos(x) from first principles'},this.send);}},
+        {tag:'{ } code', text:'Implement quicksort in Python and analyze its complexity', go:()=>{this.setState({input:'Implement quicksort in Python and analyze its complexity'},this.send);}},
+        {tag:'⊞ stats', text:'Explain a Bayesian A/B test with a worked example', go:()=>{this.setState({input:'Explain a Bayesian A/B test with a worked example'},this.send);}},
+        {tag:'◉ ocr', text:'Solve a quadratic from a screenshot I upload', go:this.ocrUpload},
+      ],
+      msgs: act.messages.map((m,i)=>{
+        const isUser = m.role==='user';
+        const isErr = m.role==='err';
+        return {
+          rowStyle: { display:'flex', justifyContent:isUser?'flex-end':'flex-start', marginBottom:'16px' },
+          bubbleStyle: {
+            maxWidth:'80%', padding:'13px 16px', borderRadius:isUser?'14px 14px 4px 14px':'14px 14px 14px 4px',
+            background:isUser?'linear-gradient(140deg,var(--violet),var(--violet-2))':isErr?'var(--danger-soft)':'var(--surface-2)',
+            color:isUser?'#fff':isErr?'var(--danger)':'var(--text)', border:isUser?'none':isErr?'1px solid var(--danger)':'1px solid var(--border)',
+            fontSize:'14px', lineHeight:1.55
+          },
+          body: isUser ? m.text : isErr ? m.text : this.aiBody(m.segs)
+        };
+      }),
+      thinking: st.thinking,
+      toast: st.toast,
+      input: st.input,
+      onSearch: this.onSearch,
+      search: st.search,
+      newSession: this.newSession,
+      hasPinned: st.sessions.some(s=>s.pinned && matches(s)),
+      pinnedList: st.sessions.filter(s=>s.pinned && matches(s)).map(decorate),
+      recentList: st.sessions.filter(s=>!s.pinned && matches(s)).map(decorate),
+      onInput: this.onInput,
+      onKey: this.onKey,
+      ocrUpload: this.ocrUpload,
+      send: this.send,
+      sendDisabled: st.input.trim().length===0,
+      sendStyle:{flex:'none',width:'38px',height:'38px',borderRadius:'11px',border:'none',cursor:st.input.trim()?'pointer':'not-allowed',fontSize:'17px',fontWeight:700,color:'#fff',background:st.input.trim()?'linear-gradient(140deg,var(--violet),var(--violet-2))':'var(--surface-2)',opacity:st.input.trim()?1:.5,boxShadow:st.input.trim()?'0 8px 20px -8px var(--glow-1)':'none'},
+    };
+  }
+}
+</script>
+</body>
+</html>
