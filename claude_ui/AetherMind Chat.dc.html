@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="./env-config.js"></script>
+<script src="./supabase_client.js"></script>
 </head>
 <body>
 <x-dc>
@@ -79,7 +82,7 @@ textarea::placeholder{color:var(--text-faint)}
         <div onMouseLeave="{{ it.closeMenu }}" style="{{ it.rowStyle }}">
           <span onClick="{{ it.select }}" style="color:var(--violet-2);font-size:11px;flex:none">★</span>
           <sc-if value="{{ it.renaming }}" hint-placeholder-val="">
-            <input value="{{ it.renameVal }}" onChange="{{ it.onRename }}" onKeyDown="{{ it.commitKey }}" onBlur="{{ it.commit }}" autoFocus="{{ true }}" style="flex:1;min-width:0;border:1px solid var(--violet);background:var(--bg);color:var(--text);border-radius:6px;padding:3px 7px;font-size:13px;outline:none;font-family:'Hanken Grotesk'">
+            <input value="{{ it.renameVal }}" onChange="{{ it.onRename }}" onKeyDown="{{ it.commitKey }}" onBlur="{{ it.commit }}" data-dc-autofocus="true" style="flex:1;min-width:0;border:1px solid var(--violet);background:var(--bg);color:var(--text);border-radius:6px;padding:3px 7px;font-size:13px;outline:none;font-family:'Hanken Grotesk'">
           </sc-if>
           <sc-if value="{{ it.notRenaming }}" hint-placeholder-val="{{ true }}">
             <span onClick="{{ it.select }}" style="flex:1;min-width:0;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ it.title }}</span>
@@ -100,7 +103,7 @@ textarea::placeholder{color:var(--text-faint)}
       <sc-for list="{{ recentList }}" as="it" hint-placeholder-count="4">
         <div onMouseLeave="{{ it.closeMenu }}" style="{{ it.rowStyle }}">
           <sc-if value="{{ it.renaming }}" hint-placeholder-val="">
-            <input value="{{ it.renameVal }}" onChange="{{ it.onRename }}" onKeyDown="{{ it.commitKey }}" onBlur="{{ it.commit }}" autoFocus="{{ true }}" style="flex:1;min-width:0;border:1px solid var(--violet);background:var(--bg);color:var(--text);border-radius:6px;padding:3px 7px;font-size:13px;outline:none;font-family:'Hanken Grotesk'">
+            <input value="{{ it.renameVal }}" onChange="{{ it.onRename }}" onKeyDown="{{ it.commitKey }}" onBlur="{{ it.commit }}" data-dc-autofocus="true" style="flex:1;min-width:0;border:1px solid var(--violet);background:var(--bg);color:var(--text);border-radius:6px;padding:3px 7px;font-size:13px;outline:none;font-family:'Hanken Grotesk'">
           </sc-if>
           <sc-if value="{{ it.notRenaming }}" hint-placeholder-val="{{ true }}">
             <span onClick="{{ it.select }}" style="flex:1;min-width:0;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ it.title }}</span>

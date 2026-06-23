@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="./env-config.js"></script>
+<script src="./supabase_client.js"></script>
 </head>
 <body>
 <x-dc>
@@ -37,304 +40,188 @@
 body{background:var(--bg);font-family:'Hanken Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
 ::selection{background:var(--violet);color:#fff}
 input::placeholder{color:var(--text-faint)}
-@keyframes auroraPulse{0%,100%{opacity:.85;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.06)}}
+@keyframes auroraPulse{0%,100%{opacity:.8}50%{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
+@media(max-width:840px){.auth-shell{grid-template-columns:1fr !important}.auth-brand{display:none !important}}
 </style>
 </helmet>
 
-<div style="background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden">
-  
-  <!-- ambient grid + glow -->
-  <div style="position:absolute;inset:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:64px 64px;-webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 50%,#000 30%,transparent 75%);mask-image:radial-gradient(ellipse 80% 60% at 50% 50%,#000 30%,transparent 75%);pointer-events:none"></div>
-  <div style="position:absolute;top:50%;left:50%;width:600px;height:600px;background:radial-gradient(circle,var(--glow-2),transparent 65%);filter:blur(30px);animation:auroraPulse 8s ease-in-out infinite;pointer-events:none;transform:translate(-50%,-50%)"></div>
+<div style="background:var(--bg);color:var(--text);min-height:100vh;display:grid;grid-template-columns:1.05fr 1fr" class="auth-shell">
 
-  <!-- card -->
-  <div style="position:relative;width:100%;max-width:440px;background:var(--surface);border:1px solid var(--border-strong);border-radius:24px;padding:36px;box-shadow:var(--shadow);z-index:10">
-    
-    <!-- logo -->
-    <div style="display:flex;justify-content:center;margin-bottom:24px">
-      <a href="AetherMind Landing.dc.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)">
-        <div style="width:36px;height:36px;border-radius:11px;background:linear-gradient(140deg,var(--violet),var(--violet-2));display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px var(--glow-2)">
-          <div style="width:12px;height:12px;border-radius:50%;background:#fff"></div>
-        </div>
-        <span style="font-family:'Space Grotesk';font-weight:700;font-size:20px;letter-spacing:-.01em">AETHERMIND</span>
-      </a>
+  <!-- LEFT: brand panel -->
+  <div style="position:relative;overflow:hidden;border-right:1px solid var(--border);padding:44px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(160deg,var(--surface),var(--bg-2))" class="auth-brand">
+    <div style="position:absolute;top:-15%;left:50%;transform:translateX(-50%);width:560px;height:520px;background:radial-gradient(ellipse 50% 50% at 50% 30%,var(--glow-1),transparent 70%);filter:blur(24px);animation:auroraPulse 7s ease-in-out infinite;pointer-events:none"></div>
+    <div style="position:absolute;inset:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:56px 56px;-webkit-mask-image:radial-gradient(ellipse 70% 60% at 50% 20%,#000,transparent 80%);mask-image:radial-gradient(ellipse 70% 60% at 50% 20%,#000,transparent 80%);pointer-events:none"></div>
+
+    <a href="AetherMind Landing.dc.html" style="position:relative;display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--text)">
+      <div style="width:30px;height:30px;border-radius:9px;background:linear-gradient(140deg,var(--violet),var(--violet-2));display:flex;align-items:center;justify-content:center;box-shadow:0 0 22px var(--glow-2)"><div style="width:11px;height:11px;border-radius:50%;background:#fff;box-shadow:0 0 10px #fff"></div></div>
+      <span style="font-family:'Space Grotesk';font-weight:700;font-size:18px;letter-spacing:-.01em">AETHERMIND</span>
+    </a>
+
+    <div style="position:relative">
+      <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 13px;border-radius:999px;border:1px solid var(--border-strong);background:var(--bg);font-size:12px;color:var(--aether);margin-bottom:22px"><span style="width:6px;height:6px;border-radius:50%;background:var(--aether);box-shadow:0 0 8px var(--aether)"></span>End-to-end on your machine</div>
+      <h1 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(28px,3.2vw,40px);line-height:1.08;letter-spacing:-.02em;margin-bottom:18px;max-width:16ch">The only AI workspace that never phones home.</h1>
+      <p style="font-size:15.5px;line-height:1.6;color:var(--text-dim);max-width:42ch">Verified math, compilable code, and a private analytics dashboard — all running locally. Sign in to pick up where you left off.</p>
     </div>
 
-    <!-- title -->
-    <h2 style="font-family:'Space Grotesk';font-size:22px;font-weight:700;text-align:center;margin-bottom:28px">Local-first AI suite</h2>
-
-    <!-- error banner -->
-    <sc-if value="{{ hasError }}" hint-placeholder-val="">
-      <div style="background:var(--danger-soft);border:1px solid color-mix(in srgb,var(--danger) 30%,transparent);color:var(--danger);padding:11px 14px;border-radius:10px;font-size:13px;margin-bottom:20px;line-height:1.4">
-        {{ errorMsg }}
-      </div>
-    </sc-if>
-
-    <!-- tabs -->
-    <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:24px">
-      <button onClick="{{ setLoginTab }}" style="{{ loginTabStyle }}">Log In</button>
-      <button onClick="{{ setSignupTab }}" style="{{ signupTabStyle }}">Sign Up</button>
+    <div style="position:relative;display:flex;gap:22px;font-family:'JetBrains Mono';font-size:12px;color:var(--text-faint)">
+      <span>● 100% offline</span><span>● 0 cloud calls</span><span>● 30-day sessions</span>
     </div>
+  </div>
 
-    <!-- Login Form -->
-    <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
-      <div>
-        <input value="{{ loginEmail }}" onChange="{{ onLoginEmail }}" placeholder="Email address" style="{{ inputStyle }}">
-        <input type="password" value="{{ loginPassword }}" onChange="{{ onLoginPassword }}" onKeyDown="{{ onLoginKey }}" placeholder="Password" style="{{ inputStyle }}">
+  <!-- RIGHT: form -->
+  <div style="position:relative;display:flex;align-items:center;justify-content:center;padding:44px 32px">
+    <button onClick="{{ toggleTheme }}" aria-label="Toggle theme" style="position:absolute;top:24px;right:24px;width:38px;height:38px;border-radius:11px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:15px">{{ themeIcon }}</button>
 
-        <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;margin-bottom:24px">
-          <label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;color:var(--text-dim)">
-            <input type="checkbox" checked="{{ rememberMe }}" onChange="{{ toggleRemember }}" style="accent-color:var(--violet)">
-            Remember me
-          </label>
-          <a href="#" onClick="{{ forgotPassword }}" style="color:var(--violet-2);text-decoration:none;font-weight:600">Forgot password?</a>
-        </div>
-
-        <button onClick="{{ handleLogin }}" disabled="{{ submitting }}" style="{{ btnStyle }}">
-          {{ loginBtnText }}
-        </button>
-
-        <div style="display:flex;align-items:center;margin:24px 0;color:var(--text-faint);font-size:12px;font-family:'JetBrains Mono'">
-          <div style="flex:1;border-bottom:1px solid var(--border)"></div>
-          <span style="padding:0 12px">OR</span>
-          <div style="flex:1;border-bottom:1px solid var(--border)"></div>
-        </div>
-
-        <button onClick="{{ handleGoogle }}" style="{{ googleBtnStyle }}">
-          <img src="https://www.google.com/favicon.ico" width="16" height="16" alt="G" style="flex:none">
-          Continue with Google
-        </button>
+    <div style="width:100%;max-width:400px">
+      <!-- tabs -->
+      <div style="display:flex;padding:5px;border-radius:13px;background:var(--surface);border:1px solid var(--border);margin-bottom:28px">
+        <button onClick="{{ showLogin }}" style="{{ loginTabStyle }}">Log in</button>
+        <button onClick="{{ showSignup }}" style="{{ signupTabStyle }}">Sign up</button>
       </div>
-    </sc-if>
 
-    <!-- Sign Up Form -->
-    <sc-if value="{{ isSignup }}" hint-placeholder-val="">
-      <div>
-        <input value="{{ signupName }}" onChange="{{ onSignupName }}" placeholder="Full Name" style="{{ inputStyle }}">
-        <input value="{{ signupEmail }}" onChange="{{ onSignupEmail }}" placeholder="Email address" style="{{ inputStyle }}">
-        <input type="password" value="{{ signupPassword }}" onChange="{{ onSignupPassword }}" placeholder="Create Password (min. 6 chars)" style="{{ inputStyle }}">
-        <input type="password" value="{{ signupConfirm }}" onChange="{{ onSignupConfirm }}" onKeyDown="{{ onSignupKey }}" placeholder="Confirm Password" style="{{ inputStyle }}">
+      <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:25px;letter-spacing:-.01em;margin-bottom:6px">{{ heading }}</h2>
+      <p style="font-size:14px;color:var(--text-dim);margin-bottom:24px">{{ subheading }}</p>
 
-        <label style="display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--text-dim);cursor:pointer;margin-bottom:24px;line-height:1.4">
-          <input type="checkbox" checked="{{ termsAgree }}" onChange="{{ toggleTerms }}" style="accent-color:var(--violet)">
-          I agree to the <a href="#" style="color:var(--violet-2);text-decoration:none;font-weight:600;margin-left:4px">Terms of Service</a>
+      <!-- error banner -->
+      <sc-if value="{{ error }}" hint-placeholder-val="">
+        <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:11px;background:var(--danger-soft);border:1px solid color-mix(in srgb,var(--danger) 40%,transparent);margin-bottom:18px;animation:shake .4s">
+          <span style="color:var(--danger);font-size:15px">⚠</span>
+          <span style="font-size:13.5px;color:var(--danger)">{{ error }}</span>
+        </div>
+      </sc-if>
+
+      <!-- google -->
+      <button onClick="{{ submit }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:11px;padding:13px;border-radius:12px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);font-size:14.5px;font-weight:600;cursor:pointer;font-family:'Hanken Grotesk'">
+        <span style="display:inline-flex;width:18px;height:18px;border-radius:50%;background:conic-gradient(from -45deg,#ea4335,#fbbc05,#34a853,#4285f4,#ea4335)"></span>
+        Continue with Google
+      </button>
+      <div style="display:flex;align-items:center;gap:14px;margin:20px 0;color:var(--text-faint);font-size:12px"><span style="flex:1;height:1px;background:var(--border)"></span>or<span style="flex:1;height:1px;background:var(--border)"></span></div>
+
+      <!-- full name (signup only) -->
+      <sc-if value="{{ isSignup }}" hint-placeholder-val="">
+        <label style="display:block;margin-bottom:16px">
+          <span style="display:block;font-size:13px;font-weight:600;color:var(--text-dim);margin-bottom:7px">Full name</span>
+          <input type="text" value="{{ fullName }}" onChange="{{ onFullName }}" placeholder="Ada Lovelace" style="{{ inputStyle }}">
         </label>
+      </sc-if>
 
-        <button onClick="{{ handleSignUp }}" disabled="{{ submitting }}" style="{{ btnStyle }}">
-          {{ signupBtnText }}
-        </button>
-      </div>
-    </sc-if>
+      <label style="display:block;margin-bottom:16px">
+        <span style="display:block;font-size:13px;font-weight:600;color:var(--text-dim);margin-bottom:7px">Email</span>
+        <input type="email" value="{{ email }}" onChange="{{ onEmail }}" placeholder="you@local.host" style="{{ inputStyle }}">
+      </label>
 
-    <a href="AetherMind Landing.dc.html" style="display:block;text-align:center;margin-top:24px;color:var(--text-faint);font-size:13px;text-decoration:none" style-hover="color:var(--text-dim)">← Back to landing page</a>
+      <label style="display:block;margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+          <span style="font-size:13px;font-weight:600;color:var(--text-dim)">Password</span>
+          <sc-if value="{{ isLogin }}" hint-placeholder-val=""><a href="#" style="font-size:12.5px;color:var(--violet-2);text-decoration:none">Forgot?</a></sc-if>
+        </div>
+        <input type="password" value="{{ password }}" onChange="{{ onPassword }}" placeholder="••••••••" style="{{ inputStyle }}">
+      </label>
 
+      <!-- password strength (signup) -->
+      <sc-if value="{{ isSignup }}" hint-placeholder-val="">
+        <div style="margin-bottom:16px">
+          <div style="display:flex;gap:5px;margin-bottom:6px">
+            <span style="flex:1;height:4px;border-radius:2px;background:{{ strengthC1 }}"></span>
+            <span style="flex:1;height:4px;border-radius:2px;background:{{ strengthC2 }}"></span>
+            <span style="flex:1;height:4px;border-radius:2px;background:{{ strengthC3 }}"></span>
+          </div>
+          <span style="font-size:12px;color:var(--text-faint)">{{ strengthLabel }}</span>
+        </div>
+      </sc-if>
+
+      <!-- remember me -->
+      <label style="display:flex;align-items:center;gap:9px;margin-bottom:22px;cursor:pointer;user-select:none">
+        <span onClick="{{ toggleRemember }}" style="{{ checkboxStyle }}">{{ checkboxMark }}</span>
+        <span style="font-size:13.5px;color:var(--text-dim)">Keep me signed in for 30 days</span>
+      </label>
+
+      <button onClick="{{ submit }}" disabled="{{ loading }}" style="{{ submitStyle }}">
+        <sc-if value="{{ loading }}" hint-placeholder-val="">
+          <span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite"></span>
+        </sc-if>
+        {{ submitLabel }}
+      </button>
+
+      <p style="text-align:center;font-size:13.5px;color:var(--text-faint);margin-top:22px">{{ switchPrompt }} <span onClick="{{ toggleMode }}" style="color:var(--violet-2);cursor:pointer;font-weight:600">{{ switchAction }}</span></p>
+    </div>
   </div>
 </div>
-
+</x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
-  state = {
-    activeTab: 'login',
-    errorMsg: '',
-    submitting: false,
-    loginEmail: '',
-    loginPassword: '',
-    rememberMe: true,
-    signupName: '',
-    signupEmail: '',
-    signupPassword: '',
-    signupConfirm: '',
-    termsAgree: false
-  };
+  state = { theme:'dark', mode:'login', remember:true, email:'', password:'', fullName:'', error:null, loading:false };
 
-  setTab = (tab) => this.setState({ activeTab: tab, errorMsg: '' });
-  setLoginTab = () => this.setTab('login');
-  setSignupTab = () => this.setTab('signup');
+  componentDidMount(){
+    try{ const t=localStorage.getItem('aether-theme'); if(t){ this.setState({theme:t}); document.documentElement.dataset.theme=t; } }catch(e){}
+    redirectIfAuthed().catch(()=>{});
+  }
 
-  onLoginEmail = (e) => this.setState({ loginEmail: e.target.value });
-  onLoginPassword = (e) => this.setState({ loginPassword: e.target.value });
-  toggleRemember = (e) => this.setState({ rememberMe: e.target.checked });
+  toggleTheme = () => { const n=this.state.theme==='dark'?'light':'dark'; this.setState({theme:n}); document.documentElement.dataset.theme=n; try{localStorage.setItem('aether-theme',n);}catch(e){} };
+  showLogin   = () => this.setState({mode:'login', error:null});
+  showSignup  = () => this.setState({mode:'signup',error:null});
+  toggleMode  = () => this.setState(s=>({mode:s.mode==='login'?'signup':'login',error:null}));
+  toggleRemember = () => this.setState(s=>({remember:!s.remember}));
+  onEmail    = (e) => this.setState({email:e.target.value});
+  onPassword = (e) => this.setState({password:e.target.value});
+  onFullName = (e) => this.setState({fullName:e.target.value});
 
-  onSignupName = (e) => this.setState({ signupName: e.target.value });
-  onSignupEmail = (e) => this.setState({ signupEmail: e.target.value });
-  onSignupPassword = (e) => this.setState({ signupPassword: e.target.value });
-  onSignupConfirm = (e) => this.setState({ signupConfirm: e.target.value });
-  toggleTerms = (e) => this.setState({ termsAgree: e.target.checked });
-
-  forgotPassword = (e) => {
-    e.preventDefault();
-    this.setState({ errorMsg: 'Password reset link would be sent to your email (demo only).' });
-  };
-
-  handleGoogle = () => {
-    this.setState({ errorMsg: 'Google sign-in is not configured for this local instance.' });
-  };
-
-  onLoginKey = (e) => { if (e.key === 'Enter') this.handleLogin(); };
-  onSignupKey = (e) => { if (e.key === 'Enter') this.handleSignUp(); };
-
-  handleLogin = async () => {
-    const { loginEmail, loginPassword, rememberMe } = this.state;
-    if (!loginEmail.trim() || !loginPassword) {
-      return this.setState({ errorMsg: 'Please enter both email and password.' });
+  submit = async () => {
+    const {email, password, fullName, mode, remember} = this.state;
+    if(!email || !email.includes('@')) return this.setState({error:'Enter a valid email address.'});
+    if(!password)                      return this.setState({error:'Password is required.'});
+    if(mode==='signup'){
+      if(!fullName.trim())             return this.setState({error:'Full name is required.'});
+      if(password.length < 8)         return this.setState({error:'Password must be at least 8 characters.'});
     }
-    this.setState({ submitting: true, errorMsg: '' });
+    this.setState({error:null, loading:true});
 
     try {
-      // Direct call to local storage / memory auth client
-      if (typeof window.login === 'function') {
-        const res = await window.login(loginEmail.trim(), loginPassword, rememberMe);
-        if (res && res.success) {
-          window.location.href = 'AetherMind Chat.dc.html';
-          return;
-        }
+      if(mode === 'login'){
+        await signIn(email, password, remember);
+      } else {
+        await signUp(email, password, fullName.trim());
       }
-      // Fallback redirect if function is not globally bound yet
       window.location.href = 'AetherMind Chat.dc.html';
-    } catch (err) {
-      this.setState({ errorMsg: err.message || 'Login failed. Please check credentials.', submitting: false });
+    } catch(err) {
+      this.setState({
+        loading: false,
+        error: err.message || (mode==='login' ? 'Sign-in failed. Check your credentials.' : 'Sign-up failed. Try a different email.'),
+      });
     }
   };
 
-  handleSignUp = async () => {
-    const { signupName, signupEmail, signupPassword, signupConfirm, termsAgree } = this.state;
-    if (!signupName.trim() || !signupEmail.trim() || !signupPassword || !signupConfirm) {
-      return this.setState({ errorMsg: 'All fields are required.' });
-    }
-    if (signupPassword !== signupConfirm) {
-      return this.setState({ errorMsg: 'Passwords do not match.' });
-    }
-    if (signupPassword.length < 6) {
-      return this.setState({ errorMsg: 'Password must be at least 6 characters.' });
-    }
-    if (!termsAgree) {
-      return this.setState({ errorMsg: 'You must agree to the Terms of Service.' });
-    }
-    this.setState({ submitting: true, errorMsg: '' });
+  strength(){ const p=this.state.password; let s=0; if(p.length>=8)s++; if(/[A-Z]/.test(p)&&/[a-z]/.test(p))s++; if(/[0-9]|[^A-Za-z0-9]/.test(p))s++; return s; }
 
-    try {
-      if (typeof window.signUp === 'function') {
-        const res = await window.signUp(signupEmail.trim(), signupPassword, signupName.trim());
-        if (res && res.success) {
-          if (typeof window.login === 'function') {
-            await window.login(signupEmail.trim(), signupPassword, true);
-          }
-          window.location.href = 'AetherMind Chat.dc.html';
-          return;
-        }
-      }
-      window.location.href = 'AetherMind Chat.dc.html';
-    } catch (err) {
-      this.setState({ errorMsg: err.message || 'Sign up failed.', submitting: false });
-    }
-  };
-
-  renderVals() {
-    const st = this.state;
-    const isLogin = st.activeTab === 'login';
-    const isSignup = st.activeTab === 'signup';
-
-    const tabBaseStyle = {
-      flex: 1,
-      textAlign: 'center',
-      padding: '12px',
-      fontSize: '14.5px',
-      fontWeight: 600,
-      cursor: 'pointer',
-      background: 'transparent',
-      border: 'none',
-      borderBottom: '2px solid transparent',
-      transition: 'all 0.2s ease',
-      fontFamily: 'Hanken Grotesk'
-    };
-
+  renderVals(){
+    const isLogin=this.state.mode==='login', isSignup=!isLogin;
+    const tabOn ={padding:'10px',borderRadius:'9px',border:'none',cursor:'pointer',fontSize:'14px',fontWeight:600,flex:1,fontFamily:'Hanken Grotesk',background:'linear-gradient(140deg,var(--violet),var(--violet-2))',color:'#fff',boxShadow:'0 6px 18px -8px var(--glow-1)'};
+    const tabOff={padding:'10px',borderRadius:'9px',border:'none',cursor:'pointer',fontSize:'14px',fontWeight:600,flex:1,fontFamily:'Hanken Grotesk',background:'transparent',color:'var(--text-dim)'};
+    const input ={width:'100%',padding:'12px 14px',borderRadius:'11px',border:'1px solid var(--border-strong)',background:'var(--bg)',color:'var(--text)',fontSize:'14.5px',fontFamily:'Hanken Grotesk',outline:'none'};
+    const s=this.strength();
+    const sc=(i)=> s>i ? (s===1?'var(--danger)':s===2?'#f5a623':'var(--aether)') : 'var(--border-strong)';
     return {
-      hasError: st.errorMsg.length > 0,
-      errorMsg: st.errorMsg,
-      isLogin,
-      isSignup,
-      loginEmail: st.loginEmail,
-      loginPassword: st.loginPassword,
-      rememberMe: st.rememberMe,
-      signupName: st.signupName,
-      signupEmail: st.signupEmail,
-      signupPassword: st.signupPassword,
-      signupConfirm: st.signupConfirm,
-      termsAgree: st.termsAgree,
-      submitting: st.submitting,
-      loginBtnText: st.submitting ? 'Signing in...' : 'Sign In',
-      signupBtnText: st.submitting ? 'Creating account...' : 'Create Account',
-      
-      setLoginTab: this.setLoginTab,
-      setSignupTab: this.setSignupTab,
-      onLoginEmail: this.onLoginEmail,
-      onLoginPassword: this.onLoginPassword,
-      onLoginKey: this.onLoginKey,
-      toggleRemember: this.toggleRemember,
-      onSignupName: this.onSignupName,
-      onSignupEmail: this.onSignupEmail,
-      onSignupPassword: this.onSignupPassword,
-      onSignupConfirm: this.onSignupConfirm,
-      onSignupKey: this.onSignupKey,
-      toggleTerms: this.toggleTerms,
-      forgotPassword: this.forgotPassword,
-      handleLogin: this.handleLogin,
-      handleSignUp: this.handleSignUp,
-      handleGoogle: this.handleGoogle,
-
-      loginTabStyle: {
-        ...tabBaseStyle,
-        color: isLogin ? 'var(--violet-2)' : 'var(--text-faint)',
-        borderBottomColor: isLogin ? 'var(--violet)' : 'transparent'
-      },
-      signupTabStyle: {
-        ...tabBaseStyle,
-        color: isSignup ? 'var(--violet-2)' : 'var(--text-faint)',
-        borderBottomColor: isSignup ? 'var(--violet)' : 'transparent'
-      },
-      inputStyle: {
-        width: '100%',
-        padding: '12px 16px',
-        marginBottom: '16px',
-        border: '1px solid var(--border)',
-        borderRadius: '12px',
-        fontSize: '14.5px',
-        background: 'var(--bg-2)',
-        color: 'var(--text)',
-        outline: 'none',
-        transition: 'border-color 0.2s',
-        fontFamily: 'Hanken Grotesk'
-      },
-      btnStyle: {
-        width: '100%',
-        padding: '14px',
-        background: 'linear-gradient(140deg,var(--violet),var(--violet-2))',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '12px',
-        fontWeight: 600,
-        fontSize: '15px',
-        cursor: st.submitting ? 'not-allowed' : 'pointer',
-        opacity: st.submitting ? 0.7 : 1,
-        fontFamily: 'Hanken Grotesk',
-        boxShadow: st.submitting ? 'none' : '0 8px 24px -8px var(--glow-1)'
-      },
-      googleBtnStyle: {
-        width: '100%',
-        padding: '14px',
-        background: 'var(--bg-2)',
-        color: 'var(--text-dim)',
-        border: '1px solid var(--border)',
-        borderRadius: '12px',
-        fontWeight: 600,
-        fontSize: '15px',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '12px',
-        fontFamily: 'Hanken Grotesk'
-      }
+      toggleTheme:this.toggleTheme, themeIcon:this.state.theme==='dark'?'☾':'☀',
+      showLogin:this.showLogin, showSignup:this.showSignup, toggleMode:this.toggleMode,
+      toggleRemember:this.toggleRemember,
+      onEmail:this.onEmail, onPassword:this.onPassword, onFullName:this.onFullName, submit:this.submit,
+      isLogin, isSignup,
+      email:this.state.email, password:this.state.password, fullName:this.state.fullName,
+      error:this.state.error, loading:this.state.loading,
+      loginTabStyle:isLogin?tabOn:tabOff, signupTabStyle:isSignup?tabOn:tabOff,
+      inputStyle:input,
+      heading:   isLogin?'Welcome back':'Create your account',
+      subheading:isLogin?'Sign in to your local AetherMind instance.':'Spin up a private workspace in seconds.',
+      submitLabel:this.state.loading?(isLogin?'Signing in…':'Creating account…'):(isLogin?'Log in':'Create account'),
+      submitStyle:{width:'100%',display:'flex',alignItems:'center',justifyContent:'center',gap:'10px',padding:'14px',borderRadius:'12px',border:'none',cursor:this.state.loading?'wait':'pointer',fontSize:'15px',fontWeight:600,fontFamily:'Hanken Grotesk',color:'#fff',background:'linear-gradient(140deg,var(--violet),var(--violet-2))',boxShadow:'0 12px 30px -10px var(--glow-1)',opacity:this.state.loading?.85:1},
+      switchPrompt:isLogin?"Don't have an account?":'Already have one?',
+      switchAction:isLogin?'Sign up free':'Log in',
+      checkboxStyle:{width:'19px',height:'19px',borderRadius:'6px',border:'1px solid var(--border-strong)',background:this.state.remember?'var(--violet)':'transparent',display:'inline-flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:'12px',flex:'none'},
+      checkboxMark:this.state.remember?'✓':'',
+      strengthC1:sc(0), strengthC2:sc(1), strengthC3:sc(2),
+      strengthLabel:this.state.password.length===0?'Use 8+ characters with a mix of letters & numbers':['Too weak','Weak','Good','Strong'][s],
     };
   }
 }
