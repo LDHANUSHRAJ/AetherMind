@@ -363,9 +363,9 @@ async function loadDashboard(userId) {
   let logs = [];
   if (sb) {
     try {
+      // RLS session-ownership check handles user filtering; no user_id column on query_logs
       const { data } = await sb.from('query_logs')
-        .select('domain,tokens_used,is_verified,created_at')
-        .eq('user_id', userId)
+        .select('session_id,domain,tokens_used,is_verified,created_at')
         .order('created_at', { ascending: true });
       if (data) { logs = data; setSyncStatus(false); }
     } catch (err) {
