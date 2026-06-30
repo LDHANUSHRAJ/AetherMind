@@ -12,6 +12,7 @@ Run: uvicorn main:app --reload --port 8000
 
 import json
 import os
+import re
 import asyncio
 from typing import AsyncGenerator
 
@@ -22,6 +23,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from compute import detect_domain, try_compute
+import knowledge_search
 
 # ─── Config ───────────────────────────────────────────────────────────────────
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")
@@ -36,6 +38,38 @@ SYSTEM_PROMPT = (
     "You never guess on numerical calculations — you compute."
 )
 
+# ─── OKF Conceptual Query Detection ──────────────────────────────────────────
+
+_CONCEPTUAL_RE = re.compile(
+    r"\bwhat is\b|\bwhat are\b|\bexplain\b|\bhow does\b|\bhow do\b"
+    r"|\bdifference between\b|\bwhen should i\b|\bwhen to use\b"
+    r"|\bdefine\b|\bwhat.*formula\b|\bwhat should i study\b"
+    r"|\bwhat should i learn\b|\bprerequisites?\s+for\b|\blearn.*after\b",
+    re.IGNORECASE,
+)
+
+_SKIP_OKF_RE = re.compile(
+    r"\bsolve\b|\bcalculate\b|\bcompute\b|\bdebug\b|\bcheck my work\b"
+    r"|\bfix.*code\b|\bwrite.*function\b|\bimplement\b",
+    re.IGNORECASE,
+)
+
+_GREETING_RE = re.compile(
+    r"^(hi|hello|hey|thanks|thank you|yes|no|go on|continue|ok|okay|more)\b",
+    re.IGNORECASE,
+)
+
+
+def _is_conceptual(message: str) -> bool:
+    """Return True if the query is asking for a factual/conceptual explanation."""
+    msg = message.strip()
+    if _GREETING_RE.match(msg):
+        return False
+    if _SKIP_OKF_RE.search(msg):
+        return False
+    return bool(_CONCEPTUAL_RE.search(msg))
+
+
 app = FastAPI(title="AetherMind API", version="1.0.0")
 
 app.add_middleware(
@@ -47,12 +81,18 @@ app.add_middleware(
 )
 
 # ─── Request Models ────────────────────────────────────────────────────────────
+MODELS = {
+    "fast":    {"name": "aethermind",     "max_tokens": 512},
+    "precise": {"name": "aethermind-pro", "max_tokens": 1024},
+}
+
 class ChatRequest(BaseModel):
     message: str
     session_id: str | None = None
-    max_tokens: int = 2048
+    max_tokens: int = 512
     temperature: float = 0.7
     history: list[dict] | None = None   # [{"role": "user"|"assistant", "content": "..."}]
+    model_id: str = "fast"              # "fast" | "precise"
 
 
 # ─── Health Check ──────────────────────────────────────────────────────────────
@@ -77,11 +117,46 @@ async def health():
         raise HTTPException(status_code=503, detail=f"Ollama unreachable: {str(e)}")
 
 
+# ─── Knowledge Base Endpoints ─────────────────────────────────────────────────
+
+@app.get("/knowledge/status")
+async def knowledge_status():
+    """Return the current OKF index stats (file count, per-domain counts)."""
+    return {
+        "file_count":    knowledge_search.get_file_count(),
+        "domain_counts": knowledge_search.get_domain_counts(),
+    }
+
+
+@app.post("/knowledge/reindex")
+async def knowledge_reindex():
+    """Re-scan the knowledge/ directory and rebuild the in-memory index."""
+    count = knowledge_search.reindex()
+    return {"indexed": count}
+
+
 # ─── Streaming Chat ────────────────────────────────────────────────────────────
 @app.post("/chat")
 async def chat(req: ChatRequest):
     domain = detect_domain(req.message)
     computed_prefix = try_compute(req.message)
+
+    # ── OKF route: only when not going to the computation engine ──────────────
+    okf_context: str | None = None
+    okf_source:  str | None = None
+
+    if not computed_prefix and _is_conceptual(req.message):
+        domain_hint = domain if domain != "general" else None
+        hits = knowledge_search.search(req.message, domain_filter=domain_hint, max_results=3)
+        if hits:
+            best = hits[0]
+            excerpt = best["excerpt"][:2000]
+            okf_context = (
+                f"Reference material from AetherMind knowledge base:\n\n"
+                f"**{best['title']}**: {excerpt}\n\n"
+                f"Using the above as verified reference, answer the student's question: "
+            )
+            okf_source = best["relpath"]
 
     # Build message list for Ollama
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
@@ -89,17 +164,20 @@ async def chat(req: ChatRequest):
     if req.history:
         messages.extend(req.history[-20:])  # Last 20 turns for context
 
-    user_content = req.message
     if computed_prefix:
         user_content = (
             f"{computed_prefix}\n\n"
             f"Using the verified result above, now explain this step by step: {req.message}"
         )
+    elif okf_context:
+        user_content = f"{okf_context}{req.message}"
+    else:
+        user_content = req.message
 
     messages.append({"role": "user", "content": user_content})
 
     return StreamingResponse(
-        _stream_ollama(messages, req, domain, computed_prefix),
+        _stream_ollama(messages, req, domain, computed_prefix, okf_source),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
@@ -112,17 +190,22 @@ async def _stream_ollama(
     messages: list,
     req: ChatRequest,
     domain: str,
-    computed_prefix: str | None
+    computed_prefix: str | None,
+    okf_source: str | None = None,
 ) -> AsyncGenerator[str, None]:
-    # First event: metadata (domain, computed flag)
-    yield f"data: {json.dumps({'domain': domain, 'has_compute': computed_prefix is not None})}\n\n"
+    # First event: metadata (domain, compute flag, OKF source)
+    yield f"data: {json.dumps({'domain': domain, 'has_compute': computed_prefix is not None, 'okf_source': okf_source})}\n\n"
+
+    chosen = MODELS.get(req.model_id, MODELS["fast"])
+    model_name = chosen["name"]
+    effective_tokens = min(req.max_tokens, chosen["max_tokens"])
 
     payload = {
-        "model": MODEL_NAME,
+        "model": model_name,
         "messages": messages,
         "stream": True,
         "options": {
-            "num_predict": req.max_tokens,
+            "num_predict": effective_tokens,
             "temperature": req.temperature,
         }
     }
@@ -184,8 +267,9 @@ async def _fallback_generate(req, domain, computed_prefix) -> AsyncGenerator[str
     if computed_prefix:
         prompt = f"{computed_prefix}\n\nExplain step by step: {req.message}"
 
+    chosen = MODELS.get(req.model_id, MODELS["fast"])
     payload = {
-        "model": MODEL_NAME,
+        "model": chosen["name"],
         "prompt": prompt,
         "system": SYSTEM_PROMPT,
         "stream": True,
