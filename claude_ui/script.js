@@ -307,7 +307,7 @@ function init() {
     // Session guard: redirect to login if no user session
     const userSession = localStorage.getItem('am_user');
     if (!userSession) {
-        window.location.href = 'login.html';
+        window.location.href = 'auth.html';
         return;
     }
 

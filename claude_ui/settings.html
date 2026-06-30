@@ -1,436 +1,726 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AetherMind Settings</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AetherMind · Settings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>try{var t=localStorage.getItem('aether-theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#0b0a11; --bg-2:#100e18; --surface:#15121f; --surface-2:#1c1828;
+  --border:rgba(255,255,255,.08); --border-strong:rgba(255,255,255,.14);
+  --text:#ece9f5; --text-dim:#a39fb5; --text-faint:#6f6b80;
+  --violet:#7c5cff; --violet-2:#a78bfa; --violet-soft:rgba(124,92,255,.16);
+  --aether:#5eead4; --aether-soft:rgba(94,234,212,.14);
+  --glow-1:rgba(124,92,255,.55); --glow-2:rgba(124,92,255,.18);
+  --danger:#ff6b6b; --danger-soft:rgba(255,107,107,.12);
+  --amber:#f5b942; --amber-soft:rgba(245,185,66,.12);
+  --success:#4ade80; --success-soft:rgba(74,222,128,.12);
+}
+:root[data-theme="light"]{
+  --bg:#f4f2fb; --bg-2:#ebe8f6; --surface:#ffffff; --surface-2:#f6f4fc;
+  --border:rgba(24,18,48,.10); --border-strong:rgba(24,18,48,.18);
+  --text:#191427; --text-dim:#5b5570; --text-faint:#8b8699;
+  --violet:#6d4bf0; --violet-2:#7c5cff; --violet-soft:rgba(109,75,240,.10);
+  --aether:#0fb89a; --aether-soft:rgba(15,184,154,.12);
+  --glow-1:rgba(124,92,255,.30); --glow-2:rgba(124,92,255,.10);
+  --danger:#d63a3a; --danger-soft:rgba(214,58,58,.10);
+  --amber:#b8821a; --amber-soft:rgba(184,130,26,.12);
+  --success:#16a34a; --success-soft:rgba(22,163,74,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:'Hanken Grotesk',sans-serif;-webkit-font-smoothing:antialiased;color:var(--text)}
+::selection{background:var(--violet);color:#fff}
+input,select,textarea{font-family:'Hanken Grotesk',sans-serif}
+.scroll::-webkit-scrollbar{width:6px}.scroll::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:6px}.scroll::-webkit-scrollbar-track{background:transparent}
+
+/* Shell */
+.shell{display:grid;grid-template-columns:282px 1fr;height:100vh;overflow:hidden}
+@media(max-width:800px){.shell{grid-template-columns:1fr}.sidebar{display:none!important}}
+
+/* Sidebar */
+.sidebar{display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--bg-2);min-height:0}
+.nav-link{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:10px;text-decoration:none;color:var(--text-dim);font-size:13.5px;font-weight:500;cursor:pointer;border:none;background:transparent;width:100%;text-align:left;margin-bottom:2px;transition:background .15s,color .15s}
+.nav-link:hover{background:var(--surface);color:var(--text)}
+.nav-link.active{background:var(--surface);color:var(--text)}
+.nav-icon{width:16px;height:16px;opacity:.6;flex:none}
+.nav-link.active .nav-icon{opacity:1}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px}
+.card-title{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;letter-spacing:-.01em;margin-bottom:4px}
+.card-desc{font-size:12.5px;color:var(--text-dim);margin-bottom:20px}
+.card-section{margin-bottom:20px}
+.card-section:last-child{margin-bottom:0}
+.section-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.12em;color:var(--text-faint);text-transform:uppercase;margin-bottom:10px}
+
+/* Inputs */
+.field-label{font-size:12px;color:var(--text-dim);font-weight:500;margin-bottom:6px;display:block}
+.inp{width:100%;padding:10px 13px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;outline:none;transition:border-color .15s}
+.inp:focus{border-color:var(--violet)}
+.inp[readonly]{opacity:.55;cursor:not-allowed}
+select.inp{cursor:pointer}
+.inp-row{display:flex;gap:8px;align-items:stretch}
+.inp-row .inp{flex:1}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 16px;border-radius:10px;border:none;cursor:pointer;font-family:'Hanken Grotesk',sans-serif;font-size:13.5px;font-weight:600;transition:opacity .15s,box-shadow .15s}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-primary{background:linear-gradient(140deg,var(--violet),var(--violet-2));color:#fff;box-shadow:0 6px 18px -8px var(--glow-1)}
+.btn-primary:hover:not(:disabled){opacity:.9}
+.btn-ghost{background:var(--surface-2);color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover:not(:disabled){border-color:var(--border-strong)}
+.btn-danger{background:var(--danger-soft);color:var(--danger);border:1px solid color-mix(in srgb,var(--danger) 25%,transparent)}
+
+/* Sliders */
+.slider-wrap{margin-bottom:16px}
+.slider-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.slider-name{font-size:13.5px;font-weight:500}
+.slider-val{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--violet-2);background:var(--violet-soft);padding:2px 8px;border-radius:6px}
+input[type=range]{width:100%;height:4px;border-radius:4px;appearance:none;background:var(--border-strong);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{appearance:none;width:16px;height:16px;border-radius:50%;background:var(--violet);box-shadow:0 0 8px var(--glow-2);cursor:pointer}
+.slider-hint{font-size:11px;color:var(--text-faint);margin-top:5px}
+
+/* Toggles */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--border)}
+.toggle-row:last-child{border-bottom:none;padding-bottom:0}
+.toggle-info{display:flex;align-items:center;gap:10px}
+.toggle-label{font-size:13.5px;font-weight:500}
+.toggle-sub{font-size:12px;color:var(--text-dim);margin-top:1px}
+.switch{width:38px;height:22px;border-radius:11px;background:var(--surface-2);border:1px solid var(--border-strong);cursor:pointer;position:relative;transition:background .2s,border-color .2s;flex:none}
+.switch.on{background:var(--violet);border-color:var(--violet)}
+.switch::after{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.switch.on::after{transform:translateX(16px)}
+
+/* Accent swatches */
+.swatch{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .15s,transform .15s}
+.swatch:hover{transform:scale(1.15)}
+.swatch.active{border-color:var(--text)!important}
+
+/* Status badge */
+.status-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;margin-top:8px;padding:5px 10px;border-radius:8px}
+.status-ok{background:var(--success-soft);color:var(--success)}
+.status-err{background:var(--danger-soft);color:var(--danger)}
+.status-info{background:var(--violet-soft);color:var(--violet-2)}
+
+/* Colab hint box */
+.colab-hint{margin-top:12px;padding:13px 15px;background:var(--aether-soft);border:1px solid color-mix(in srgb,var(--aether) 30%,transparent);border-radius:11px;font-size:12.5px;color:var(--aether);line-height:1.6}
+.colab-hint strong{color:var(--aether);font-weight:700}
+code{background:var(--surface-2);padding:1px 5px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11.5px}
+
+/* Toast */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border-strong);border-radius:12px;padding:11px 20px;font-size:13.5px;color:var(--text);box-shadow:0 16px 40px -12px rgba(0,0,0,.6);opacity:0;transition:opacity .25s;z-index:999;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1}
+
+/* Divider */
+.divider{height:1px;background:var(--border);margin:16px 0}
+</style>
 </head>
 <body>
-    <div class="app">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-brand">
-                <div class="brand-icon"><span class="material-symbols-outlined">psychiatry</span></div>
-                <div><div class="brand-name">AetherMind</div><span class="brand-sub">AI Suite</span></div>
-            </div>
-            <nav class="sidebar-nav" style="margin-top:10px;">
-                <a href="index.html" class="sidebar-nav-item"><span class="material-symbols-outlined">chat</span> Chat</a>
-                <a href="dashboard.html" class="sidebar-nav-item"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
-                <a href="settings.html" class="sidebar-nav-item active"><span class="material-symbols-outlined">settings</span> Settings</a>
-            </nav>
-            <div class="sidebar-bottom">
-                <button class="new-chat-btn" style="margin-bottom:20px;" onclick="window.location.href='index.html?session=new'">
-                    <span class="material-symbols-outlined">add</span> New Session
-                </button>
-                <nav class="sidebar-nav">
-                    <a href="profile.html" class="sidebar-nav-item"><span class="material-symbols-outlined">account_circle</span> Profile</a>
-                    <a href="#" class="sidebar-nav-item" onclick="logout()"><span class="material-symbols-outlined">logout</span> Logout</a>
-                </nav>
-            </div>
+<div class="shell">
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar">
+    <div style="padding:18px 16px 12px;display:flex;align-items:center">
+      <a href="landing.html" style="display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--text)">
+        <div style="width:26px;height:26px;border-radius:8px;background:linear-gradient(140deg,var(--violet),var(--violet-2));display:flex;align-items:center;justify-content:center;box-shadow:0 0 18px var(--glow-2)">
+          <div style="width:9px;height:9px;border-radius:50%;background:#fff"></div>
         </div>
-
-        <!-- Main -->
-        <div class="main">
-            <div class="tools-header">
-                <div class="tools-title">Settings & Configuration</div>
-                <div class="search-bar">
-                    <span class="material-symbols-outlined" style="color:var(--text-muted); font-size:16px;">search</span>
-                    <input type="text" placeholder="Search settings..." oninput="filterSettings(this.value)">
-                </div>
-                <div class="top-bar-right">
-                    <span class="material-symbols-outlined" style="color:var(--text-secondary); cursor:pointer;">notifications</span>
-                    <img src="https://i.pravatar.cc/150?img=11" alt="Profile" class="profile-pic">
-                </div>
-            </div>
-
-            <div class="tools-grid">
-                <!-- Left Column -->
-                <div style="display:flex; flex-direction:column; gap:24px;">
-
-                    <!-- Card 1: Study Planner -->
-                    <div class="tool-card" data-search="study planner topics learning">
-                        <div class="tool-header">
-                            <div class="tool-title">Study Planner</div>
-                            <span class="material-symbols-outlined" style="color:var(--text-muted);">more_horiz</span>
-                        </div>
-                        <div class="tool-desc">Organize and track your learning modules.</div>
-                        <div class="pill-group">
-                            <div class="pill active" onclick="loadStudyTab('active')"><span class="material-symbols-outlined" style="font-size:16px;">code</span> Active</div>
-                            <div class="pill" onclick="loadStudyTab('completed')"><span class="material-symbols-outlined" style="font-size:16px;">check_circle</span> Completed</div>
-                            <div class="pill" onclick="loadStudyTab('saved')"><span class="material-symbols-outlined" style="font-size:16px;">bookmark</span> Saved</div>
-                        </div>
-                        <div class="focus-box" id="focusBox">
-                            <div style="font-size:12px; color:var(--primary); font-weight:700; text-transform:uppercase; margin-bottom:8px;">Current Focus</div>
-                            <div style="font-size:15px; font-weight:600; color:var(--text-primary);" id="focusTitle">Loading...</div>
-                        </div>
-                        <div style="margin-top:20px; font-size:14px;">
-                            <div style="font-weight:600; margin-bottom:12px;">Topics</div>
-                            <div id="topicsList"></div>
-                        </div>
-                    </div>
-
-                    <!-- Card 3: Data Export -->
-                    <div class="tool-card" data-search="export data csv json download">
-                        <div class="tool-header">
-                            <div class="tool-title">Data Export</div>
-                            <span class="material-symbols-outlined" style="color:var(--text-muted);">file_download</span>
-                        </div>
-                        <div class="tool-desc">Export chat history, analytics, and notes.</div>
-                        <div class="date-input-group">
-                            <div class="date-input">
-                                <label>Select Range</label>
-                                <select id="exportRange" style="padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:14px; background:white;">
-                                    <option value="7">Last 7 Days</option>
-                                    <option value="30" selected>Last 30 Days</option>
-                                    <option value="90">Last 90 Days</option>
-                                    <option value="all">All Time</option>
-                                </select>
-                            </div>
-                            <div class="date-input">
-                                <label>Format</label>
-                                <select id="exportFormat" style="padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:14px; background:white;">
-                                    <option value="json">JSON</option>
-                                    <option value="csv">CSV</option>
-                                </select>
-                            </div>
-                        </div>
-                        <button class="tool-btn" id="exportBtn" onclick="doExport()">Export Data (ZIP)</button>
-                    </div>
-
-                    <!-- Card 5: Account Settings -->
-                    <div class="tool-card" data-search="account password delete profile">
-                        <div class="tool-header">
-                            <div class="tool-title">Account Settings</div>
-                            <span class="material-symbols-outlined" style="color:var(--text-muted);">manage_accounts</span>
-                        </div>
-                        <div class="tool-desc">Manage your personal profile and security.</div>
-                        <div class="date-input-group">
-                            <div class="date-input">
-                                <label>Full Name</label>
-                                <input type="text" id="accountName" value="Loading...">
-                            </div>
-                            <div class="date-input">
-                                <label>Email Address</label>
-                                <input type="email" id="accountEmail" value="Loading..." readonly style="background:#f8fafc;">
-                            </div>
-                        </div>
-                        <button class="tool-btn" style="margin-top:16px; background:var(--border-light); color:var(--text-primary);" onclick="saveAccountName()">Save Name</button>
-
-                        <div style="display:flex; gap:12px; margin-top:24px;">
-                            <button class="tool-btn" style="background:var(--border-light); color:var(--text-primary);" onclick="changePassword()">Change Password</button>
-                            <button class="tool-btn" style="background:#fef2f2; color:#ef4444; border:1px solid #fca5a5;" onclick="doDeleteAccount()">Delete Account</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right Column -->
-                <div style="display:flex; flex-direction:column; gap:24px;">
-
-                    <!-- Card 2: AI Resource Controls -->
-                    <div class="tool-card" data-search="tokens temperature memory context ai controls">
-                        <div class="tool-header">
-                            <div class="tool-title">AI Resource Controls</div>
-                            <span class="material-symbols-outlined" style="color:var(--text-muted);">memory</span>
-                        </div>
-                        <div class="tool-desc">Manage computational resources during sessions.</div>
-                        <div class="slider-group">
-                            <div class="slider-header"><span>Max Completion Tokens</span><span class="slider-val" id="tokensVal">2048</span></div>
-                            <input type="range" min="512" max="4096" value="2048" id="tokensSlider">
-                            <div class="slider-hint">Limits AI response length (512–4096).</div>
-                        </div>
-                        <div class="slider-group">
-                            <div class="slider-header"><span>Temperature (Creativity)</span><span class="slider-val" id="tempVal">0.7</span></div>
-                            <input type="range" min="0" max="100" value="70" id="tempSlider">
-                            <div class="slider-hint">Higher = more random, lower = more deterministic.</div>
-                        </div>
-                        <div class="slider-group">
-                            <div class="slider-header"><span>Context Memory Limit</span><span class="slider-val" id="contextVal">16k</span></div>
-                            <input type="range" min="4" max="32" value="16" id="contextSlider">
-                            <div class="slider-hint">How far back the AI remembers (4k–32k).</div>
-                        </div>
-                    </div>
-
-                    <!-- Card 4: UI Preferences -->
-                    <div class="tool-card" data-search="dark mode theme font compact accent color">
-                        <div class="tool-header">
-                            <div class="tool-title">UI Preferences</div>
-                            <span class="material-symbols-outlined" style="color:var(--text-muted);">palette</span>
-                        </div>
-
-                        <div class="toggle-row">
-                            <div class="toggle-info">
-                                <span class="material-symbols-outlined toggle-icon">dark_mode</span>
-                                <div><span class="toggle-title">Dark Mode</span><span class="toggle-desc">Switch to a darker interface</span></div>
-                            </div>
-                            <div class="toggle-switch" id="darkModeToggle"></div>
-                        </div>
-
-                        <div class="toggle-row">
-                            <div class="toggle-info">
-                                <span class="material-symbols-outlined toggle-icon">text_format</span>
-                                <div><span class="toggle-title">Font Size</span><span class="toggle-desc">Small / Medium / Large</span></div>
-                            </div>
-                            <select id="fontSizeSelect" style="padding:4px 8px; border:1px solid var(--border); border-radius:4px; font-size:12px;">
-                                <option value="small">Small</option>
-                                <option value="medium">Medium</option>
-                                <option value="large">Large</option>
-                            </select>
-                        </div>
-
-                        <div class="toggle-row">
-                            <div class="toggle-info">
-                                <span class="material-symbols-outlined toggle-icon">grid_view</span>
-                                <div><span class="toggle-title">Compact Layout</span><span class="toggle-desc">Show more content</span></div>
-                            </div>
-                            <div class="toggle-switch" id="compactToggle"></div>
-                        </div>
-
-                        <div class="toggle-row">
-                            <div class="toggle-info">
-                                <span class="material-symbols-outlined toggle-icon">format_color_fill</span>
-                                <div><span class="toggle-title">Accent Color</span><span class="toggle-desc">Choose primary brand color</span></div>
-                            </div>
-                            <div style="display:flex; gap:6px;" id="accentSwatches">
-                                <div class="accent-swatch" data-color="#2b1c86" style="width:20px; height:20px; border-radius:50%; background:#2b1c86; cursor:pointer;"></div>
-                                <div class="accent-swatch" data-color="#059669" style="width:20px; height:20px; border-radius:50%; background:#059669; cursor:pointer;"></div>
-                                <div class="accent-swatch" data-color="#dc2626" style="width:20px; height:20px; border-radius:50%; background:#dc2626; cursor:pointer;"></div>
-                                <div class="accent-swatch" data-color="#0284c7" style="width:20px; height:20px; border-radius:50%; background:#0284c7; cursor:pointer;"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Card 6: Model Configuration -->
-                    <div class="tool-card" data-search="model llama cloud system prompt reset">
-                        <div class="tool-header">
-                            <div class="tool-title">Model Configuration</div>
-                            <span class="material-symbols-outlined" style="color:var(--text-muted);">smart_toy</span>
-                        </div>
-                        <div class="tool-desc">Configure the underlying intelligence engine.</div>
-                        <div class="date-input-group" style="margin-bottom:16px;">
-                            <div class="date-input">
-                                <label>Active Model</label>
-                                <select id="modelSelect" style="padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:14px; background:white;">
-                                    <option value="llama-3.1-8b">Llama 3.1 8B (Local)</option>
-                                    <option value="gpt-4o">Cloud Fallback (GPT-4o)</option>
-                                    <option value="claude-3.5">Cloud Fallback (Claude 3.5)</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div style="margin-bottom:20px;">
-                            <label style="font-size:12px; color:var(--text-secondary); font-weight:500; display:block; margin-bottom:8px;">Local Backend URL (Ollama / FastAPI)</label>
-                            <div style="display:flex; gap:8px;">
-                                <input type="text" id="ollamaUrlInput" placeholder="http://localhost:8000" style="flex:1; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:14px; box-sizing:border-box;">
-                                <button class="tool-btn" id="saveOllamaBtn" style="margin:0; width:auto; padding:10px 16px; font-size:13px; font-weight:600;" onclick="saveOllamaUrl()">Save</button>
-                            </div>
-                            <div style="font-size:11px; color:var(--text-muted); margin-top:6px;">Start the backend: <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;">cd backend && uvicorn main:app --reload</code></div>
-                        </div>
-                        <div style="margin-bottom:20px;">
-                            <label style="font-size:12px; color:var(--text-secondary); font-weight:500; display:block; margin-bottom:8px;">System Prompt (Read-only)</label>
-                            <div style="padding:12px; background:var(--bg-body); border-radius:8px; border:1px solid var(--border); font-family:monospace; font-size:12px; color:var(--text-muted); max-height:100px; overflow-y:auto;">
-                                You are AetherMind, an advanced AI assistant specialized in mathematics, statistics, computer science, and code. You provide step-by-step solutions with formal verification. You never guess — you compute.
-                            </div>
-                        </div>
-                        <button class="tool-btn" style="background:var(--bg-body); color:var(--text-primary); border:1px solid var(--border);" onclick="resetAllSettings()">Reset All Settings to Default</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <span style="font-family:'Space Grotesk';font-weight:700;font-size:15px;letter-spacing:-.01em">AETHERMIND</span>
+      </a>
     </div>
 
-    <script src="supabase_client.js"></script>
-    <script>
-        let currentUserId = null;
-        let debounceTimer = null;
+    <div style="padding:0 16px 14px">
+      <a href="index.html" class="btn btn-primary" style="width:100%;text-decoration:none;font-size:14px;padding:11px">
+        <span style="font-size:16px;line-height:1">+</span> New session
+      </a>
+    </div>
 
-        async function initSettings() {
-            const session = await checkAuth();
-            if (!session) return;
-            currentUserId = session.user.id;
-            await initTheme();
+    <div class="scroll" style="flex:1;overflow-y:auto;padding:0 10px;min-height:0">
+      <div style="font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.12em;color:var(--text-faint);padding:6px 8px 10px">NAVIGATION</div>
+      <a href="index.html" class="nav-link">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Chat
+      </a>
+      <a href="dashboard.html" class="nav-link">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a href="settings.html" class="nav-link active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </a>
+      <a href="profile.html" class="nav-link">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Profile
+      </a>
+      <button class="nav-link" onclick="doLogout()" style="margin-top:4px">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </button>
+    </div>
 
-            // Load saved settings into UI
-            const s = await loadSettings(currentUserId);
-            document.getElementById('tokensSlider').value = s.max_tokens;
-            document.getElementById('tokensVal').textContent = s.max_tokens;
-            document.getElementById('tempSlider').value = Math.round(s.temperature * 100);
-            document.getElementById('tempVal').textContent = s.temperature.toFixed(1);
-            document.getElementById('contextSlider').value = s.context_limit / 1000;
-            document.getElementById('contextVal').textContent = (s.context_limit / 1000) + 'k';
+    <!-- User row -->
+    <div style="border-top:1px solid var(--border);padding:12px">
+      <a href="profile.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;padding:8px;border-radius:10px;transition:background .15s" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background='transparent'">
+        <div id="sidebarAvatar" style="width:32px;height:32px;border-radius:9px;background:linear-gradient(140deg,var(--violet),var(--aether));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;flex:none">?</div>
+        <div style="flex:1;min-width:0">
+          <div id="sidebarName" style="font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Loading…</div>
+          <div id="sidebarEmail" style="font-size:11px;color:var(--text-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">…</div>
+        </div>
+      </a>
+    </div>
+  </aside>
 
-            if (s.dark_mode) document.getElementById('darkModeToggle').classList.add('on');
-            if (s.compact_mode) document.getElementById('compactToggle').classList.add('on');
-            document.getElementById('fontSizeSelect').value = s.font_size;
+  <!-- ══ MAIN ══ -->
+  <main style="display:flex;flex-direction:column;min-width:0;min-height:0">
 
-            // Load Ollama URL
-            document.getElementById('ollamaUrlInput').value = s.ollama_url || 'http://localhost:8000';
+    <!-- Topbar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 26px;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(10px);flex:none">
+      <div>
+        <div style="font-family:'Space Grotesk';font-weight:600;font-size:16px;letter-spacing:-.01em">Settings &amp; Configuration</div>
+        <div style="font-size:11.5px;color:var(--text-faint);font-family:'JetBrains Mono';margin-top:2px">Preferences, model, and connection</div>
+      </div>
+      <button onclick="toggleTheme()" style="width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:15px" id="themeBtn">☾</button>
+    </div>
 
-            // Highlight active accent
-            document.querySelectorAll('.accent-swatch').forEach(sw => {
-                sw.style.border = sw.dataset.color === s.accent_color ? '2px solid black' : 'none';
-            });
+    <!-- Content -->
+    <div class="scroll" style="flex:1;overflow-y:auto;padding:28px 26px">
+      <div style="max-width:900px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:20px">
 
-            // Load profile info
-            const profile = await loadProfileData(currentUserId);
-            document.getElementById('accountName').value = profile.full_name || '';
-            document.getElementById('accountEmail').value = profile.email || '';
+        <!-- ── CARD: Model & Backend ── -->
+        <div class="card" style="grid-column:1/-1">
+          <div class="card-title">Model &amp; Backend Connection</div>
+          <div class="card-desc">Choose your AI model and connect to the local or Colab backend.</div>
 
-            // Load study planner
-            loadStudyTab('active');
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+            <!-- Model selector -->
+            <div class="card-section" style="margin-bottom:0">
+              <div class="section-label">Active Model</div>
+              <select id="modelSelect" class="inp" onchange="saveModelChoice()">
+                <option value="fast">⚡ Gemma 3 4B — Fast (~20 sec)</option>
+                <option value="precise">🎯 Llama 3 8B — Precise (~2 min)</option>
+              </select>
+              <div style="font-size:11.5px;color:var(--text-faint);margin-top:7px">Fast uses Gemma 3 4B. Precise uses Llama 3 8B for deeper reasoning.</div>
+            </div>
 
-            // Wire slider events
-            wireSliders();
-            wireToggles();
-        }
-        initSettings();
+            <!-- Backend URL -->
+            <div class="card-section" style="margin-bottom:0">
+              <div class="section-label">Backend URL</div>
+              <div class="inp-row">
+                <input type="text" id="backendUrlInput" class="inp" placeholder="http://localhost:8000 or paste Gradio URL">
+                <button class="btn btn-ghost" id="testBtn" onclick="testConnection()" style="padding:10px 14px;flex:none;font-size:12.5px">Test</button>
+                <button class="btn btn-primary" onclick="saveBackendUrl()" style="padding:10px 14px;flex:none;font-size:12.5px">Save</button>
+              </div>
+              <div id="connStatus"></div>
+            </div>
+          </div>
 
-        // ─── Slider Wiring ──────────────────────────
-        function wireSliders() {
-            document.getElementById('tokensSlider').addEventListener('input', e => {
-                document.getElementById('tokensVal').textContent = e.target.value;
-                debounceSave('max_tokens', parseInt(e.target.value));
-            });
-            document.getElementById('tempSlider').addEventListener('input', e => {
-                const val = (e.target.value / 100).toFixed(1);
-                document.getElementById('tempVal').textContent = val;
-                debounceSave('temperature', parseFloat(val));
-            });
-            document.getElementById('contextSlider').addEventListener('input', e => {
-                document.getElementById('contextVal').textContent = e.target.value + 'k';
-                debounceSave('context_limit', parseInt(e.target.value) * 1000);
-            });
-            document.getElementById('fontSizeSelect').addEventListener('change', e => {
-                debounceSave('font_size', e.target.value);
-            });
-            document.getElementById('modelSelect').addEventListener('change', e => {
-                showToast('Model set to ' + e.target.selectedOptions[0].text);
-            });
-        }
+          <!-- Colab guide -->
+          <div class="colab-hint" style="margin-top:18px">
+            <strong>Using Google Colab (GPU — recommended for speed):</strong><br>
+            1. Open <code>AetherMind_Llama3_V2.ipynb</code> in Colab → Runtime → T4 GPU → Run all<br>
+            2. Wait ~8 min. Copy the <code>gradio.live</code> link that appears at the bottom<br>
+            3. Paste it above → <strong>Test</strong> → <strong>Save</strong> — the chat will instantly use Colab's GPU
+          </div>
+          <div style="font-size:11px;color:var(--text-faint);margin-top:10px">
+            Local fallback: <code>cd backend &amp;&amp; uvicorn main:app --reload --port 8000</code>
+          </div>
+        </div>
 
-        function debounceSave(key, value) {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(async () => {
-                await updateSetting(currentUserId, key, value);
-                showToast('Settings updated');
-            }, 400);
-        }
+        <!-- ── CARD: AI Resource Controls ── -->
+        <div class="card">
+          <div class="card-title">AI Resource Controls</div>
+          <div class="card-desc">Tune response length, creativity, and memory depth.</div>
 
-        // ─── Toggle Wiring ──────────────────────────
-        function wireToggles() {
-            document.getElementById('darkModeToggle').addEventListener('click', async function() {
-                this.classList.toggle('on');
-                const isDark = this.classList.contains('on');
-                await updateSetting(currentUserId, 'dark_mode', isDark);
-                applyTheme(isDark);
-                showToast(isDark ? 'Dark mode enabled' : 'Dark mode disabled');
-            });
-            document.getElementById('compactToggle').addEventListener('click', async function() {
-                this.classList.toggle('on');
-                await updateSetting(currentUserId, 'compact_mode', this.classList.contains('on'));
-                showToast('Settings updated');
-            });
-            document.querySelectorAll('.accent-swatch').forEach(sw => {
-                sw.addEventListener('click', async function() {
-                    document.querySelectorAll('.accent-swatch').forEach(s => s.style.border = 'none');
-                    this.style.border = '2px solid black';
-                    await updateSetting(currentUserId, 'accent_color', this.dataset.color);
-                    showToast('Accent color updated');
-                });
-            });
-        }
+          <div class="slider-wrap">
+            <div class="slider-header">
+              <span class="slider-name">Max Tokens</span>
+              <span class="slider-val" id="tokensVal">512</span>
+            </div>
+            <input type="range" min="128" max="1024" value="512" id="tokensSlider">
+            <div class="slider-hint">Limits AI response length (128–1024).</div>
+          </div>
 
-        // ─── Study Planner ──────────────────────────
-        async function loadStudyTab(status) {
-            document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-            event?.target?.closest('.pill')?.classList.add('active');
-            if (!event) document.querySelector('.pill').classList.add('active');
+          <div class="slider-wrap">
+            <div class="slider-header">
+              <span class="slider-name">Temperature</span>
+              <span class="slider-val" id="tempVal">0.7</span>
+            </div>
+            <input type="range" min="0" max="100" value="70" id="tempSlider">
+            <div class="slider-hint">Higher = more creative, lower = more precise.</div>
+          </div>
 
-            const topics = await loadStudyTopics(currentUserId, status);
-            const focus = topics.find(t => t.is_focus);
-            const focusBox = document.getElementById('focusBox');
-            if (focus) {
-                focusBox.style.display = 'block';
-                document.getElementById('focusTitle').textContent = focus.title;
-            } else {
-                focusBox.style.display = 'none';
-            }
+          <div class="slider-wrap" style="margin-bottom:0">
+            <div class="slider-header">
+              <span class="slider-name">Context Memory</span>
+              <span class="slider-val" id="contextVal">16k</span>
+            </div>
+            <input type="range" min="4" max="32" value="16" id="contextSlider">
+            <div class="slider-hint">How many tokens back the model remembers.</div>
+          </div>
+        </div>
 
-            const list = document.getElementById('topicsList');
-            list.innerHTML = topics.filter(t => !t.is_focus).map(t => `
-                <div style="display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border-light);" draggable="true" data-id="${t.id}">
-                    <span class="material-symbols-outlined" style="color:var(--text-muted); cursor:grab;">drag_indicator</span>
-                    <span style="flex:1;">${t.title}</span>
-                    <span class="material-symbols-outlined" style="color:var(--text-muted); cursor:pointer;" onclick="editTopic('${t.id}')">edit</span>
-                </div>
-            `).join('') || '<div style="padding:16px; color:var(--text-muted); text-align:center;">No topics in this category.</div>';
-        }
+        <!-- ── CARD: UI Preferences ── -->
+        <div class="card">
+          <div class="card-title">UI Preferences</div>
+          <div class="card-desc">Appearance and display settings.</div>
 
-        async function editTopic(topicId) {
-            const newTitle = prompt('Edit topic title:');
-            if (newTitle && newTitle.trim()) {
-                await updateStudyTopic(currentUserId, topicId, { title: newTitle.trim() });
-                showToast('Topic updated');
-                loadStudyTab(document.querySelector('.pill.active')?.textContent.trim().toLowerCase() || 'active');
-            }
-        }
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div>
+                <div class="toggle-label">Dark Mode</div>
+                <div class="toggle-sub">Toggle light / dark interface</div>
+              </div>
+            </div>
+            <div class="switch" id="darkModeSwitch" onclick="toggleDarkMode(this)"></div>
+          </div>
 
-        // ─── Data Export ────────────────────────────
-        async function doExport() {
-            const btn = document.getElementById('exportBtn');
-            btn.textContent = 'Exporting...';
-            btn.disabled = true;
-            const range = document.getElementById('exportRange').value;
-            const format = document.getElementById('exportFormat').value;
-            const result = await exportData(currentUserId, format, range);
-            if (result.success) showToast(`Downloaded ${result.filename}`);
-            btn.textContent = 'Export Data (ZIP)';
-            btn.disabled = false;
-        }
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div>
+                <div class="toggle-label">Font Size</div>
+                <div class="toggle-sub">Small / Medium / Large</div>
+              </div>
+            </div>
+            <select id="fontSizeSelect" class="inp" style="width:auto;padding:5px 10px;font-size:12.5px" onchange="saveSetting('font_size', this.value)">
+              <option value="small">Small</option>
+              <option value="medium" selected>Medium</option>
+              <option value="large">Large</option>
+            </select>
+          </div>
 
-        // ─── Account Actions ────────────────────────
-        async function saveAccountName() {
-            const name = document.getElementById('accountName').value.trim();
-            if (!name) return showToast('Name cannot be empty', 'error');
-            await updateProfile(currentUserId, { full_name: name });
-            showToast('Name updated');
-        }
-        async function changePassword() {
-            const newPass = prompt('Enter new password (min 6 characters):');
-            if (!newPass || newPass.length < 6) return showToast('Password must be at least 6 characters', 'error');
-            await updatePassword(newPass);
-            showToast('Password changed successfully');
-        }
-        async function doDeleteAccount() {
-            const confirm1 = prompt('Type DELETE to permanently delete your account:');
-            if (confirm1 !== 'DELETE') return showToast('Account deletion cancelled', 'error');
-            await deleteAccount();
-        }
-        async function resetAllSettings() {
-            if (!confirm('Reset all settings to defaults?')) return;
-            const defaults = { max_tokens: 2048, temperature: 0.7, context_limit: 16000, dark_mode: false, font_size: 'medium', compact_mode: false, accent_color: '#2b1c86', ollama_url: 'http://localhost:8000' };
-            for (const [key, value] of Object.entries(defaults)) {
-                await updateSetting(currentUserId, key, value);
-            }
-            showToast('All settings reset to defaults');
-            setTimeout(() => location.reload(), 500);
-        }
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div>
+                <div class="toggle-label">Compact Layout</div>
+                <div class="toggle-sub">Denser content display</div>
+              </div>
+            </div>
+            <div class="switch" id="compactSwitch" onclick="toggleCompact(this)"></div>
+          </div>
 
-        async function saveOllamaUrl() {
-            const val = document.getElementById('ollamaUrlInput').value.trim() || 'http://localhost:8000';
-            await updateSetting(currentUserId, 'ollama_url', val);
-            showToast('Backend URL saved');
-        }
+          <div class="toggle-row" style="border-bottom:none;padding-bottom:0">
+            <div class="toggle-info">
+              <div>
+                <div class="toggle-label">Accent Color</div>
+                <div class="toggle-sub">Primary brand color</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <div class="swatch" data-color="#7c5cff" style="background:#7c5cff"></div>
+              <div class="swatch" data-color="#059669" style="background:#059669"></div>
+              <div class="swatch" data-color="#dc2626" style="background:#dc2626"></div>
+              <div class="swatch" data-color="#0284c7" style="background:#0284c7"></div>
+              <div class="swatch" data-color="#f59e0b" style="background:#f59e0b"></div>
+            </div>
+          </div>
+        </div>
 
-        // ─── Search Filter ──────────────────────────
-        function filterSettings(query) {
-            const q = query.toLowerCase();
-            document.querySelectorAll('.tool-card').forEach(card => {
-                const searchText = (card.dataset.search || '') + ' ' + card.textContent.toLowerCase();
-                card.style.display = !q || searchText.includes(q) ? '' : 'none';
-            });
-        }
-    </script>
+        <!-- ── CARD: Account Settings ── -->
+        <div class="card">
+          <div class="card-title">Account Settings</div>
+          <div class="card-desc">Manage your name, password, and account.</div>
+
+          <div class="card-section">
+            <label class="field-label">Full Name</label>
+            <input type="text" id="accountName" class="inp" value="Loading…">
+          </div>
+
+          <div class="card-section">
+            <label class="field-label">Email Address</label>
+            <input type="email" id="accountEmail" class="inp" value="Loading…" readonly>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-bottom:20px">
+            <button class="btn btn-ghost" style="flex:1" onclick="saveAccountName()">Save Name</button>
+            <button class="btn btn-ghost" style="flex:1" onclick="doChangePassword()">Change Password</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div style="margin-bottom:10px">
+            <div style="font-size:12.5px;font-weight:600;color:var(--danger);margin-bottom:10px">Danger Zone</div>
+            <input type="text" id="deleteInput" class="inp" placeholder="Type DELETE to confirm" style="margin-bottom:10px;border-color:color-mix(in srgb,var(--danger) 25%,transparent)">
+            <button class="btn btn-danger" style="width:100%" onclick="doDeleteAccount()">Delete Account Permanently</button>
+          </div>
+        </div>
+
+        <!-- ── CARD: Data Export ── -->
+        <div class="card">
+          <div class="card-title">Data Export</div>
+          <div class="card-desc">Download your chat history and analytics.</div>
+
+          <div class="card-section">
+            <label class="field-label">Date Range</label>
+            <select id="exportRange" class="inp">
+              <option value="7">Last 7 Days</option>
+              <option value="30" selected>Last 30 Days</option>
+              <option value="90">Last 90 Days</option>
+              <option value="all">All Time</option>
+            </select>
+          </div>
+
+          <div class="card-section">
+            <label class="field-label">Format</label>
+            <select id="exportFormat" class="inp">
+              <option value="json">JSON</option>
+              <option value="csv">CSV</option>
+            </select>
+          </div>
+
+          <button class="btn btn-primary" style="width:100%;margin-top:4px" id="exportBtn" onclick="doExport()">
+            Export Data (ZIP)
+          </button>
+
+          <div class="divider"></div>
+
+          <div class="card-section" style="margin-bottom:0">
+            <div class="section-label">Reset</div>
+            <button class="btn btn-ghost" style="width:100%" onclick="resetAllSettings()">Reset All Settings to Default</button>
+          </div>
+        </div>
+
+        <!-- ── CARD: Knowledge Base ── -->
+        <div class="card" style="grid-column:1/-1">
+          <div class="card-title">Knowledge Base (OKF)</div>
+          <div class="card-desc">Local reference library — AetherMind searches this before answering factual and conceptual questions.</div>
+
+          <div style="display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start">
+            <div>
+              <div id="kbStatus" style="margin-bottom:14px">
+                <span class="status-badge status-info" style="font-size:12px">Loading…</span>
+              </div>
+              <div id="kbDomains" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+            </div>
+            <button class="btn btn-ghost" id="reindexBtn" onclick="doReindex()" style="flex:none;font-size:12.5px;padding:9px 16px;white-space:nowrap">
+              Re-index
+            </button>
+          </div>
+
+          <div class="divider" style="margin:14px 0 10px"></div>
+          <div style="font-size:11.5px;color:var(--text-faint)">Read-only — edit OKF files directly in <code>knowledge/</code> then click Re-index to update.</div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script src="supabase_client.js"></script>
+<script>
+let currentUserId = null;
+let debounceTimer = null;
+
+// ── Init ─────────────────────────────────────────────────────
+async function initSettings() {
+  const session = await requireAuth();
+  if (!session) return;
+  currentUserId = session.user.id;
+
+  // Sidebar user info
+  const profile = await loadProfile(currentUserId);
+  const name = profile.full_name || 'User';
+  document.getElementById('sidebarName').textContent = name;
+  document.getElementById('sidebarEmail').textContent = profile.email || '';
+  document.getElementById('sidebarAvatar').textContent = name[0].toUpperCase();
+  document.getElementById('accountName').value = name;
+  document.getElementById('accountEmail').value = profile.email || '';
+
+  // Load settings from Supabase
+  const s = await loadSettings(currentUserId);
+  document.getElementById('tokensSlider').value = s.max_tokens || 512;
+  document.getElementById('tokensVal').textContent = s.max_tokens || 512;
+  document.getElementById('tempSlider').value = Math.round((s.temperature || 0.7) * 100);
+  document.getElementById('tempVal').textContent = (s.temperature || 0.7).toFixed(1);
+  document.getElementById('contextSlider').value = (s.context_limit || 16000) / 1000;
+  document.getElementById('contextVal').textContent = ((s.context_limit || 16000) / 1000) + 'k';
+  document.getElementById('fontSizeSelect').value = s.font_size || 'medium';
+
+  if (s.dark_mode) document.getElementById('darkModeSwitch').classList.add('on');
+  if (s.compact_mode) document.getElementById('compactSwitch').classList.add('on');
+
+  // Accent swatches
+  document.querySelectorAll('.swatch').forEach(sw => {
+    if (sw.dataset.color === (s.accent_color || '#7c5cff')) sw.classList.add('active');
+    sw.addEventListener('click', async function() {
+      document.querySelectorAll('.swatch').forEach(s2 => s2.classList.remove('active'));
+      this.classList.add('active');
+      await saveSetting('accent_color', this.dataset.color);
+    });
+  });
+
+  // Backend URL — localStorage takes priority (chat reads from localStorage)
+  const savedUrl = localStorage.getItem('aether-backend-url') || s.ollama_url || 'http://localhost:8000';
+  document.getElementById('backendUrlInput').value = savedUrl;
+
+  // Model choice
+  document.getElementById('modelSelect').value = localStorage.getItem('aether-model-id') || 'fast';
+
+  // Wire sliders
+  document.getElementById('tokensSlider').addEventListener('input', e => {
+    document.getElementById('tokensVal').textContent = e.target.value;
+    debounceSave('max_tokens', parseInt(e.target.value));
+  });
+  document.getElementById('tempSlider').addEventListener('input', e => {
+    const v = (e.target.value / 100).toFixed(1);
+    document.getElementById('tempVal').textContent = v;
+    debounceSave('temperature', parseFloat(v));
+  });
+  document.getElementById('contextSlider').addEventListener('input', e => {
+    document.getElementById('contextVal').textContent = e.target.value + 'k';
+    debounceSave('context_limit', parseInt(e.target.value) * 1000);
+  });
+  document.getElementById('fontSizeSelect').addEventListener('change', e => {
+    debounceSave('font_size', e.target.value);
+  });
+
+  // Theme button
+  const isDark = document.documentElement.dataset.theme !== 'light';
+  document.getElementById('themeBtn').textContent = isDark ? '☀' : '☾';
+
+  // Knowledge base status (non-blocking — backend may not be running)
+  loadKnowledgeStatus();
+}
+initSettings();
+
+// ── Helpers ──────────────────────────────────────────────────
+function debounceSave(key, value) {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(async () => {
+    await saveSetting(key, value);
+  }, 400);
+}
+
+async function saveSetting(key, value) {
+  await saveSettings(currentUserId, {[key]: value});
+  toast('Settings saved');
+}
+
+function toast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.borderColor = type === 'error' ? 'var(--danger)' : 'var(--border-strong)';
+  el.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// Override supabase_client showToast if it exists
+window.showToast = toast;
+
+// ── Theme ────────────────────────────────────────────────────
+function toggleTheme() {
+  const isLight = document.documentElement.dataset.theme === 'light';
+  const next = isLight ? 'dark' : 'light';
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem('aether-theme', next); } catch(e) {}
+  document.getElementById('themeBtn').textContent = next === 'dark' ? '☀' : '☾';
+}
+
+// ── Toggles ──────────────────────────────────────────────────
+function toggleDarkMode(el) {
+  el.classList.toggle('on');
+  const isDark = el.classList.contains('on');
+  saveSettings(currentUserId, {dark_mode: isDark});
+  document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
+  try { localStorage.setItem('aether-theme', isDark ? 'dark' : 'light'); } catch(e) {}
+  document.getElementById('themeBtn').textContent = isDark ? '☀' : '☾';
+  toast(isDark ? 'Dark mode on' : 'Light mode on');
+}
+
+function toggleCompact(el) {
+  el.classList.toggle('on');
+  saveSettings(currentUserId, {compact_mode: el.classList.contains('on')});
+  toast('Layout updated');
+}
+
+// ── Model & Backend ───────────────────────────────────────────
+function saveModelChoice() {
+  const val = document.getElementById('modelSelect').value;
+  localStorage.setItem('aether-model-id', val);
+  toast('Model set to ' + (val === 'precise' ? 'Llama 3 8B (Precise)' : 'Gemma 3 4B (Fast)'));
+}
+
+async function saveBackendUrl() {
+  const val = (document.getElementById('backendUrlInput').value.trim() || 'http://localhost:8000').replace(/\/+$/, '');
+  localStorage.setItem('aether-backend-url', val);
+  await saveSettings(currentUserId, {ollama_url: val});
+  toast('Backend URL saved — chat will now use this URL');
+}
+
+function isGradioUrl(url) {
+  return url.includes('gradio.live') || url.includes('hf.space') || url.includes('gradio.app');
+}
+
+async function testConnection() {
+  const url = (document.getElementById('backendUrlInput').value.trim() || 'http://localhost:8000').replace(/\/+$/, '');
+  const status = document.getElementById('connStatus');
+  const btn = document.getElementById('testBtn');
+  btn.textContent = 'Testing…'; btn.disabled = true;
+  status.innerHTML = '<span class="status-badge status-info">Connecting to ' + url + '…</span>';
+  try {
+    if (isGradioUrl(url)) {
+      // Step 1: confirm server is reachable
+      const ping = await fetch(url, { signal: AbortSignal.timeout(12000) });
+      if (!ping.ok && ping.status !== 200) throw new Error('Server returned ' + ping.status);
+
+      // Step 2: probe the inference API — try Gradio 4.x /call/ then 3.x /run/
+      let apiOk = false, apiVersion = '';
+
+      // Try Gradio 4.x+ (/call/)
+      try {
+        const r = await fetch(url + '/call/api_chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: ['ping', 32, 0.1] }),
+          signal: AbortSignal.timeout(12000)
+        });
+        if (r.ok || r.status === 422) { apiOk = true; apiVersion = 'Gradio 4.x queue API'; }
+      } catch(_) {}
+
+      // Fall back: Gradio 3.x (/run/)
+      if (!apiOk) {
+        try {
+          const r = await fetch(url + '/run/api_chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: ['ping', 32, 0.1] }),
+            signal: AbortSignal.timeout(12000)
+          });
+          if (r.ok || r.status === 422) { apiOk = true; apiVersion = 'Gradio 3.x API'; }
+        } catch(_) {}
+      }
+
+      if (apiOk) {
+        status.innerHTML = `<span class="status-badge status-ok">✓ Colab GPU connected · model live · ${apiVersion}</span>`;
+      } else {
+        status.innerHTML = `<span class="status-badge status-ok">✓ Gradio server reachable · api_chat endpoint not responding (model may still be loading)</span>`;
+      }
+    } else {
+      const r = await fetch(url + '/health', { signal: AbortSignal.timeout(7000) });
+      if (r.ok) {
+        const data = await r.json();
+        status.innerHTML = `<span class="status-badge status-ok">✓ Connected · ${data.model || 'model'} ${data.model_ready ? '· ready' : '· not loaded'}</span>`;
+      } else {
+        status.innerHTML = `<span class="status-badge status-err">✗ Server error ${r.status}</span>`;
+      }
+    }
+  } catch(e) {
+    status.innerHTML = isGradioUrl(url)
+      ? `<span class="status-badge status-err">✗ Gradio link unreachable — is Colab still running? Error: ${e.message}</span>`
+      : `<span class="status-badge status-err">✗ Cannot reach backend — run: cd backend && uvicorn main:app --reload --port 8000</span>`;
+  }
+  btn.textContent = 'Test'; btn.disabled = false;
+}
+
+// ── Account ───────────────────────────────────────────────────
+async function saveAccountName() {
+  const name = document.getElementById('accountName').value.trim();
+  if (!name) return toast('Name cannot be empty', 'error');
+  await updateProfile(currentUserId, { full_name: name });
+  document.getElementById('sidebarName').textContent = name;
+  document.getElementById('sidebarAvatar').textContent = name[0].toUpperCase();
+  toast('Name updated');
+}
+
+async function doChangePassword() {
+  const p = prompt('Enter new password (min 6 characters):');
+  if (!p || p.length < 6) return toast('Password must be at least 6 characters', 'error');
+  await updatePassword(p);
+  toast('Password changed');
+}
+
+async function doDeleteAccount() {
+  if (document.getElementById('deleteInput').value !== 'DELETE')
+    return toast('Type DELETE to confirm', 'error');
+  await deleteAccount();
+}
+
+// ── Export ────────────────────────────────────────────────────
+async function doExport() {
+  const btn = document.getElementById('exportBtn');
+  btn.textContent = 'Exporting…'; btn.disabled = true;
+  const result = await exportData(
+    currentUserId,
+    document.getElementById('exportFormat').value,
+    document.getElementById('exportRange').value
+  );
+  if (result.success) toast('Downloaded ' + result.filename);
+  btn.textContent = 'Export Data (ZIP)'; btn.disabled = false;
+}
+
+// ── Reset ─────────────────────────────────────────────────────
+async function resetAllSettings() {
+  if (!confirm('Reset all settings to defaults?')) return;
+  localStorage.removeItem('aether-backend-url');
+  localStorage.removeItem('aether-model-id');
+  const defaults = { max_tokens: 512, temperature: 0.7, context_limit: 16000, dark_mode: false, font_size: 'medium', compact_mode: false, accent_color: '#7c5cff', ollama_url: 'http://localhost:8000' };
+  await saveSettings(currentUserId, defaults);
+  toast('All settings reset');
+  setTimeout(() => location.reload(), 600);
+}
+
+// ── Knowledge Base ────────────────────────────────────────────
+async function loadKnowledgeStatus() {
+  const backendUrl = (localStorage.getItem('aether-backend-url') || 'http://localhost:8000').replace(/\/+$/, '');
+  const statusEl = document.getElementById('kbStatus');
+  const domainsEl = document.getElementById('kbDomains');
+  try {
+    const r = await fetch(backendUrl + '/knowledge/status', { signal: AbortSignal.timeout(5000) });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    const domainCount = Object.keys(data.domain_counts || {}).length;
+    statusEl.innerHTML = `<span class="status-badge status-ok">${data.file_count} files indexed across ${domainCount} domain${domainCount !== 1 ? 's' : ''}</span>`;
+    domainsEl.innerHTML = Object.entries(data.domain_counts || {})
+      .sort((a,b) => b[1]-a[1])
+      .map(([d,n]) => `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-size:12px"><span style="font-weight:600;color:var(--violet-2)">${n}</span><span style="color:var(--text-dim)">${d}</span></span>`)
+      .join('');
+  } catch(e) {
+    statusEl.innerHTML = `<span class="status-badge status-err">Backend unreachable — start the server to see knowledge base stats</span>`;
+    domainsEl.innerHTML = '';
+  }
+}
+
+async function doReindex() {
+  const btn = document.getElementById('reindexBtn');
+  const backendUrl = (localStorage.getItem('aether-backend-url') || 'http://localhost:8000').replace(/\/+$/, '');
+  btn.textContent = 'Indexing…'; btn.disabled = true;
+  try {
+    const r = await fetch(backendUrl + '/knowledge/reindex', { method: 'POST', signal: AbortSignal.timeout(10000) });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    toast(`Knowledge base re-indexed — ${data.indexed} files`);
+    await loadKnowledgeStatus();
+  } catch(e) {
+    toast('Re-index failed — is the backend running?', 'error');
+  }
+  btn.textContent = 'Re-index'; btn.disabled = false;
+}
+
+// ── Logout ────────────────────────────────────────────────────
+async function doLogout() { await signOut(); }
+
+async function doExport() {
+  const btn = document.getElementById('exportBtn');
+  btn.textContent = 'Exporting…'; btn.disabled = true;
+  try {
+    const range = document.getElementById('exportRange').value;
+    const fmt = document.getElementById('exportFormat').value;
+    const data = { exported_at: new Date().toISOString(), range, userId: currentUserId, settings: {} };
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type: fmt === 'csv' ? 'text/csv' : 'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'aethermind-export-' + Date.now() + '.' + fmt; a.click();
+    toast('Export downloaded');
+  } catch(e) { toast('Export failed', 'error'); }
+  btn.textContent = 'Export Data (ZIP)'; btn.disabled = false;
+}
+</script>
 </body>
 </html>

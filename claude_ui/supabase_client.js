@@ -96,14 +96,14 @@ async function getSession() {
 /** Redirect to auth page if no valid session. Call at top of every protected page. */
 async function requireAuth() {
   const session = await getSession();
-  if (!session) { window.location.href = 'AetherMind Auth.dc.html'; return null; }
+  if (!session) { window.location.href = 'auth.html'; return null; }
   return session;
 }
 
 /** Redirect away from auth page if already signed in. */
 async function redirectIfAuthed() {
   const session = await getSession();
-  if (session) { window.location.href = 'AetherMind Chat.dc.html'; return true; }
+  if (session) { window.location.href = 'index.html'; return true; }
   return false;
 }
 
@@ -153,7 +153,7 @@ async function signOut() {
   const sb = getSB();
   if (sb) await sb.auth.signOut().catch(() => {});
   _lsSet('local_session', null);
-  window.location.href = 'AetherMind Auth.dc.html';
+  window.location.href = 'auth.html';
 }
 
 async function updatePassword(newPassword) {
@@ -180,7 +180,7 @@ async function deleteAccount() {
   }
   ['local_session','local_profile','local_settings','local_sessions','local_logs']
     .forEach(k => localStorage.removeItem('am_' + k));
-  window.location.href = 'AetherMind Auth.dc.html';
+  window.location.href = 'auth.html';
 }
 
 // ── PROFILES ─────────────────────────────────────────────────────────────────
