@@ -1,17 +1,28 @@
 {
-    "buildCommand": "",
-    "outputDirectory": "claude_ui",
-    "installCommand": "",
-    "framework": null,
-    "rewrites": [
-        { "source": "/(.*)", "destination": "/index.html" }
-    ],
-    "headers": [
-        {
-            "source": "/(.*)",
-            "headers": [
-                { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
-            ]
-        }
-    ]
+  "version": 2,
+  "outputDirectory": "claude_ui",
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/", "destination": "/landing.html" },
+    { "source": "/chat", "destination": "/index.html" },
+    { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/practice", "destination": "/practice.html" },
+    { "source": "/flashcards", "destination": "/flashcards.html" },
+    { "source": "/tools", "destination": "/tools.html" },
+    { "source": "/rooms", "destination": "/rooms.html" },
+    { "source": "/planner", "destination": "/planner.html" },
+    { "source": "/concept-map", "destination": "/concept-map.html" },
+    { "source": "/auth", "destination": "/auth.html" },
+    { "source": "/settings", "destination": "/settings.html" },
+    { "source": "/profile", "destination": "/profile.html" },
+    { "source": "/set-backend", "destination": "/set-backend.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    }
+  ]
 }
