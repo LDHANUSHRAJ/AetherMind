@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Profile — AetherMind</title>
+<title>Planner — AetherMind</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -88,7 +88,7 @@ body{display:flex;background:var(--bg);color:var(--text);font-family:'Hanken Gro
 .content::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:3px}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.container{max-width:800px;margin:0 auto;animation:fadeUp .3s ease}
+.container{max-width:900px;margin:0 auto;animation:fadeUp .3s ease}
 
 /* CARDS */
 .card{
@@ -102,8 +102,11 @@ body{display:flex;background:var(--bg);color:var(--text);font-family:'Hanken Gro
 .card-title{font-family:'Space Grotesk';font-size:16px;font-weight:700;margin-bottom:4px}
 .card-desc{font-size:13px;color:var(--text-faint);margin-bottom:18px;line-height:1.5}
 
-input[type=text],input[type=password]{width:100%;background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:10px 12px;font-family:'Hanken Grotesk';font-size:14px;outline:none}
-input[type=text]:focus,input[type=password]:focus{border-color:var(--violet)}
+.grid{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:12px;align-items:end}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+label{font-size:11px;font-weight:700;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px;font-family:'JetBrains Mono'}
+input[type=text],input[type=date],select{width:100%;background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:10px 12px;font-family:'Hanken Grotesk';font-size:14px;outline:none}
+input[type=text]:focus,input[type=date]:focus{border-color:var(--violet)}
 
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
@@ -113,15 +116,18 @@ input[type=text]:focus,input[type=password]:focus{border-color:var(--violet)}
 .btn-primary{background:linear-gradient(140deg,var(--violet),var(--violet-2));color:#fff;box-shadow:0 6px 20px -6px var(--violet-glow)}
 .btn-primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 10px 24px -6px var(--violet-glow)}
 .btn-ghost{background:var(--surface-2);color:var(--text);border:1px solid var(--border)}
-.btn-danger{background:var(--danger-soft);color:var(--danger);border:1px solid color-mix(in srgb,var(--danger) 30%,transparent)}
 
-.avatar-large{
-  width:72px;height:72px;border-radius:50%;
-  background:linear-gradient(140deg,var(--violet),var(--violet-2));
-  color:#fff;display:flex;align-items:center;justify-content:center;
-  font-family:'Space Grotesk';font-size:28px;font-weight:700;flex-shrink:0;
-  box-shadow:0 0 24px var(--violet-glow);
-}
+.deadline{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--border);gap:14px}
+.deadline:last-child{border-bottom:none}
+.deadline.completed .d-title{text-decoration:line-through;color:var(--text-faint)}
+.d-title{font-weight:600;font-size:14.5px}
+.d-meta{font-size:12px;color:var(--text-faint);margin-top:3px;font-family:'JetBrains Mono'}
+.days{font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap;font-family:'JetBrains Mono'}
+.days.soon{background:var(--danger-soft);color:var(--danger)}
+.days.ok{background:var(--success-soft);color:var(--success)}
+.days.done{background:var(--surface-2);color:var(--text-faint)}
+.actions{display:flex;gap:8px;align-items:center}
+input[type=checkbox]{width:17px;height:17px;accent-color:var(--violet)}
 </style>
 </head>
 <body>
@@ -141,11 +147,11 @@ input[type=text]:focus,input[type=password]:focus{border-color:var(--violet)}
     <a href="flashcards.html" class="sb-link"><span class="ico">🃏</span> Flashcards</a>
     <a href="tools.html" class="sb-link"><span class="ico">🔧</span> Tools</a>
     <a href="rooms.html" class="sb-link"><span class="ico">👥</span> Study Rooms</a>
-    <a href="planner.html" class="sb-link"><span class="ico">📅</span> Planner</a>
+    <a href="planner.html" class="sb-link active"><span class="ico">📅</span> Planner</a>
     <a href="concept-map.html" class="sb-link"><span class="ico">🕸</span> Concept Map</a>
     <div class="sb-label">Account</div>
     <a href="settings.html" class="sb-link"><span class="ico">⚙️</span> Settings</a>
-    <a href="profile.html" class="sb-link active"><span class="ico">👤</span> Profile</a>
+    <a href="profile.html" class="sb-link"><span class="ico">👤</span> Profile</a>
     <button class="sb-link" onclick="signOut&&signOut()"><span class="ico">🚪</span> Logout</button>
   </nav>
   <div class="sb-bottom">
@@ -165,8 +171,8 @@ input[type=text]:focus,input[type=password]:focus{border-color:var(--violet)}
   <!-- Topbar -->
   <div class="topbar">
     <div>
-      <div class="topbar-title">👤 User Profile</div>
-      <div class="topbar-sub">Manage your account identity and security settings</div>
+      <div class="topbar-title">📅 Academic Planner &amp; Deadlines</div>
+      <div class="topbar-sub">Track exams, assignments, and study milestones</div>
     </div>
     <div class="topbar-right">
       <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">☾</button>
@@ -176,35 +182,40 @@ input[type=text]:focus,input[type=password]:focus{border-color:var(--violet)}
   <div class="content">
     <div class="container">
 
-      <!-- Identity Card -->
+      <!-- Add Card -->
       <div class="card">
-        <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
-          <div class="avatar-large" id="profAvatar">?</div>
-          <div style="flex:1">
-            <div style="font-family:'Space Grotesk';font-size:22px;font-weight:700" id="profName">Loading…</div>
-            <div style="color:var(--text-faint);font-size:13px;font-family:'JetBrains Mono';margin-top:2px" id="profEmail">…</div>
+        <div class="card-title">➕ Add Deadline</div>
+        <div class="card-desc">Keep track of upcoming exams, project submissions, and homework.</div>
+        <form onsubmit="addDeadlineItem(event)">
+          <div class="grid">
+            <div>
+              <label for="title">Title</label>
+              <input type="text" id="title" placeholder="e.g. Linear Algebra Midterm" required>
+            </div>
+            <div>
+              <label for="due">Due Date</label>
+              <input type="date" id="due" required>
+            </div>
+            <div>
+              <label for="domain">Domain</label>
+              <select id="domain">
+                <option value="math">Mathematics</option>
+                <option value="stats">Statistics</option>
+                <option value="coding">Coding</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div>
+              <button class="btn btn-primary" type="submit">Add Task</button>
+            </div>
           </div>
-        </div>
+        </form>
       </div>
 
-      <!-- Account Details -->
+      <!-- List Card -->
       <div class="card">
-        <div class="card-title">✏ Edit Profile</div>
-        <div class="card-desc">Update your display name.</div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap">
-          <input type="text" id="nameInp" placeholder="Full Name" style="flex:1">
-          <button class="btn btn-primary" onclick="saveName()">Save Name</button>
-        </div>
-      </div>
-
-      <!-- Security -->
-      <div class="card">
-        <div class="card-title">🔒 Change Password</div>
-        <div class="card-desc">Set a new password for your account.</div>
-        <div style="display:flex;flex-direction:column;gap:12px;max-width:400px">
-          <input type="password" id="newPw" placeholder="New Password (min 6 chars)">
-          <button class="btn btn-ghost" onclick="doChangePw()" style="width:fit-content">Update Password</button>
-        </div>
+        <div class="card-title">📌 Upcoming &amp; Tracked Deadlines</div>
+        <div id="list" style="margin-top:14px;color:var(--text-faint);font-size:13px">Loading deadlines…</div>
       </div>
 
     </div>
@@ -230,46 +241,78 @@ let currentUser = null;
   if (!session) return;
   currentUser = session.user;
 
-  const email = currentUser.email || 'local@user';
-  let name = email.split('@')[0];
-
   if(typeof loadProfile === 'function') {
     const p = await loadProfile(currentUser.id).catch(()=>null);
-    if(p && p.full_name) name = p.full_name;
+    if(p) {
+      const name = p.full_name || currentUser.email || 'User';
+      document.getElementById('sbName').textContent = name;
+      document.getElementById('sbEmail').textContent = currentUser.email || '';
+      document.getElementById('sbAvatar').textContent = name[0].toUpperCase();
+    }
   }
 
-  document.getElementById('profName').textContent = name;
-  document.getElementById('profEmail').textContent = email;
-  document.getElementById('profAvatar').textContent = name[0].toUpperCase();
-  document.getElementById('nameInp').value = name;
+  // Set default due date to 7 days from now
+  const d = new Date(); d.setDate(d.getDate() + 7);
+  document.getElementById('due').value = d.toISOString().split('T')[0];
 
-  document.getElementById('sbName').textContent = name;
-  document.getElementById('sbEmail').textContent = email;
-  document.getElementById('sbAvatar').textContent = name[0].toUpperCase();
+  await refreshList();
 })();
 
-async function saveName(){
-  const name = document.getElementById('nameInp').value.trim();
-  if (!name) return;
-  await updateProfile(currentUser.id, { full_name: name });
-  document.getElementById('profName').textContent = name;
-  document.getElementById('sbName').textContent = name;
-  document.getElementById('profAvatar').textContent = name[0].toUpperCase();
-  document.getElementById('sbAvatar').textContent = name[0].toUpperCase();
-  alert('Profile updated successfully ✓');
+async function refreshList(){
+  const listEl = document.getElementById('list');
+  const items = await loadDeadlines(currentUser.id);
+  if (!items || !items.length) {
+    listEl.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-faint)">No deadlines saved yet — add one above!</div>';
+    return;
+  }
+  const now = new Date().setHours(0,0,0,0);
+  listEl.innerHTML = items.map(d => {
+    const dueTime = new Date(d.due_date).setHours(0,0,0,0);
+    const diffDays = Math.ceil((dueTime - now) / 86400000);
+    let badgeClass = 'ok', badgeText = `${diffDays}d left`;
+    if (d.completed) { badgeClass = 'done'; badgeText = 'Done ✓'; }
+    else if (diffDays < 0) { badgeClass = 'soon'; badgeText = `${Math.abs(diffDays)}d overdue`; }
+    else if (diffDays <= 3) { badgeClass = 'soon'; badgeText = `${diffDays}d left`; }
+
+    return `
+      <div class="deadline ${d.completed ? 'completed' : ''}">
+        <div style="display:flex;align-items:center;gap:12px">
+          <input type="checkbox" ${d.completed ? 'checked' : ''} onchange="toggleDone('${d.id}', this.checked)">
+          <div>
+            <div class="d-title">${escapeHtml(d.title)}</div>
+            <div class="d-meta">${escapeHtml(d.domain || 'general')} · Due ${d.due_date}</div>
+          </div>
+        </div>
+        <div class="actions">
+          <span class="days ${badgeClass}">${badgeText}</span>
+          <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="removeDeadline('${d.id}')">Delete</button>
+        </div>
+      </div>`;
+  }).join('');
 }
 
-async function doChangePw(){
-  const pw = document.getElementById('newPw').value;
-  if (!pw || pw.length < 6) { alert('Password must be at least 6 characters.'); return; }
-  try {
-    await updatePassword(pw);
-    alert('Password updated successfully ✓');
-    document.getElementById('newPw').value = '';
-  } catch(e) {
-    alert('Failed to update password: ' + e.message);
-  }
+async function addDeadlineItem(e){
+  e.preventDefault();
+  const title = document.getElementById('title').value.trim();
+  const dueDate = document.getElementById('due').value;
+  const domain = document.getElementById('domain').value;
+  if (!title || !dueDate) return;
+  await addDeadline(currentUser.id, title, dueDate, domain);
+  document.getElementById('title').value = '';
+  await refreshList();
 }
+
+async function toggleDone(id, completed){
+  await updateDeadline(currentUser.id, id, { completed });
+  await refreshList();
+}
+
+async function removeDeadline(id){
+  await deleteDeadline(currentUser.id, id);
+  await refreshList();
+}
+
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 </script>
 </body>
 </html>

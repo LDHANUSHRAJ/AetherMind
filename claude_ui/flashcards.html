@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flashcards — AetherMind</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script>try{var t=localStorage.getItem('aether-theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="env-config.js"></script>
+<script src="supabase_client.js"></script>
+<style>
+:root{
+  --bg:#0b0a11;--bg-2:#100e18;--surface:#15121f;--surface-2:#1c1828;--surface-3:#221e30;
+  --border:rgba(255,255,255,.07);--border-strong:rgba(255,255,255,.13);
+  --text:#ece9f5;--text-dim:#a39fb5;--text-faint:#6f6b80;--text-muted:#4a4660;
+  --violet:#7c5cff;--violet-2:#a78bfa;--violet-soft:rgba(124,92,255,.14);--violet-glow:rgba(124,92,255,.5);
+  --aether:#5eead4;--aether-soft:rgba(94,234,212,.12);
+  --amber:#f5b942;--amber-soft:rgba(245,185,66,.12);
+  --danger:#ff6b6b;--danger-soft:rgba(255,107,107,.12);
+  --success:#34d399;--success-soft:rgba(52,211,153,.12);
+  --sidebar-w:240px;
+}
+:root[data-theme="light"]{
+  --bg:#f4f2fb;--bg-2:#ebe8f6;--surface:#fff;--surface-2:#f6f4fc;--surface-3:#edeaf8;
+  --border:rgba(24,18,48,.09);--border-strong:rgba(24,18,48,.17);
+  --text:#191427;--text-dim:#5b5570;--text-faint:#8b8699;--text-muted:#c4bdd9;
+  --violet:#6d4bf0;--violet-2:#7c5cff;--violet-soft:rgba(109,75,240,.10);--violet-glow:rgba(109,75,240,.35);
+  --aether:#0fb89a;--aether-soft:rgba(15,184,154,.12);
+  --amber:#d97706;--amber-soft:rgba(217,119,6,.10);
+  --danger:#d63a3a;--danger-soft:rgba(214,58,58,.10);
+  --success:#059669;--success-soft:rgba(5,150,105,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{display:flex;background:var(--bg);color:var(--text);font-family:'Hanken Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+::selection{background:var(--violet);color:#fff}
+
+/* SIDEBAR */
+.sidebar{
+  width:var(--sidebar-w);flex-shrink:0;
+  display:flex;flex-direction:column;height:100vh;
+  background:var(--bg-2);border-right:1px solid var(--border);
+  overflow:hidden;position:relative;z-index:10;
+}
+.sidebar::before{
+  content:'';position:absolute;top:-60px;left:-60px;width:200px;height:200px;
+  background:radial-gradient(circle,var(--violet-soft),transparent 70%);
+  filter:blur(30px);pointer-events:none;
+}
+.sb-brand{display:flex;align-items:center;gap:10px;padding:20px 16px 14px;text-decoration:none;color:var(--text)}
+.sb-logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(140deg,var(--violet),var(--violet-2));display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 18px var(--violet-glow)}
+.sb-logo-dot{width:11px;height:11px;border-radius:50%;background:#fff}
+.sb-name{font-family:'Space Grotesk';font-weight:700;font-size:15.5px;letter-spacing:.05em}
+.sb-nav{flex:1;overflow-y:auto;padding:4px 8px 8px;display:flex;flex-direction:column;gap:2px}
+.sb-nav::-webkit-scrollbar{display:none}
+.sb-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);padding:12px 10px 6px;font-family:'JetBrains Mono'}
+.sb-link{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;text-decoration:none;color:var(--text-dim);font-size:13.5px;font-weight:500;transition:all .18s;cursor:pointer;border:none;background:none;width:100%;text-align:left}
+.sb-link:hover{background:var(--surface);color:var(--text)}
+.sb-link.active{background:var(--violet-soft);color:var(--violet-2);font-weight:600}
+.sb-link .ico{font-size:16px;flex-shrink:0;opacity:.9}
+.sb-bottom{padding:10px 8px;border-top:1px solid var(--border)}
+.sb-user{display:flex;align-items:center;gap:10px;padding:10px 10px;border-radius:10px;text-decoration:none;transition:background .18s}
+.sb-user:hover{background:var(--surface)}
+.sb-avatar{width:30px;height:30px;border-radius:8px;background:linear-gradient(140deg,var(--violet),var(--violet-2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;flex-shrink:0}
+.sb-uname{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb-uemail{font-size:11px;color:var(--text-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;height:100vh;overflow:hidden}
+
+.topbar{
+  display:flex;align-items:center;gap:16px;
+  padding:14px 28px;border-bottom:1px solid var(--border);
+  background:color-mix(in srgb,var(--bg) 80%,transparent);
+  backdrop-filter:blur(12px);flex-shrink:0;
+}
+.topbar-title{font-family:'Space Grotesk';font-weight:700;font-size:18px;letter-spacing:-.01em}
+.topbar-sub{font-size:12px;color:var(--text-faint);font-family:'JetBrains Mono';margin-top:2px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.icon-btn{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .18s}
+.icon-btn:hover{border-color:var(--border-strong);background:var(--surface-2)}
+
+.content{flex:1;overflow-y:auto;padding:28px;background:var(--bg)}
+.content::-webkit-scrollbar{width:6px}
+.content::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:3px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.container{max-width:900px;margin:0 auto;animation:fadeUp .3s ease}
+
+/* CARDS */
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:18px;
+  padding:24px;margin-bottom:20px;position:relative;overflow:hidden;
+}
+.card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--border-strong),transparent);
+}
+.card-title{font-family:'Space Grotesk';font-size:16px;font-weight:700;margin-bottom:4px}
+.card-desc{font-size:13px;color:var(--text-faint);margin-bottom:18px;line-height:1.5}
+
+/* INPUTS */
+textarea,input[type=text],select{
+  width:100%;background:var(--surface-2);border:1px solid var(--border);color:var(--text);
+  border-radius:12px;padding:12px 14px;font-family:'Hanken Grotesk';font-size:14px;
+  outline:none;transition:border-color .2s,box-shadow .2s;
+}
+textarea:focus,input[type=text]:focus{border-color:var(--violet);box-shadow:0 0 0 3px var(--violet-soft)}
+select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236f6b80' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:10px 20px;border-radius:11px;font-family:'Hanken Grotesk';font-size:13.5px;font-weight:600;
+  cursor:pointer;border:none;transition:all .18s;white-space:nowrap;
+}
+.btn-primary{background:linear-gradient(140deg,var(--violet),var(--violet-2));color:#fff;box-shadow:0 6px 20px -6px var(--violet-glow)}
+.btn-primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 10px 24px -6px var(--violet-glow)}
+.btn-ghost{background:var(--surface-2);color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover:not(:disabled){border-color:var(--border-strong);background:var(--surface-3)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* FLIP CARDS */
+.deck-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:16px}
+.flip-card{perspective:1000px;height:170px;cursor:pointer}
+.flip-inner{position:relative;width:100%;height:100%;transition:transform .5s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
+.flip-card.flipped .flip-inner{transform:rotateY(180deg)}
+.flip-face{
+  position:absolute;inset:0;backface-visibility:hidden;
+  background:var(--surface-2);border:1px solid var(--border);border-radius:14px;
+  padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;font-size:14px;line-height:1.55;overflow-y:auto;
+  box-shadow:0 8px 24px -10px rgba(0,0,0,.4);
+}
+.flip-face.back{transform:rotateY(180deg);background:var(--violet-soft);border-color:rgba(124,92,255,.3);color:var(--violet-2);font-weight:600}
+.flip-hint{position:absolute;bottom:10px;font-size:10.5px;color:var(--text-faint);font-family:'JetBrains Mono'}
+
+/* SAVED DECKS */
+.set-item{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
+.set-item:last-child{border-bottom:none}
+.set-item:hover{background:var(--surface-2)}
+
+.badge-alg{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--aether-soft);color:var(--aether);font-family:'JetBrains Mono'}
+.spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sidebar">
+  <a href="index.html" class="sb-brand">
+    <div class="sb-logo"><div class="sb-logo-dot"></div></div>
+    <span class="sb-name">AETHERMIND</span>
+  </a>
+  <nav class="sb-nav">
+    <div class="sb-label">Workspace</div>
+    <a href="index.html" class="sb-link"><span class="ico">💬</span> Chat</a>
+    <a href="dashboard.html" class="sb-link"><span class="ico">📊</span> Dashboard</a>
+    <div class="sb-label">Learning</div>
+    <a href="practice.html" class="sb-link"><span class="ico">🧠</span> Practice</a>
+    <a href="flashcards.html" class="sb-link active"><span class="ico">🃏</span> Flashcards</a>
+    <a href="tools.html" class="sb-link"><span class="ico">🔧</span> Tools</a>
+    <a href="rooms.html" class="sb-link"><span class="ico">👥</span> Study Rooms</a>
+    <a href="planner.html" class="sb-link"><span class="ico">📅</span> Planner</a>
+    <a href="concept-map.html" class="sb-link"><span class="ico">🕸</span> Concept Map</a>
+    <div class="sb-label">Account</div>
+    <a href="settings.html" class="sb-link"><span class="ico">⚙️</span> Settings</a>
+    <a href="profile.html" class="sb-link"><span class="ico">👤</span> Profile</a>
+    <button class="sb-link" onclick="signOut&&signOut()"><span class="ico">🚪</span> Logout</button>
+  </nav>
+  <div class="sb-bottom">
+    <a href="profile.html" class="sb-user">
+      <div class="sb-avatar" id="sbAvatar">?</div>
+      <div>
+        <div class="sb-uname" id="sbName">Loading…</div>
+        <div class="sb-uemail" id="sbEmail">…</div>
+      </div>
+    </a>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">🃏 Flashcards Deck Generator</div>
+      <div class="topbar-sub">AI &amp; Algorithmic NLP card generation · Spaced repetition</div>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">☾</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="container">
+
+      <!-- Generator Card -->
+      <div class="card">
+        <div class="card-title">✨ Create a New Deck</div>
+        <div class="card-desc">Paste lecture notes, textbook summaries, or formulas. Works with AI or 100% offline algorithm extraction.</div>
+
+        <input type="text" id="deck-title" placeholder="Deck title (e.g. Linear Algebra Exam 1)" style="margin-bottom:12px">
+        <textarea id="deck-content" rows="5" placeholder="Paste your study notes or concept text here… e.g. A matrix is a rectangular array of numbers. The determinant of a matrix A is denoted det(A)."></textarea>
+
+        <div style="display:flex;gap:12px;margin-top:14px;align-items:center;flex-wrap:wrap">
+          <select id="deck-domain" style="width:auto;flex:1">
+            <option value="">General STEM</option>
+            <option value="math">Mathematics</option>
+            <option value="stats">Statistics</option>
+            <option value="coding">Computer Science / Coding</option>
+          </select>
+          <button class="btn btn-primary" id="gen-btn" onclick="generateDeck()">
+            <span id="gen-btn-text">⚡ Generate Deck</span>
+          </button>
+          <button class="btn btn-ghost" onclick="loadSampleDeck()">📋 Load Sample Notes</button>
+        </div>
+      </div>
+
+      <!-- Generated Deck Output -->
+      <div id="deck-view"></div>
+
+      <!-- Saved Decks -->
+      <div class="card">
+        <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+          <span>📚 Saved Decks</span>
+          <span class="badge-alg">Local + Supabase</span>
+        </div>
+        <div id="sets-list" style="margin-top:14px;color:var(--text-faint);font-size:13px">Loading saved decks…</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleTheme(){
+  const isDark=document.documentElement.dataset.theme!=='light';
+  const next=isDark?'light':'dark';
+  document.documentElement.dataset.theme=next;
+  document.getElementById('themeBtn').textContent=isDark?'🌙':'☾';
+  try{localStorage.setItem('aether-theme',next);}catch(e){}
+}
+(function(){
+  try{if(localStorage.getItem('aether-theme')==='light')document.getElementById('themeBtn').textContent='🌙';}catch(e){}
+})();
+
+function backendUrl(){ return (localStorage.getItem('aether-backend-url')||'http://localhost:8000').replace(/\/+$/,''); }
+let currentUser = null;
+
+(async function init(){
+  const session = await requireAuth();
+  if (!session) return;
+  currentUser = session.user;
+
+  if(typeof loadProfile === 'function') {
+    const p = await loadProfile(currentUser.id).catch(()=>null);
+    if(p) {
+      const name = p.full_name || currentUser.email || 'User';
+      document.getElementById('sbName').textContent = name;
+      document.getElementById('sbEmail').textContent = currentUser.email || '';
+      document.getElementById('sbAvatar').textContent = name[0].toUpperCase();
+    }
+  }
+  await refreshSets();
+})();
+
+async function refreshSets(){
+  const list = document.getElementById('sets-list');
+  const sets = await loadFlashcardSets(currentUser.id);
+  if (!sets || !sets.length) {
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-faint)">No saved decks yet — generate one above!</div>';
+    return;
+  }
+  list.innerHTML = sets.map(s => `
+    <div class="set-item" onclick='showDeck(${JSON.stringify(s.cards).replace(/'/g,"&#39;")}, ${JSON.stringify(s.title)})'>
+      <div>
+        <span style="font-weight:600;font-size:14px">${escapeHtml(s.title)}</span>
+        <span style="color:var(--text-faint);font-size:12px;margin-left:8px;font-family:'JetBrains Mono'">(${(s.cards||[]).length} cards)</span>
+      </div>
+      <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="event.stopPropagation();removeSet('${s.id}')">Delete</button>
+    </div>`).join('');
+}
+
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// ── Smart Algorithmic Card Extractor (100% Offline Engine) ────────────────────
+function algorithmicExtractCards(text) {
+  const cards = [];
+  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
+  
+  // Rule 1: Definitions with "is", "defined as", "refers to", ":", "="
+  lines.forEach(line => {
+    if (line.includes(' is ') || line.includes(' refers to ') || line.includes(' = ') || line.includes(':')) {
+      let q = '', a = '';
+      if (line.includes(' is ')) {
+        const parts = line.split(' is ');
+        q = `What is ${parts[0].trim()}?`;
+        a = `${parts[0].trim()} is ${parts.slice(1).join(' is ').trim()}`;
+      } else if (line.includes(' refers to ')) {
+        const parts = line.split(' refers to ');
+        q = `What does ${parts[0].trim()} refer to?`;
+        a = parts.slice(1).join(' refers to ').trim();
+      } else if (line.includes(':')) {
+        const parts = line.split(':');
+        q = `Define ${parts[0].trim()}`;
+        a = parts.slice(1).join(':').trim();
+      } else if (line.includes(' = ')) {
+        const parts = line.split(' = ');
+        q = `What is the formula for ${parts[0].trim()}?`;
+        a = `${parts[0].trim()} = ${parts.slice(1).join(' = ').trim()}`;
+      }
+      if (q && a && a.length > 5) {
+        cards.push({ front: q, back: a });
+      }
+    }
+  });
+
+  // Rule 2: If fewer than 4 cards, sentence chunking fallback
+  if (cards.length < 4) {
+    const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+    sentences.forEach((s, idx) => {
+      const clean = s.trim();
+      if (clean.length > 15 && cards.length < 8) {
+        cards.push({
+          front: `Key Concept #${idx + 1}`,
+          back: clean
+        });
+      }
+    });
+  }
+
+  return cards.slice(0, 10);
+}
+
+async function generateDeck(){
+  const content = document.getElementById('deck-content').value.trim();
+  if (!content) { alert('Please enter some study notes or content.'); return; }
+  const btn = document.getElementById('gen-btn');
+  const btnTxt = document.getElementById('gen-btn-text');
+  btn.disabled = true;
+  btnTxt.innerHTML = '<div class="spinner"></div> Generating…';
+
+  const view = document.getElementById('deck-view');
+  view.innerHTML = '<div class="card" style="text-align:center;padding:30px;color:var(--text-faint)">Generating flashcard deck…</div>';
+
+  let cards = [];
+  let isAlgorithmic = false;
+
+  try {
+    const resp = await fetch(backendUrl() + '/flashcards/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content, count: 8 }),
+      signal: AbortSignal.timeout(1200)
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data.cards && data.cards.length) cards = data.cards;
+    }
+  } catch(e) {
+    // Fast offline fallback -> use local algorithmic extraction
+  }
+
+  if (!cards.length) {
+    cards = algorithmicExtractCards(content);
+    isAlgorithmic = true;
+  }
+
+  if (!cards.length) {
+    view.innerHTML = '<div class="card" style="color:var(--danger)">Could not generate cards. Try adding more detailed text.</div>';
+    btn.disabled = false;
+    btnTxt.textContent = '⚡ Generate Deck';
+    return;
+  }
+
+  const title = document.getElementById('deck-title').value.trim() || 'Study Deck (' + new Date().toLocaleDateString() + ')';
+  const domain = document.getElementById('deck-domain').value || null;
+  
+  await saveFlashcardSet(currentUser.id, title, domain, cards);
+  showDeck(cards, title, isAlgorithmic);
+  await refreshSets();
+
+  btn.disabled = false;
+  btnTxt.textContent = '⚡ Generate Deck';
+}
+
+function showDeck(cards, title, isAlgorithmic = false){
+  const view = document.getElementById('deck-view');
+  const cardsHtml = cards.map((c, i) => `
+    <div class="flip-card" onclick="this.classList.toggle('flipped')">
+      <div class="flip-inner">
+        <div class="flip-face">
+          <div style="font-weight:600;margin-bottom:6px">${escapeHtml(c.front || c.q)}</div>
+          <div class="flip-hint">Click to flip 🔄</div>
+        </div>
+        <div class="flip-face back">
+          <div>${escapeHtml(c.back || c.a)}</div>
+          <div class="flip-hint" style="color:var(--violet-2)">Card ${i+1} of ${cards.length}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  view.innerHTML = `
+    <div class="card">
+      <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+        <span>📖 ${escapeHtml(title)}</span>
+        <span class="badge-alg">${isAlgorithmic ? 'Algorithmic Extract' : 'AI Generated'}</span>
+      </div>
+      <div class="deck-grid">${cardsHtml}</div>
+    </div>
+  `;
+}
+
+function removeSet(id){
+  deleteFlashcardSet(currentUser.id, id).then(()=>refreshSets());
+}
+
+function loadSampleDeck(){
+  document.getElementById('deck-title').value = 'Eigenvalues & Vectors';
+  document.getElementById('deck-content').value = 
+`An eigenvalue is a scalar lambda associated with a linear system of equations.
+The characteristic equation is defined as det(A - lambda I) = 0.
+An eigenvector is a non-zero vector v such that A v = lambda v.
+A matrix is diagonalizable if it has n linearly independent eigenvectors.
+The trace of a matrix is equal to the sum of its eigenvalues.`;
+}
+</script>
+</body>
+</html>

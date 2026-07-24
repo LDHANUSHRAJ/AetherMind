@@ -306,6 +306,16 @@
         continue;
       }
 
+      // checked (checkbox / radio) — must set the live IDL property, not the
+      // content attribute: setAttribute('checked', 'false') still renders
+      // checked because any non-empty attribute value is truthy in HTML.
+      if (name === 'checked') {
+        const key = singleKey(raw);
+        const v = key ? resolve(key, vals) : (raw !== 'false');
+        el.checked = Boolean(v);
+        continue;
+      }
+
       // autofocus / data-dc-autofocus (use data-dc-autofocus in templates to avoid
       // the browser auto-focusing template inputs while they sit in the live DOM)
       if (name === 'autofocus' || name === 'data-dc-autofocus') {

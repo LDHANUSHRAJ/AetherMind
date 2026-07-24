@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Concept Visualizer — AetherMind</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>try{var t=localStorage.getItem('aether-theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="env-config.js"></script>
+<script src="supabase_client.js"></script>
+<style>
+:root{
+  --bg:#0b0a11;--bg-2:#100e18;--surface:#15121f;--surface-2:#1c1828;--surface-3:#221e30;
+  --border:rgba(255,255,255,.07);--border-strong:rgba(255,255,255,.13);
+  --text:#ece9f5;--text-dim:#a39fb5;--text-faint:#6f6b80;--text-muted:#4a4660;
+  --violet:#7c5cff;--violet-2:#a78bfa;--violet-soft:rgba(124,92,255,.14);--violet-glow:rgba(124,92,255,.5);
+  --aether:#5eead4;--aether-soft:rgba(94,234,212,.12);
+  --amber:#f5b942;--amber-soft:rgba(245,185,66,.12);
+  --danger:#ff6b6b;--danger-soft:rgba(255,107,107,.12);
+  --success:#34d399;--success-soft:rgba(52,211,153,.12);
+  --sidebar-w:240px;
+}
+:root[data-theme="light"]{
+  --bg:#f4f2fb;--bg-2:#ebe8f6;--surface:#fff;--surface-2:#f6f4fc;--surface-3:#edeaf8;
+  --border:rgba(24,18,48,.09);--border-strong:rgba(24,18,48,.17);
+  --text:#191427;--text-dim:#5b5570;--text-faint:#8b8699;--text-muted:#c4bdd9;
+  --violet:#6d4bf0;--violet-2:#7c5cff;--violet-soft:rgba(109,75,240,.10);--violet-glow:rgba(109,75,240,.35);
+  --aether:#0fb89a;--aether-soft:rgba(15,184,154,.12);
+  --amber:#d97706;--amber-soft:rgba(217,119,6,.10);
+  --danger:#d63a3a;--danger-soft:rgba(214,58,58,.10);
+  --success:#059669;--success-soft:rgba(5,150,105,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{display:flex;background:var(--bg);color:var(--text);font-family:'Hanken Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+::selection{background:var(--violet);color:#fff}
+
+/* SIDEBAR */
+.sidebar{
+  width:var(--sidebar-w);flex-shrink:0;
+  display:flex;flex-direction:column;height:100vh;
+  background:var(--bg-2);border-right:1px solid var(--border);
+  overflow:hidden;position:relative;z-index:10;
+}
+.sidebar::before{
+  content:'';position:absolute;top:-60px;left:-60px;width:200px;height:200px;
+  background:radial-gradient(circle,var(--violet-soft),transparent 70%);
+  filter:blur(30px);pointer-events:none;
+}
+.sb-brand{display:flex;align-items:center;gap:10px;padding:20px 16px 14px;text-decoration:none;color:var(--text)}
+.sb-logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(140deg,var(--violet),var(--violet-2));display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 18px var(--violet-glow)}
+.sb-logo-dot{width:11px;height:11px;border-radius:50%;background:#fff}
+.sb-name{font-family:'Space Grotesk';font-weight:700;font-size:15.5px;letter-spacing:.05em}
+.sb-nav{flex:1;overflow-y:auto;padding:4px 8px 8px;display:flex;flex-direction:column;gap:2px}
+.sb-nav::-webkit-scrollbar{display:none}
+.sb-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);padding:12px 10px 6px;font-family:'JetBrains Mono'}
+.sb-link{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;text-decoration:none;color:var(--text-dim);font-size:13.5px;font-weight:500;transition:all .18s;cursor:pointer;border:none;background:none;width:100%;text-align:left}
+.sb-link:hover{background:var(--surface);color:var(--text)}
+.sb-link.active{background:var(--violet-soft);color:var(--violet-2);font-weight:600}
+.sb-link .ico{font-size:16px;flex-shrink:0;opacity:.9}
+.sb-bottom{padding:10px 8px;border-top:1px solid var(--border)}
+.sb-user{display:flex;align-items:center;gap:10px;padding:10px 10px;border-radius:10px;text-decoration:none;transition:background .18s}
+.sb-user:hover{background:var(--surface)}
+.sb-avatar{width:30px;height:30px;border-radius:8px;background:linear-gradient(140deg,var(--violet),var(--violet-2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;flex-shrink:0}
+.sb-uname{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb-uemail{font-size:11px;color:var(--text-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;height:100vh;overflow:hidden}
+
+.topbar{
+  display:flex;align-items:center;gap:16px;
+  padding:14px 28px;border-bottom:1px solid var(--border);
+  background:color-mix(in srgb,var(--bg) 80%,transparent);
+  backdrop-filter:blur(12px);flex-shrink:0;
+}
+.topbar-title{font-family:'Space Grotesk';font-weight:700;font-size:18px;letter-spacing:-.01em}
+.topbar-sub{font-size:12px;color:var(--text-faint);font-family:'JetBrains Mono';margin-top:2px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.icon-btn{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .18s}
+.icon-btn:hover{border-color:var(--border-strong);background:var(--surface-2)}
+
+.content{flex:1;overflow-y:auto;overflow-x:hidden;padding:24px 28px;background:var(--bg)}
+.content::-webkit-scrollbar{width:6px}
+.content::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:99px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:18px;
+  padding:20px;position:relative;overflow:hidden;
+}
+.card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--border-strong),transparent);
+}
+.badge-alg{font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;background:var(--aether-soft);color:var(--aether);font-family:'JetBrains Mono'}
+
+/* ═══ FLOWCHART VISUALIZER ═══ */
+.flow-container{
+  position:relative;padding:24px 0 0;animation:fadeUp .4s ease;
+}
+
+/* Topic Title */
+.flow-topic-title{
+  font-family:'Space Grotesk';font-weight:700;font-size:22px;
+  color:var(--text);margin-bottom:6px;
+}
+.flow-topic-sub{
+  font-size:13px;color:var(--text-faint);font-family:'JetBrains Mono';margin-bottom:32px;
+}
+
+/* Chevron row */
+.chevron-row{
+  display:flex;align-items:center;position:relative;gap:0;
+  overflow-x:auto;padding-bottom:8px;
+}
+.chevron-row::-webkit-scrollbar{height:4px}
+.chevron-row::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:99px}
+
+.chevron{
+  position:relative;flex:1;min-width:140px;max-width:220px;
+  height:52px;display:flex;align-items:center;justify-content:center;
+  font-family:'Space Grotesk';font-weight:700;font-size:12.5px;
+  letter-spacing:.02em;text-transform:uppercase;color:#fff;
+  cursor:pointer;transition:all .25s;z-index:1;
+  padding:0 20px;text-align:center;
+}
+.chevron svg{position:absolute;top:0;left:0;width:100%;height:100%}
+.chevron-fill{transition:fill .25s}
+.chevron:hover .chevron-fill{filter:brightness(1.15)}
+.chevron.active .chevron-fill{filter:brightness(1.3)}
+.chevron.active{transform:scale(1.04);z-index:2}
+.chevron-label{position:relative;z-index:2;text-shadow:0 1px 3px rgba(0,0,0,.3);line-height:1.2}
+
+/* Connector line between chevrons */
+.flow-connector{
+  position:relative;width:100%;height:2px;margin:-4px 0 0;
+  display:flex;align-items:center;
+}
+.flow-connector-line{
+  flex:1;height:2px;
+  background:linear-gradient(90deg,var(--violet),var(--aether),var(--amber),var(--success),var(--violet-2));
+  border-radius:2px;opacity:.5;
+}
+
+/* Branch columns with cards */
+.branch-grid{
+  display:flex;gap:0;margin-top:20px;overflow-x:auto;
+  padding-bottom:16px;
+}
+.branch-grid::-webkit-scrollbar{height:4px}
+.branch-grid::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:99px}
+
+.branch-column{
+  flex:1;min-width:140px;max-width:220px;display:flex;flex-direction:column;gap:10px;
+  align-items:center;padding:0 6px;
+}
+
+/* Vertical connector from chevron to cards */
+.vert-connector{
+  width:2px;height:24px;border-radius:2px;opacity:.5;
+}
+
+/* Concept card */
+.concept-card{
+  width:100%;background:var(--surface-2);border:1px solid var(--border);
+  border-radius:12px;padding:14px 14px;cursor:pointer;
+  transition:all .22s;position:relative;overflow:hidden;
+}
+.concept-card::before{
+  content:'';position:absolute;top:0;left:0;width:100%;height:3px;border-radius:12px 12px 0 0;
+  transition:opacity .22s;opacity:.7;
+}
+.concept-card:hover{
+  border-color:var(--border-strong);transform:translateY(-2px);
+  box-shadow:0 8px 24px rgba(0,0,0,.2);
+}
+.concept-card:hover::before{opacity:1}
+.concept-card.selected{
+  border-color:var(--violet);
+  box-shadow:0 0 0 2px var(--violet-soft),0 8px 24px rgba(0,0,0,.25);
+}
+.concept-card-title{
+  font-family:'Space Grotesk';font-weight:700;font-size:13px;
+  color:var(--text);margin-bottom:6px;line-height:1.3;
+}
+.concept-card-desc{
+  font-size:12px;color:var(--text-dim);line-height:1.5;
+}
+
+/* Detail panel */
+.detail-floating{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:24px;margin-top:24px;
+  animation:fadeUp .25s ease;position:relative;overflow:hidden;
+}
+.detail-floating::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--border-strong),transparent);
+}
+.detail-floating-header{
+  font-family:'Space Grotesk';font-weight:700;font-size:18px;color:var(--text);margin-bottom:4px;
+}
+.detail-floating-domain{
+  display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;
+  border-radius:99px;font-family:'JetBrains Mono';margin-bottom:12px;
+}
+.detail-floating-body{
+  font-size:13.5px;color:var(--text-dim);line-height:1.7;
+}
+
+/* Empty state */
+.empty-state{
+  text-align:center;padding:80px 20px;animation:fadeUp .4s ease;
+}
+.empty-state-icon{font-size:48px;display:block;margin-bottom:16px;opacity:.8}
+.empty-state-title{font-family:'Space Grotesk';font-weight:700;font-size:20px;color:var(--text);margin-bottom:8px}
+.empty-state-sub{font-size:14px;color:var(--text-faint);max-width:420px;margin:0 auto;line-height:1.6}
+.empty-suggestions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+.suggestion-chip{
+  font-size:12px;padding:7px 14px;border-radius:99px;border:1px solid var(--border);
+  background:var(--surface-2);color:var(--text-dim);cursor:pointer;
+  transition:all .2s;font-family:'Hanken Grotesk';font-weight:500;
+}
+.suggestion-chip:hover{
+  border-color:var(--violet);color:var(--violet-2);background:var(--violet-soft);
+  transform:translateY(-1px);
+}
+</style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sidebar">
+  <a href="index.html" class="sb-brand">
+    <div class="sb-logo"><div class="sb-logo-dot"></div></div>
+    <span class="sb-name">AETHERMIND</span>
+  </a>
+  <nav class="sb-nav">
+    <div class="sb-label">Workspace</div>
+    <a href="index.html" class="sb-link"><span class="ico">💬</span> Chat</a>
+    <a href="dashboard.html" class="sb-link"><span class="ico">📊</span> Dashboard</a>
+    <div class="sb-label">Learning</div>
+    <a href="practice.html" class="sb-link"><span class="ico">🧠</span> Practice</a>
+    <a href="flashcards.html" class="sb-link"><span class="ico">🃏</span> Flashcards</a>
+    <a href="tools.html" class="sb-link"><span class="ico">🔧</span> Tools</a>
+    <a href="rooms.html" class="sb-link"><span class="ico">👥</span> Study Rooms</a>
+    <a href="planner.html" class="sb-link"><span class="ico">📅</span> Planner</a>
+    <a href="concept-map.html" class="sb-link active"><span class="ico">🕸</span> Concept Map</a>
+    <div class="sb-label">Account</div>
+    <a href="settings.html" class="sb-link"><span class="ico">⚙️</span> Settings</a>
+    <a href="profile.html" class="sb-link"><span class="ico">👤</span> Profile</a>
+    <button class="sb-link" onclick="signOut&&signOut()"><span class="ico">🚪</span> Logout</button>
+  </nav>
+  <div class="sb-bottom">
+    <a href="profile.html" class="sb-user">
+      <div class="sb-avatar" id="sbAvatar">?</div>
+      <div>
+        <div class="sb-uname" id="sbName">Loading…</div>
+        <div class="sb-uemail" id="sbEmail">…</div>
+      </div>
+    </a>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">🕸 Concept Visualizer</div>
+      <div class="topbar-sub">Generate structured visual concept maps from any topic</div>
+    </div>
+    <div class="topbar-right">
+      <span class="badge-alg" id="graphModeBadge">Ready</span>
+      <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">☾</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Topic Input Bar -->
+    <div class="card" style="padding:20px 24px;position:relative;overflow:hidden;margin-bottom:0;">
+      <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(124,92,255,.15),transparent 70%);pointer-events:none"></div>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <span style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--violet),var(--violet-2));display:inline-flex;align-items:center;justify-content:center;font-size:17px;box-shadow:0 0 14px var(--violet-glow);flex-shrink:0">🧠</span>
+        <div style="flex:1;position:relative;">
+          <input type="text" id="topicInput" placeholder="Type a topic — Machine Learning, Calculus, Cybersecurity..." onkeydown="if(event.key==='Enter')generateTopicMap()" style="width:100%;padding:12px 16px;border-radius:12px;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);font-family:'Hanken Grotesk';font-size:14px;outline:none;transition:all .2s;box-shadow:inset 0 1px 3px rgba(0,0,0,.15);" onfocus="this.style.borderColor='var(--violet)';this.style.boxShadow='0 0 0 3px var(--violet-soft),inset 0 1px 3px rgba(0,0,0,.1)'" onblur="this.style.borderColor='var(--border-strong)';this.style.boxShadow='inset 0 1px 3px rgba(0,0,0,.15)'">
+        </div>
+        <button onclick="generateTopicMap()" id="genMapBtn" style="padding:11px 22px;border-radius:12px;font-weight:700;font-size:13px;white-space:nowrap;display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--violet),var(--violet-2));color:#fff;border:none;cursor:pointer;box-shadow:0 4px 14px var(--violet-glow);transition:all .22s;font-family:'Space Grotesk'" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px var(--violet-glow)'" onmouseleave="this.style.transform='';this.style.boxShadow='0 4px 14px var(--violet-glow)'">
+          ✨ Generate
+        </button>
+      </div>
+    </div>
+
+    <!-- Visualization Area -->
+    <div id="vizArea">
+      <div class="empty-state">
+        <span class="empty-state-icon">🕸️</span>
+        <div class="empty-state-title">Concept Visualizer</div>
+        <div class="empty-state-sub">Enter any topic above to generate a beautiful structured concept map with categories, sub-concepts, and descriptions.</div>
+        <div class="empty-suggestions">
+          <span class="suggestion-chip" onclick="document.getElementById('topicInput').value='Machine Learning';generateTopicMap()">Machine Learning</span>
+          <span class="suggestion-chip" onclick="document.getElementById('topicInput').value='Data Structures';generateTopicMap()">Data Structures</span>
+          <span class="suggestion-chip" onclick="document.getElementById('topicInput').value='Calculus';generateTopicMap()">Calculus</span>
+          <span class="suggestion-chip" onclick="document.getElementById('topicInput').value='Cybersecurity';generateTopicMap()">Cybersecurity</span>
+          <span class="suggestion-chip" onclick="document.getElementById('topicInput').value='Cloud Computing';generateTopicMap()">Cloud Computing</span>
+          <span class="suggestion-chip" onclick="document.getElementById('topicInput').value='Quantum Computing';generateTopicMap()">Quantum Computing</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function toggleTheme(){
+  const isDark=document.documentElement.dataset.theme!=='light';
+  const next=isDark?'light':'dark';
+  document.documentElement.dataset.theme=next;
+  document.getElementById('themeBtn').textContent=isDark?'🌙':'☾';
+  try{localStorage.setItem('aether-theme',next);}catch(e){}
+}
+(function(){
+  try{if(localStorage.getItem('aether-theme')==='light')document.getElementById('themeBtn').textContent='🌙';}catch(e){}
+})();
+
+function backendUrl(){ return (localStorage.getItem('aether-backend-url')||'http://localhost:8000').replace(/\/+$/,''); }
+
+// Load user profile
+(async function init(){
+  const session = await getSession();
+  if (session && typeof loadProfile === 'function') {
+    const p = await loadProfile(session.user.id).catch(()=>null);
+    if(p) {
+      const name = p.full_name || session.user.email || 'User';
+      document.getElementById('sbName').textContent = name;
+      document.getElementById('sbEmail').textContent = session.user.email || '';
+      document.getElementById('sbAvatar').textContent = name[0].toUpperCase();
+    }
+  } else {
+    document.getElementById('sbName').textContent = 'Aether Member';
+    document.getElementById('sbEmail').textContent = 'Local Session';
+    document.getElementById('sbAvatar').textContent = 'A';
+  }
+})();
+
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TOPIC DATABASE
+// ══════════════════════════════════════════════════════════════════════════════
+
+const TOPIC_DB = {
+  'machine learning': {
+    branches: [
+      { cat: 'Supervised', color: '#7c5cff', items: [
+        { label: 'Linear Regression', summary: 'Predicts continuous outcomes using linear relationships between features and target variable.' },
+        { label: 'Decision Trees', summary: 'Tree-structured model that splits data by feature thresholds for classification or regression.' },
+        { label: 'SVM', summary: 'Support Vector Machines find optimal hyperplanes for classification in high-dimensional space.' },
+      ]},
+      { cat: 'Unsupervised', color: '#5eead4', items: [
+        { label: 'K-Means', summary: 'Partitions data into K clusters by iteratively minimizing intra-cluster variance.' },
+        { label: 'PCA', summary: 'Principal Component Analysis reduces dimensionality while preserving maximum variance.' },
+      ]},
+      { cat: 'Deep Learning', color: '#f5b942', items: [
+        { label: 'Neural Networks', summary: 'Layered architectures with neurons, weights, biases, and activation functions.' },
+        { label: 'CNNs', summary: 'Convolutional Neural Networks excel at spatial pattern recognition in images.' },
+        { label: 'RNNs / LSTMs', summary: 'Recurrent networks process sequential data with temporal memory mechanisms.' },
+      ]},
+      { cat: 'Optimization', color: '#3ddc97', items: [
+        { label: 'Gradient Descent', summary: 'Iteratively minimizes loss by following the negative gradient direction.' },
+        { label: 'Backpropagation', summary: 'Computes gradients through the chain rule for efficient weight updates.' },
+      ]},
+      { cat: 'Evaluation', color: '#e879f9', items: [
+        { label: 'Cross-Validation', summary: 'Splits data into K folds to estimate model generalization performance.' },
+        { label: 'ROC / AUC', summary: 'Plots true positive vs false positive rate to measure classifier quality.' },
+      ]},
+    ]
+  },
+  'artificial intelligence': {
+    branches: [
+      { cat: 'Search', color: '#7c5cff', items: [
+        { label: 'A* Algorithm', summary: 'Informed graph search using heuristics and cost functions for pathfinding.' },
+        { label: 'Minimax', summary: 'Game tree search for adversarial two-player decision-making.' },
+      ]},
+      { cat: 'Knowledge', color: '#5eead4', items: [
+        { label: 'Ontologies', summary: 'Formal structured representation of concepts and relationships in a domain.' },
+        { label: 'Expert Systems', summary: 'Rule-based systems that emulate human expert decision-making capabilities.' },
+      ]},
+      { cat: 'NLP', color: '#f5b942', items: [
+        { label: 'Transformers', summary: 'Self-attention architecture powering GPT, BERT, and modern large language models.' },
+        { label: 'Embeddings', summary: 'Dense vector representations capturing semantic meaning and relationships of words.' },
+      ]},
+      { cat: 'Vision', color: '#3ddc97', items: [
+        { label: 'Object Detection', summary: 'Locating and classifying objects within images using YOLO, R-CNN architectures.' },
+        { label: 'Segmentation', summary: 'Pixel-level classification of image regions for scene understanding.' },
+      ]},
+      { cat: 'Ethics', color: '#e879f9', items: [
+        { label: 'Bias & Fairness', summary: 'Ensuring AI systems do not discriminate against protected groups.' },
+        { label: 'Explainability', summary: 'Making AI decisions interpretable, transparent, and accountable.' },
+      ]},
+    ]
+  },
+  'data structures': {
+    branches: [
+      { cat: 'Linear', color: '#7c5cff', items: [
+        { label: 'Arrays', summary: 'Contiguous memory blocks with O(1) random access by index.' },
+        { label: 'Linked Lists', summary: 'Nodes linked by pointers enabling O(1) insertion and deletion.' },
+        { label: 'Stacks & Queues', summary: 'LIFO and FIFO abstract data types for ordered processing.' },
+      ]},
+      { cat: 'Trees', color: '#5eead4', items: [
+        { label: 'BST', summary: 'Binary Search Tree with O(log n) search in balanced form.' },
+        { label: 'AVL / Red-Black', summary: 'Self-balancing BSTs guaranteeing O(log n) worst-case operations.' },
+        { label: 'Heaps', summary: 'Complete binary trees supporting efficient priority queue operations.' },
+      ]},
+      { cat: 'Graphs', color: '#f5b942', items: [
+        { label: 'BFS & DFS', summary: 'Breadth-first and depth-first traversal algorithms for graph exploration.' },
+        { label: 'Dijkstra\'s', summary: 'Shortest path algorithm for weighted graphs with non-negative edges.' },
+      ]},
+      { cat: 'Hash-Based', color: '#3ddc97', items: [
+        { label: 'Hash Tables', summary: 'Key-value stores with O(1) average lookup via hash functions.' },
+        { label: 'Bloom Filters', summary: 'Space-efficient probabilistic data structure for set membership testing.' },
+      ]},
+      { cat: 'Advanced', color: '#e879f9', items: [
+        { label: 'Tries', summary: 'Prefix trees for efficient string search and autocomplete operations.' },
+        { label: 'Segment Trees', summary: 'Trees for efficient range query and point update operations.' },
+      ]},
+    ]
+  },
+  'cloud computing': {
+    branches: [
+      { cat: 'Service Models', color: '#7c5cff', items: [
+        { label: 'IaaS', summary: 'Infrastructure as a Service: virtual machines, storage, and networking on demand.' },
+        { label: 'PaaS', summary: 'Platform as a Service: managed runtime environments for app deployment.' },
+        { label: 'SaaS', summary: 'Software as a Service: fully managed end-user applications.' },
+      ]},
+      { cat: 'Providers', color: '#5eead4', items: [
+        { label: 'AWS', summary: 'Amazon Web Services: largest cloud platform with 200+ managed services.' },
+        { label: 'Azure', summary: 'Microsoft cloud platform with deep enterprise and hybrid integration.' },
+        { label: 'GCP', summary: 'Google Cloud Platform: strong in data analytics and ML services.' },
+      ]},
+      { cat: 'Architecture', color: '#f5b942', items: [
+        { label: 'Microservices', summary: 'Decomposing applications into small, independently deployable services.' },
+        { label: 'Serverless', summary: 'Event-driven compute that scales automatically without server management.' },
+        { label: 'Containers', summary: 'Lightweight isolation using Docker containers and Kubernetes orchestration.' },
+      ]},
+      { cat: 'Security', color: '#3ddc97', items: [
+        { label: 'IAM', summary: 'Identity and Access Management for fine-grained permission control.' },
+        { label: 'Encryption', summary: 'Data protection at rest (AES-256) and in transit (TLS/SSL).' },
+      ]},
+    ]
+  },
+  'calculus': {
+    branches: [
+      { cat: 'Limits', color: '#7c5cff', items: [
+        { label: 'Continuity', summary: 'A function is continuous at a point if the limit equals the function value.' },
+        { label: 'L\'Hôpital\'s Rule', summary: 'Evaluates indeterminate forms (0/0, ∞/∞) using ratio of derivatives.' },
+      ]},
+      { cat: 'Derivatives', color: '#5eead4', items: [
+        { label: 'Power Rule', summary: 'd/dx[xⁿ] = nxⁿ⁻¹ — the fundamental derivative computation rule.' },
+        { label: 'Chain Rule', summary: 'Derivative of composed functions: d/dx[f(g(x))] = f\'(g(x))·g\'(x).' },
+        { label: 'Product Rule', summary: 'd/dx[uv] = u\'v + uv\' — derivative of products of two functions.' },
+      ]},
+      { cat: 'Integration', color: '#f5b942', items: [
+        { label: 'FTC', summary: 'Fundamental Theorem of Calculus links differentiation and integration as inverses.' },
+        { label: 'U-Substitution', summary: 'Reverse chain rule technique for evaluating complex antiderivatives.' },
+        { label: 'By Parts', summary: '∫u dv = uv − ∫v du — integration of products of functions.' },
+      ]},
+      { cat: 'Series', color: '#3ddc97', items: [
+        { label: 'Taylor Series', summary: 'Infinite polynomial approximation of functions around a point a.' },
+        { label: 'Convergence', summary: 'Ratio, root, integral, and comparison tests for infinite series.' },
+      ]},
+      { cat: 'Applications', color: '#e879f9', items: [
+        { label: 'Area & Volume', summary: 'Definite integrals compute areas, volumes of revolution, and arc lengths.' },
+        { label: 'Optimization', summary: 'Finding maxima/minima using first and second derivative tests.' },
+      ]},
+    ]
+  },
+  'cybersecurity': {
+    branches: [
+      { cat: 'Network', color: '#7c5cff', items: [
+        { label: 'Firewalls', summary: 'Filter network traffic based on rules to protect system boundaries.' },
+        { label: 'IDS/IPS', summary: 'Intrusion detection and prevention systems that monitor for threats.' },
+        { label: 'VPN', summary: 'Virtual Private Networks encrypt traffic tunnels over public networks.' },
+      ]},
+      { cat: 'Cryptography', color: '#5eead4', items: [
+        { label: 'AES / RSA', summary: 'Symmetric (AES) and asymmetric (RSA) encryption algorithms for data protection.' },
+        { label: 'Hashing', summary: 'One-way functions (SHA-256, bcrypt) for integrity verification and passwords.' },
+        { label: 'PKI', summary: 'Public Key Infrastructure for digital certificates and chain of trust.' },
+      ]},
+      { cat: 'Threats', color: '#f5b942', items: [
+        { label: 'Phishing', summary: 'Social engineering attacks that impersonate trusted entities via email or web.' },
+        { label: 'Malware', summary: 'Malicious software including viruses, ransomware, trojans, and worms.' },
+        { label: 'SQL Injection', summary: 'Injecting malicious SQL queries through unvalidated user input fields.' },
+      ]},
+      { cat: 'Defense', color: '#3ddc97', items: [
+        { label: 'Zero Trust', summary: 'Never trust, always verify — microsegmentation and continuous authentication.' },
+        { label: 'Incident Response', summary: 'Structured approach to detecting, containing, and recovering from breaches.' },
+      ]},
+    ]
+  },
+  'web development': {
+    branches: [
+      { cat: 'Frontend', color: '#7c5cff', items: [
+        { label: 'HTML / CSS', summary: 'Semantic markup for structure and cascading stylesheets for presentation.' },
+        { label: 'JavaScript', summary: 'Dynamic interactivity, DOM manipulation, and event-driven programming.' },
+        { label: 'React', summary: 'Component-based UI library with virtual DOM and declarative rendering.' },
+      ]},
+      { cat: 'Backend', color: '#5eead4', items: [
+        { label: 'Node.js', summary: 'JavaScript runtime for building scalable server-side applications.' },
+        { label: 'REST APIs', summary: 'Stateless HTTP endpoints following resource-oriented architecture.' },
+        { label: 'Databases', summary: 'SQL (PostgreSQL, MySQL) and NoSQL (MongoDB, Redis) data storage.' },
+      ]},
+      { cat: 'DevOps', color: '#f5b942', items: [
+        { label: 'CI/CD', summary: 'Continuous integration and deployment pipelines for automated delivery.' },
+        { label: 'Docker', summary: 'Containerization for consistent development and deployment environments.' },
+      ]},
+      { cat: 'Performance', color: '#3ddc97', items: [
+        { label: 'Caching', summary: 'CDN, Redis, and browser-level caching strategies for faster load times.' },
+        { label: 'SEO', summary: 'Search engine optimization techniques for web discoverability and ranking.' },
+      ]},
+    ]
+  },
+  'linear algebra': {
+    branches: [
+      { cat: 'Vectors', color: '#7c5cff', items: [
+        { label: 'Dot Product', summary: 'Scalar product measuring alignment and projection between two vectors.' },
+        { label: 'Cross Product', summary: 'Vector perpendicular to two input vectors in three-dimensional space.' },
+        { label: 'Vector Spaces', summary: 'Sets of vectors closed under addition and scalar multiplication operations.' },
+      ]},
+      { cat: 'Matrices', color: '#5eead4', items: [
+        { label: 'Multiplication', summary: 'Composition of linear transformations through row-column products.' },
+        { label: 'Inverse & Det', summary: 'A⁻¹ exists if and only if det(A) ≠ 0 — non-singular matrices.' },
+        { label: 'Rank', summary: 'Dimension of the column space — number of linearly independent columns.' },
+      ]},
+      { cat: 'Transforms', color: '#f5b942', items: [
+        { label: 'Eigenvalues', summary: 'Scalars λ satisfying Av = λv for corresponding eigenvector v.' },
+        { label: 'Diagonalization', summary: 'Expressing a matrix as PDP⁻¹ using eigenvalue decomposition.' },
+      ]},
+      { cat: 'Applications', color: '#3ddc97', items: [
+        { label: 'SVD', summary: 'Singular Value Decomposition for dimensionality reduction and compression.' },
+        { label: 'Least Squares', summary: 'Solving overdetermined linear systems by minimizing squared error.' },
+      ]},
+    ]
+  },
+  'quantum computing': {
+    branches: [
+      { cat: 'Fundamentals', color: '#7c5cff', items: [
+        { label: 'Qubits', summary: 'Quantum bits existing in superposition of |0⟩ and |1⟩ basis states.' },
+        { label: 'Superposition', summary: 'A qubit can represent multiple states simultaneously until measured.' },
+        { label: 'Entanglement', summary: 'Non-local correlations between quantum particles — "spooky action."' },
+      ]},
+      { cat: 'Gates', color: '#5eead4', items: [
+        { label: 'Hadamard', summary: 'Creates equal superposition from computational basis states.' },
+        { label: 'CNOT', summary: 'Controlled-NOT gate — fundamental two-qubit entanglement operation.' },
+      ]},
+      { cat: 'Algorithms', color: '#f5b942', items: [
+        { label: 'Shor\'s', summary: 'Factors large integers in polynomial time — threatens RSA encryption.' },
+        { label: 'Grover\'s', summary: 'Quadratic speedup for searching unstructured databases.' },
+      ]},
+      { cat: 'Hardware', color: '#3ddc97', items: [
+        { label: 'Superconducting', summary: 'IBM/Google approach using Josephson junctions at millikelvin temperatures.' },
+        { label: 'Ion Traps', summary: 'Trapped ions manipulated by precisely tuned laser pulses.' },
+      ]},
+    ]
+  },
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CHEVRON SVG GENERATOR
+// ══════════════════════════════════════════════════════════════════════════════
+
+function makeChevronSVG(color, isFirst, isLast) {
+  // Chevron shape: left edge straight (or arrow-notch), right edge pointed arrow
+  const arrowDepth = 12;
+  let path;
+  if (isFirst) {
+    path = `M4,0 L${220-arrowDepth},0 L220,26 L${220-arrowDepth},52 L4,52 Q0,52 0,48 L0,4 Q0,0 4,0Z`;
+  } else if (isLast) {
+    path = `M0,0 L${220-arrowDepth},0 Q220,0 220,4 L220,48 Q220,52 ${220-arrowDepth},52 L0,52 L${arrowDepth},26Z`;
+  } else {
+    path = `M0,0 L${220-arrowDepth},0 L220,26 L${220-arrowDepth},52 L0,52 L${arrowDepth},26Z`;
+  }
+  return `<svg viewBox="0 0 220 52" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="g-${color.replace('#','')}" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="${color}" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="${color}" stop-opacity="0.55"/>
+    </linearGradient></defs>
+    <path d="${path}" fill="url(#g-${color.replace('#','')})" class="chevron-fill"/>
+  </svg>`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// GENERATE TOPIC MAP
+// ══════════════════════════════════════════════════════════════════════════════
+
+let selectedCard = null;
+
+function generateTopicMap() {
+  const input = document.getElementById('topicInput').value.trim();
+  if (!input) return;
+
+  const btn = document.getElementById('genMapBtn');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Generating...';
+
+  const topic = input;
+  const topicLower = topic.toLowerCase();
+
+  // Find matching topic
+  let branches = null;
+  for (const [key, val] of Object.entries(TOPIC_DB)) {
+    if (topicLower.includes(key) || key.includes(topicLower)) {
+      branches = val.branches;
+      break;
+    }
+  }
+
+  // Fallback for unknown topics
+  if (!branches) {
+    const cats = ['Core Concepts', 'Principles', 'Methods', 'Applications', 'Advanced'];
+    const colors = ['#7c5cff', '#5eead4', '#f5b942', '#3ddc97', '#e879f9'];
+    branches = cats.map((cat, i) => ({
+      cat,
+      color: colors[i],
+      items: [
+        { label: `${cat} of ${topic}`, summary: `Fundamental ${cat.toLowerCase()} related to the study of ${topic}.` },
+        { label: `${topic} ${cat}`, summary: `Advanced exploration of ${cat.toLowerCase()} within ${topic}.` },
+      ]
+    }));
+  }
+
+  // Count totals
+  const totalConcepts = branches.reduce((s,b) => s + b.items.length, 0);
+
+  // Build HTML
+  const vizArea = document.getElementById('vizArea');
+
+  let html = `<div class="flow-container">`;
+
+  // Title
+  html += `<div class="flow-topic-title">${escapeHtml(topic)}</div>`;
+  html += `<div class="flow-topic-sub">${branches.length} categories · ${totalConcepts} concepts</div>`;
+
+  // Chevron row
+  html += `<div class="chevron-row">`;
+  branches.forEach((b, i) => {
+    const isFirst = i === 0;
+    const isLast = i === branches.length - 1;
+    html += `<div class="chevron" data-idx="${i}" onclick="highlightBranch(${i})" style="margin-left:${i===0?0:-6}px">`;
+    html += makeChevronSVG(b.color, isFirst, isLast);
+    html += `<span class="chevron-label">${escapeHtml(b.cat)}</span>`;
+    html += `</div>`;
+  });
+  html += `</div>`;
+
+  // Connector line
+  html += `<div class="flow-connector"><div class="flow-connector-line"></div></div>`;
+
+  // Branch columns with cards
+  html += `<div class="branch-grid">`;
+  branches.forEach((b, bi) => {
+    html += `<div class="branch-column" data-branch="${bi}">`;
+    // Vertical connector
+    html += `<div class="vert-connector" style="background:${b.color}"></div>`;
+    // Cards
+    b.items.forEach((item, ii) => {
+      html += `<div class="concept-card" data-bi="${bi}" data-ii="${ii}" onclick="selectCard(this,${bi},${ii})" style="--card-accent:${b.color}">`;
+      html += `<div style="position:absolute;top:0;left:0;width:100%;height:3px;background:${b.color};border-radius:12px 12px 0 0;opacity:.6"></div>`;
+      html += `<div class="concept-card-title">${escapeHtml(item.label)}</div>`;
+      html += `<div class="concept-card-desc">${escapeHtml(item.summary)}</div>`;
+      html += `</div>`;
+    });
+    html += `</div>`;
+  });
+  html += `</div>`;
+
+  // Detail panel placeholder
+  html += `<div id="detailPanel"></div>`;
+
+  html += `</div>`;
+
+  vizArea.innerHTML = html;
+
+  // Update badge
+  document.getElementById('graphModeBadge').textContent = '✨ ' + topic;
+
+  // Store branches for detail panel
+  window._currentBranches = branches;
+  window._currentTopic = topic;
+
+  btn.disabled = false;
+  btn.innerHTML = '✨ Generate';
+}
+
+function selectCard(el, bi, ii) {
+  // Deselect previous
+  document.querySelectorAll('.concept-card.selected').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+
+  const branches = window._currentBranches;
+  const topic = window._currentTopic;
+  if (!branches) return;
+
+  const branch = branches[bi];
+  const item = branch.items[ii];
+
+  const panel = document.getElementById('detailPanel');
+  panel.innerHTML = `
+    <div class="detail-floating">
+      <div style="position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:radial-gradient(circle,${branch.color}22,transparent 70%);pointer-events:none"></div>
+      <div class="detail-floating-header">${escapeHtml(item.label)}</div>
+      <div class="detail-floating-domain" style="background:${branch.color}18;color:${branch.color}">${escapeHtml(branch.cat)}</div>
+      <div class="detail-floating-body">${escapeHtml(item.summary)}</div>
+      <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap">
+        <span style="font-size:11px;padding:4px 10px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-dim);font-family:'JetBrains Mono'">📂 ${escapeHtml(branch.cat)}</span>
+        <span style="font-size:11px;padding:4px 10px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-dim);font-family:'JetBrains Mono'">🏷 ${escapeHtml(topic)}</span>
+      </div>
+    </div>
+  `;
+}
+
+function highlightBranch(idx) {
+  // Toggle active chevron
+  document.querySelectorAll('.chevron').forEach((c, i) => {
+    c.classList.toggle('active', i === idx);
+  });
+
+  // Scroll the branch column into view
+  const col = document.querySelector(`.branch-column[data-branch="${idx}"]`);
+  if (col) col.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+}
+</script>
+</body>
+</html>

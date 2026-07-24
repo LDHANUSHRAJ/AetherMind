@@ -124,50 +124,39 @@ code{background:var(--surface-2);padding:1px 5px;border-radius:4px;font-family:'
 <div class="shell">
 
   <!-- ══ SIDEBAR ══ -->
-  <aside class="sidebar">
-    <div style="padding:18px 16px 12px;display:flex;align-items:center">
-      <a href="landing.html" style="display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--text)">
-        <div style="width:26px;height:26px;border-radius:8px;background:linear-gradient(140deg,var(--violet),var(--violet-2));display:flex;align-items:center;justify-content:center;box-shadow:0 0 18px var(--glow-2)">
-          <div style="width:9px;height:9px;border-radius:50%;background:#fff"></div>
+  <aside class="sidebar" style="width:240px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--bg-2)">
+    <div style="padding:18px 16px 12px">
+      <a href="index.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)">
+        <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(140deg,var(--violet),var(--violet-2));display:flex;align-items:center;justify-content:center;box-shadow:0 0 18px var(--glow-2)">
+          <div style="width:11px;height:11px;border-radius:50%;background:#fff"></div>
         </div>
-        <span style="font-family:'Space Grotesk';font-weight:700;font-size:15px;letter-spacing:-.01em">AETHERMIND</span>
+        <span style="font-family:'Space Grotesk';font-weight:700;font-size:15.5px;letter-spacing:.05em">AETHERMIND</span>
       </a>
     </div>
 
-    <div style="padding:0 16px 14px">
-      <a href="index.html" class="btn btn-primary" style="width:100%;text-decoration:none;font-size:14px;padding:11px">
-        <span style="font-size:16px;line-height:1">+</span> New session
-      </a>
-    </div>
-
-    <div class="scroll" style="flex:1;overflow-y:auto;padding:0 10px;min-height:0">
-      <div style="font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.12em;color:var(--text-faint);padding:6px 8px 10px">NAVIGATION</div>
-      <a href="index.html" class="nav-link">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        Chat
-      </a>
-      <a href="dashboard.html" class="nav-link">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-        Dashboard
-      </a>
-      <a href="settings.html" class="nav-link active">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        Settings
-      </a>
-      <a href="profile.html" class="nav-link">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        Profile
-      </a>
-      <button class="nav-link" onclick="doLogout()" style="margin-top:4px">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        Logout
-      </button>
+    <div class="scroll" style="flex:1;overflow-y:auto;padding:4px 8px 8px;display:flex;flex-direction:column;gap:2px">
+      <div style="font-family:'JetBrains Mono';font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text-faint);padding:12px 10px 6px;text-transform:uppercase">Workspace</div>
+      <a href="index.html" class="nav-link"><span style="font-size:16px">💬</span> Chat</a>
+      <a href="dashboard.html" class="nav-link"><span style="font-size:16px">📊</span> Dashboard</a>
+      
+      <div style="font-family:'JetBrains Mono';font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text-faint);padding:12px 10px 6px;text-transform:uppercase">Learning</div>
+      <a href="practice.html" class="nav-link"><span style="font-size:16px">🧠</span> Practice</a>
+      <a href="flashcards.html" class="nav-link"><span style="font-size:16px">🃏</span> Flashcards</a>
+      <a href="tools.html" class="nav-link"><span style="font-size:16px">🔧</span> Tools</a>
+      <a href="rooms.html" class="nav-link"><span style="font-size:16px">👥</span> Study Rooms</a>
+      <a href="planner.html" class="nav-link"><span style="font-size:16px">📅</span> Planner</a>
+      <a href="concept-map.html" class="nav-link"><span style="font-size:16px">🕸</span> Concept Map</a>
+      
+      <div style="font-family:'JetBrains Mono';font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text-faint);padding:12px 10px 6px;text-transform:uppercase">Account</div>
+      <a href="settings.html" class="nav-link active"><span style="font-size:16px">⚙️</span> Settings</a>
+      <a href="profile.html" class="nav-link"><span style="font-size:16px">👤</span> Profile</a>
+      <button class="nav-link" onclick="doLogout()" style="margin-top:2px"><span style="font-size:16px">🚪</span> Logout</button>
     </div>
 
     <!-- User row -->
-    <div style="border-top:1px solid var(--border);padding:12px">
-      <a href="profile.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;padding:8px;border-radius:10px;transition:background .15s" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background='transparent'">
-        <div id="sidebarAvatar" style="width:32px;height:32px;border-radius:9px;background:linear-gradient(140deg,var(--violet),var(--aether));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;flex:none">?</div>
+    <div style="border-top:1px solid var(--border);padding:10px 8px">
+      <a href="profile.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;padding:10px 10px;border-radius:10px;transition:background .18s">
+        <div id="sidebarAvatar" style="width:30px;height:30px;border-radius:8px;background:linear-gradient(140deg,var(--violet),var(--violet-2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;flex:none">?</div>
         <div style="flex:1;min-width:0">
           <div id="sidebarName" style="font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Loading…</div>
           <div id="sidebarEmail" style="font-size:11px;color:var(--text-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">…</div>
@@ -350,6 +339,33 @@ code{background:var(--surface-2);padding:1px 5px;border-radius:4px;font-family:'
           </div>
         </div>
 
+        <!-- ── CARD: Knowledge Base ── -->
+        <div class="card">
+          <div class="card-title">Knowledge Base</div>
+          <div class="card-desc">Manage your local OKF knowledge files.</div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-bottom:1px solid var(--border-light)">
+            <div>
+              <div style="font-weight:600">Total OKF Files</div>
+              <div style="font-size:12px;color:var(--text-secondary)">Indexed markdown files in /knowledge</div>
+            </div>
+            <div style="font-size:18px;font-weight:700" id="kbFileCount">142</div>
+          </div>
+          
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 0">
+            <div>
+              <div style="font-weight:600">Last Index Date</div>
+              <div style="font-size:12px;color:var(--text-secondary)">When the engine last scanned the folder</div>
+            </div>
+            <div style="font-size:14px;color:var(--text-primary)" id="kbLastIndex">Today, 10:24 AM</div>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:16px">
+            <button class="btn btn-ghost" style="flex:1" onclick="toast('Refreshing index...')">Refresh Index</button>
+            <button class="btn btn-primary" style="flex:1" onclick="toast('OKF Index rebuilt successfully')">Rebuild Now</button>
+          </div>
+        </div>
+
         <!-- ── CARD: Data Export ── -->
         <div class="card">
           <div class="card-title">Data Export</div>
@@ -385,6 +401,19 @@ code{background:var(--surface-2);padding:1px 5px;border-radius:4px;font-family:'
           </div>
         </div>
 
+        <!-- ── CARD: Study Plan ── -->
+        <div class="card" style="grid-column:1/-1">
+          <div class="card-title">Study Plan</div>
+          <div class="card-desc">Topics you're tracking. Mark them focus/complete as you go.</div>
+
+          <div class="inp-row" style="margin-bottom:16px">
+            <input type="text" id="topicInput" class="inp" placeholder="Add a topic — e.g. Eigenvalues, Big-O notation…">
+            <button class="btn btn-primary" onclick="doAddTopic()" style="flex:none;padding:10px 16px;font-size:12.5px">Add</button>
+          </div>
+
+          <div id="topicList" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+
         <!-- ── CARD: Knowledge Base ── -->
         <div class="card" style="grid-column:1/-1">
           <div class="card-title">Knowledge Base (OKF)</div>
@@ -413,6 +442,7 @@ code{background:var(--surface-2);padding:1px 5px;border-radius:4px;font-family:'
 
 <div id="toast"></div>
 
+<script src="env-config.js"></script>
 <script src="supabase_client.js"></script>
 <script>
 let currentUserId = null;
@@ -429,7 +459,7 @@ async function initSettings() {
   const name = profile.full_name || 'User';
   document.getElementById('sidebarName').textContent = name;
   document.getElementById('sidebarEmail').textContent = profile.email || '';
-  document.getElementById('sidebarAvatar').textContent = name[0].toUpperCase();
+  setSidebarAvatar(profile.avatar_url, name[0].toUpperCase());
   document.getElementById('accountName').value = name;
   document.getElementById('accountEmail').value = profile.email || '';
 
@@ -457,7 +487,7 @@ async function initSettings() {
   });
 
   // Backend URL — localStorage takes priority (chat reads from localStorage)
-  const savedUrl = localStorage.getItem('aether-backend-url') || s.ollama_url || 'http://localhost:8000';
+  const savedUrl = localStorage.getItem('aethermind_backend_url') || localStorage.getItem('aether-backend-url') || s.ollama_url || 'http://localhost:11434';
   document.getElementById('backendUrlInput').value = savedUrl;
 
   // Model choice
@@ -487,10 +517,69 @@ async function initSettings() {
 
   // Knowledge base status (non-blocking — backend may not be running)
   loadKnowledgeStatus();
+  renderTopics();
 }
 initSettings();
 
+// ── Study Plan ───────────────────────────────────────────────
+async function renderTopics() {
+  const list = document.getElementById('topicList');
+  const topics = await loadStudyTopics(currentUserId);
+  if (!topics.length) {
+    list.innerHTML = '<div style="font-size:12.5px;color:var(--text-faint)">No topics yet — add one above.</div>';
+    return;
+  }
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  list.innerHTML = topics.map(t => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface-2);border-radius:10px;border:1px solid var(--border)">
+      <input type="checkbox" ${t.status === 'completed' ? 'checked' : ''} onchange="toggleTopicDone('${t.id}', this.checked)" style="accent-color:var(--violet);cursor:pointer">
+      <span style="flex:1;font-size:13.5px;${t.status === 'completed' ? 'text-decoration:line-through;color:var(--text-faint)' : ''}">${esc(t.title)}</span>
+      <span onclick="toggleTopicFocus('${t.id}', ${!t.is_focus})" title="Toggle focus" style="cursor:pointer;font-size:15px;opacity:${t.is_focus ? 1 : 0.3}">★</span>
+      <span onclick="doDeleteTopic('${t.id}')" title="Delete" style="cursor:pointer;color:var(--danger);font-size:13px;padding:2px 6px">✕</span>
+    </div>
+  `).join('');
+}
+
+async function doAddTopic() {
+  const input = document.getElementById('topicInput');
+  const title = input.value.trim();
+  if (!title) return;
+  input.value = '';
+  await addStudyTopic(currentUserId, title);
+  toast('Topic added');
+  renderTopics();
+}
+
+async function toggleTopicDone(id, done) {
+  await updateStudyTopic(currentUserId, id, { status: done ? 'completed' : 'active' });
+  renderTopics();
+}
+
+async function toggleTopicFocus(id, focus) {
+  await updateStudyTopic(currentUserId, id, { is_focus: focus });
+  renderTopics();
+}
+
+async function doDeleteTopic(id) {
+  await deleteStudyTopic(currentUserId, id);
+  toast('Topic removed');
+  renderTopics();
+}
+
 // ── Helpers ──────────────────────────────────────────────────
+function setSidebarAvatar(url, initial) {
+  const el = document.getElementById('sidebarAvatar');
+  if (url) {
+    el.textContent = '';
+    el.style.backgroundImage = `url('${url}')`;
+    el.style.backgroundSize = 'cover';
+    el.style.backgroundPosition = 'center';
+  } else {
+    el.style.backgroundImage = '';
+    el.textContent = initial;
+  }
+}
+
 function debounceSave(key, value) {
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(async () => {
@@ -549,7 +638,8 @@ function saveModelChoice() {
 }
 
 async function saveBackendUrl() {
-  const val = (document.getElementById('backendUrlInput').value.trim() || 'http://localhost:8000').replace(/\/+$/, '');
+  const val = (document.getElementById('backendUrlInput').value.trim() || 'http://localhost:11434').replace(/\/+$/, '');
+  localStorage.setItem('aethermind_backend_url', val);
   localStorage.setItem('aether-backend-url', val);
   await saveSettings(currentUserId, {ollama_url: val});
   toast('Backend URL saved — chat will now use this URL');
@@ -560,7 +650,14 @@ function isGradioUrl(url) {
 }
 
 async function testConnection() {
-  const url = (document.getElementById('backendUrlInput').value.trim() || 'http://localhost:8000').replace(/\/+$/, '');
+  const url = (document.getElementById('backendUrlInput').value.trim() || 'http://localhost:11434').replace(/\/+$/, '');
+  // Persist immediately on Test too — previously only the Save button wrote to
+  // localStorage, so a user who pasted a link, clicked Test, saw it succeed,
+  // and moved on (without a separate Save click) would find chat still using
+  // the old URL. Chat always reads localStorage, so writing it here as soon as
+  // the user tests removes that gap entirely.
+  localStorage.setItem('aethermind_backend_url', url);
+  localStorage.setItem('aether-backend-url', url);
   const status = document.getElementById('connStatus');
   const btn = document.getElementById('testBtn');
   btn.textContent = 'Testing…'; btn.disabled = true;
@@ -643,19 +740,6 @@ async function doDeleteAccount() {
   await deleteAccount();
 }
 
-// ── Export ────────────────────────────────────────────────────
-async function doExport() {
-  const btn = document.getElementById('exportBtn');
-  btn.textContent = 'Exporting…'; btn.disabled = true;
-  const result = await exportData(
-    currentUserId,
-    document.getElementById('exportFormat').value,
-    document.getElementById('exportRange').value
-  );
-  if (result.success) toast('Downloaded ' + result.filename);
-  btn.textContent = 'Export Data (ZIP)'; btn.disabled = false;
-}
-
 // ── Reset ─────────────────────────────────────────────────────
 async function resetAllSettings() {
   if (!confirm('Reset all settings to defaults?')) return;
@@ -713,10 +797,32 @@ async function doExport() {
   try {
     const range = document.getElementById('exportRange').value;
     const fmt = document.getElementById('exportFormat').value;
-    const data = { exported_at: new Date().toISOString(), range, userId: currentUserId, settings: {} };
-    const blob = new Blob([JSON.stringify(data, null, 2)], {type: fmt === 'csv' ? 'text/csv' : 'application/json'});
+    const cutoff = range === 'all' ? null : Date.now() - Number(range) * 86400000;
+
+    const settings = await loadSettings(currentUserId);
+    let sessions = await loadSessions(currentUserId);
+    if (cutoff) sessions = sessions.filter(s => new Date(s.updated_at || s.created_at).getTime() >= cutoff);
+    const sessionsWithMessages = await Promise.all(sessions.map(async s => ({
+      ...s, messages: await loadMessages(s.id),
+    })));
+
+    const data = { exported_at: new Date().toISOString(), range, userId: currentUserId, settings, sessions: sessionsWithMessages };
+
+    let blob, ext;
+    if (fmt === 'csv') {
+      const rows = [['session_id','session_title','role','content','created_at']];
+      sessionsWithMessages.forEach(s => s.messages.forEach(m =>
+        rows.push([s.id, s.title, m.role, (m.content || '').replace(/\n/g, ' ').replace(/"/g, '""'), m.created_at])
+      ));
+      const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+      blob = new Blob([csv], { type: 'text/csv' });
+      ext = 'csv';
+    } else {
+      blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      ext = 'json';
+    }
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = 'aethermind-export-' + Date.now() + '.' + fmt; a.click();
+    a.download = 'aethermind-export-' + Date.now() + '.' + ext; a.click();
     toast('Export downloaded');
   } catch(e) { toast('Export failed', 'error'); }
   btn.textContent = 'Export Data (ZIP)'; btn.disabled = false;

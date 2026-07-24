@@ -17,6 +17,12 @@
 <script>try{var t=localStorage.getItem('aether-theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="env-config.js"></script>
+<script src="supabase_client.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
 <style>
 :root{
   --bg:#0b0a11; --bg-2:#100e18; --surface:#15121f; --surface-2:#1c1828;
@@ -121,9 +127,19 @@ textarea::placeholder{color:var(--text-faint)}
 
     <!-- sidebar footer / app nav -->
     <div style="border-top:1px solid var(--border);padding:10px 12px">
-      <div style="display:flex;gap:4px;margin-bottom:8px">
+      <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
         <a href="dashboard.html" style="flex:1;text-align:center;text-decoration:none;color:var(--text-dim);font-size:12px;font-weight:500;padding:8px;border-radius:8px;background:var(--surface);border:1px solid var(--border)">Dashboard</a>
         <a href="settings.html" style="flex:1;text-align:center;text-decoration:none;color:var(--text-dim);font-size:12px;font-weight:500;padding:8px;border-radius:8px;background:var(--surface);border:1px solid var(--border)">Settings</a>
+      </div>
+      <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
+        <a href="practice.html" style="flex:1;text-align:center;text-decoration:none;color:var(--text-dim);font-size:12px;font-weight:500;padding:8px;border-radius:8px;background:var(--surface);border:1px solid var(--border)">Practice</a>
+        <a href="flashcards.html" style="flex:1;text-align:center;text-decoration:none;color:var(--text-dim);font-size:12px;font-weight:500;padding:8px;border-radius:8px;background:var(--surface);border:1px solid var(--border)">Flashcards</a>
+        <a href="tools.html" style="flex:1;text-align:center;text-decoration:none;color:var(--text-dim);font-size:12px;font-weight:500;padding:8px;border-radius:8px;background:var(--surface);border:1px solid var(--border)">Tools</a>
+      </div>
+      <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
+        <a href="rooms.html" style="flex:1;text-align:center;text-decoration:none;color:var(--text-dim);font-size:12px;font-weight:500;padding:8px;border-radius:8px;background:var(--surface);border:1px solid var(--border)">Rooms</a>
+        <a href="planner.html" style="flex:1;text-align:center;text-decoration:none;color:var(--text-dim);font-size:12px;font-weight:500;padding:8px;border-radius:8px;background:var(--surface);border:1px solid var(--border)">Planner</a>
+        <a href="concept-map.html" style="flex:1;text-align:center;text-decoration:none;color:var(--text-dim);font-size:12px;font-weight:500;padding:8px;border-radius:8px;background:var(--surface);border:1px solid var(--border)">Concepts</a>
       </div>
       <a href="profile.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;padding:8px;border-radius:10px" style-hover="background:var(--surface)">
         <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(140deg,var(--violet),var(--aether));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:13px;flex:none">AL</div>
@@ -142,6 +158,16 @@ textarea::placeholder{color:var(--text-faint)}
       </div>
       <div style="display:flex;align-items:center;gap:10px">
         <button onClick="{{ cycleConn }}" title="Click to preview connection states" style="{{ connPillStyle }}"><span style="{{ connDotStyle }}"></span>{{ connLabel }}</button>
+        <div style="position:relative">
+          <button onClick="{{ toggleExportMenu }}" title="Export conversation" style="width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);cursor:pointer;font-size:15px;flex:none">⇩</button>
+          <sc-if value="{{ exportMenuOpen }}" hint-placeholder-val="">
+            <div style="position:absolute;top:42px;right:0;z-index:30;width:160px;padding:5px;border-radius:11px;background:var(--surface);border:1px solid var(--border-strong);box-shadow:0 16px 40px -12px rgba(0,0,0,.6)">
+              <div onClick="{{ exportPdf }}" style="padding:8px 10px;border-radius:7px;font-size:13px;cursor:pointer" style-hover="background:var(--surface-2)">⇩ PDF</div>
+              <div onClick="{{ exportWord }}" style="padding:8px 10px;border-radius:7px;font-size:13px;cursor:pointer" style-hover="background:var(--surface-2)">⇩ Word</div>
+              <div onClick="{{ exportMarkdown }}" style="padding:8px 10px;border-radius:7px;font-size:13px;cursor:pointer" style-hover="background:var(--surface-2)">⇩ Markdown</div>
+            </div>
+          </sc-if>
+        </div>
         <button onClick="{{ toggleTheme }}" aria-label="Toggle theme" style="width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:14px;flex:none">{{ themeIcon }}</button>
       </div>
     </div>
@@ -195,12 +221,16 @@ textarea::placeholder{color:var(--text-faint)}
     <!-- input bar -->
     <div style="padding:16px 24px 22px">
       <div style="max-width:760px;margin:0 auto">
+        <sc-if value="{{ mistakeWarning }}" hint-placeholder-val="">
+          <div style="display:inline-flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 13px;border-radius:10px;background:var(--amber-soft);border:1px solid color-mix(in srgb,var(--amber) 40%,transparent);font-size:12.5px;color:var(--amber)">⚠ {{ mistakeWarning }}</div>
+        </sc-if>
         <sc-if value="{{ toast }}" hint-placeholder-val="">
           <div style="display:inline-flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 13px;border-radius:10px;background:var(--aether-soft);border:1px solid color-mix(in srgb,var(--aether) 40%,transparent);font-size:12.5px;color:var(--aether)">✓ {{ toast }}</div>
         </sc-if>
         <div style="display:flex;align-items:flex-end;gap:10px;padding:10px 10px 10px 14px;border-radius:16px;background:var(--surface);border:1px solid var(--border-strong);box-shadow:0 10px 30px -16px rgba(0,0,0,.5)">
+          <input type="file" id="ocrFileInput" accept="image/*" style="display:none" onChange="{{ onOcrFile }}">
           <button onClick="{{ ocrUpload }}" title="Upload image for OCR" style="flex:none;width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text-dim);cursor:pointer;font-size:16px">⎙</button>
-          <textarea value="{{ input }}" onChange="{{ onInput }}" onKeyDown="{{ onKey }}" rows="1" placeholder="Ask a math, code, or stats question…" style="flex:1;resize:none;border:none;background:transparent;color:var(--text);font-size:15px;font-family:'Hanken Grotesk';outline:none;max-height:140px;line-height:1.5;padding:9px 0"></textarea>
+          <textarea id="chatInput" value="{{ input }}" onChange="{{ onInput }}" onKeyDown="{{ onKey }}" rows="1" placeholder="Ask a math, code, or stats question…" style="flex:1;resize:none;border:none;background:transparent;color:var(--text);font-size:15px;font-family:'Hanken Grotesk';outline:none;max-height:140px;line-height:1.5;padding:9px 0" oninput="this._dcOnInput&&this._dcOnInput(event)"></textarea>
           <button onClick="{{ send }}" disabled="{{ sendDisabled }}" aria-label="Send" style="{{ sendStyle }}">↑</button>
         </div>
         <div style="text-align:center;font-size:11px;color:var(--text-faint);margin-top:9px;font-family:'JetBrains Mono'">Responses are symbolically verified · nothing is sent to the cloud</div>
@@ -213,35 +243,100 @@ textarea::placeholder{color:var(--text-faint)}
 class Component extends DCLogic {
   state = {
     theme:'dark', search:'', input:'', thinking:false, conn:'checking',
-    backendUrl: (()=>{ try{ return localStorage.getItem('aether-backend-url')||'http://localhost:8000'; }catch(e){ return 'http://localhost:8000'; } })(),
+    backendUrl: (()=>{ try{ return localStorage.getItem('aethermind_backend_url')||localStorage.getItem('aether-backend-url')||'http://localhost:11434'; }catch(e){ return 'http://localhost:11434'; } })(),
     modelId: (()=>{ try{ return localStorage.getItem('aether-model-id')||'fast'; }catch(e){ return 'fast'; } })(),
-    openMenuId:null, renamingId:null, renameVal:'', toast:'', copiedKey:null, libs:false,
-    activeId:'s1',
-    sessions:[
-      { id:'s1', pinned:true, title:'Eigenvalue decomposition proof', messages:[
-        {role:'user', text:'Show that a symmetric matrix has real eigenvalues, and solve ∫ x·eˣ dx as a warm-up.'},
-        {role:'ai', segs:[
-          {t:'p', text:'For a real symmetric matrix A, take eigenpair (λ, v). Then v*Av = λ‖v‖², and taking conjugate transpose shows λ = λ̄, so λ is real. Here is the warm-up integral by parts (u = x, dv = eˣ dx):'},
-          {t:'math', tex:'\\int x\\,e^{x}\\,dx = x e^{x} - \\int e^{x}\\,dx = (x-1)e^{x} + C'},
-          {t:'p', text:'Symbolic check with SymPy — runs locally:'},
-          {t:'code', lang:'python', code:"from sympy import symbols, integrate, exp\\nx = symbols('x')\\nprint(integrate(x*exp(x), x))   # (x - 1)*exp(x)"}
-        ]}
-      ]},
-      { id:'s2', pinned:true, title:'Big-O of quicksort', messages:[] },
-      { id:'s3', pinned:false, title:'Bayesian A/B test', messages:[] },
-      { id:'s4', pinned:false, title:'Gradient descent intuition', messages:[] },
-      { id:'s5', pinned:false, title:'Regex for email validation', messages:[] },
-      { id:'s6', pinned:false, title:'Matrix rank, explained', messages:[] },
-    ],
+    openMenuId:null, renamingId:null, renameVal:'', toast:'', copiedKey:null, libs:false, pyodideReady:false, runOutputs:{}, mistakeWarning:'', connError:'',
+    activeId:null,
+    sessions:[],
+    exportMenuOpen:false,
+    authReady:false,
   };
+
+  userId=null;
 
   componentDidMount(){
     try{ const t=localStorage.getItem('aether-theme'); if(t){ this.setState({theme:t}); document.documentElement.dataset.theme=t; } }catch(e){}
     const check=()=>{ if(window.katex && window.hljs){ this.setState({libs:true}); } else { this._lt=setTimeout(check,120); } };
     check();
     this._checkConn();
+    this._initAuth();
+    // Re-check connectivity periodically and whenever the backend URL changes
+    // (e.g. edited on the Settings page in another tab) — previously the conn
+    // badge/banner only reflected a single check made at page load, so a Colab
+    // runtime that disconnected mid-session left the UI showing stale "Connected"
+    // status until the user actually tried to send a message.
+    this._connInterval=setInterval(this._checkConn,30000);
+    this._onStorage=(e)=>{ if(e.key==='aethermind_backend_url' || e.key==='aether-backend-url'){ this.setState({backendUrl:e.newValue||'http://localhost:11434'}); this._checkConn(); } };
+    window.addEventListener('storage',this._onStorage);
+    this._initPyodide();
+  }
+
+  _initPyodide=async()=>{
+    if(typeof loadPyodide==='undefined') return;
+    try {
+      this.pyodide = await loadPyodide();
+      this.setState({pyodideReady:true});
+    } catch(e) {}
+  };
+
+  runCode=(key,code,lang)=>async(e)=>{
+    if(lang!=='python' && lang!=='py') return;
+    if(!this.pyodide) return;
+    this.setState(st=>({ runOutputs:{...st.runOutputs, [key]:'Running...'} }));
+    try {
+      this.pyodide.runPython(`import sys\nimport io\nsys.stdout = io.StringIO()`);
+      const val = await this.pyodide.runPythonAsync(code);
+      const out = this.pyodide.runPython("sys.stdout.getvalue()");
+      const result = out ? out : (val !== undefined && val !== null ? String(val) : '(no output)');
+      this.setState(st=>({ runOutputs:{...st.runOutputs, [key]:result} }));
+    } catch(err) {
+      this.setState(st=>({ runOutputs:{...st.runOutputs, [key]:err.toString()} }));
+    }
+  };
+
+  componentWillUnmount(){
+    if(this._connInterval) clearInterval(this._connInterval);
+    if(this._onStorage) window.removeEventListener('storage',this._onStorage);
   }
   componentDidUpdate(){ const el=document.getElementById('msgScroll'); if(el) el.scrollTop=el.scrollHeight; }
+
+  // ── Auth + persistence bootstrap (Supabase, with localStorage fallback baked
+  // into supabase_client.js — see EX-6) ──────────────────────────────────────
+  _initAuth=async()=>{
+    if(typeof requireAuth!=='function'){ this.setState({authReady:true}); return; }
+    const session = await getSession();
+    if (!session) { window.location.href = 'auth.html'; return; }
+    this.userId = session.user.id;
+    let sessions=await loadSessions(this.userId);
+    if(!sessions.length){
+      const s=await createSession(this.userId,'New session');
+      sessions=[s];
+    }
+    const activeId=sessions[0] ? sessions[0].id : null;
+    this.setState({ sessions, activeId, authReady:true });
+    if (activeId) {
+      await this._ensureMessages(activeId);
+    }
+    
+    try {
+      if(typeof getMistakePatterns === 'function') {
+        const patterns = await getMistakePatterns(this.userId, 7);
+        if(patterns && patterns.length > 0) {
+          this.setState({mistakeWarning: `You've struggled with ${patterns[0].error_type.replace(/_/g,' ')} recently. Be careful!`});
+        }
+      }
+    } catch(e) {}
+  };
+
+  _ensureMessages=async(id)=>{
+    const sess=this.state.sessions.find(s=>s.id===id);
+    if(!sess || sess.messages) return;
+    const rows=await loadMessages(id);
+    const messages=(rows||[]).map(r=> r.role==='user'
+      ? {role:'user', text:r.content}
+      : {role:'ai', segs:this.parseResponse(r.content)});
+    this.setState(st=>({ sessions:st.sessions.map(s=>s.id===id?{...s,messages}:s) }));
+  };
 
   toggleTheme=()=>{ const n=this.state.theme==='dark'?'light':'dark'; this.setState({theme:n}); document.documentElement.dataset.theme=n; try{localStorage.setItem('aether-theme',n);}catch(e){} };
   onSearch=(e)=>this.setState({search:e.target.value});
@@ -251,92 +346,366 @@ class Component extends DCLogic {
   retryConn=()=>this._checkConn();
   flash=(m)=>{ this.setState({toast:m}); clearTimeout(this._tt); this._tt=setTimeout(()=>this.setState({toast:''}),2200); };
 
-  active(){ return this.state.sessions.find(s=>s.id===this.state.activeId) || this.state.sessions[0]; }
-  selectSession=(id)=>this.setState({activeId:id, openMenuId:null});
-  newSession=()=>{ const id='s'+Date.now(); this.setState(st=>({ sessions:[{id,pinned:false,title:'New session',messages:[]},...st.sessions], activeId:id, input:'' })); };
+  active(){ const ss=this.state.sessions.filter(Boolean); const s=ss.find(s=>s.id===this.state.activeId) || ss[0]; return s ? {...s, messages:s.messages||[]} : {id:null,title:'New session',pinned:false,messages:[]}; }
+  selectSession=(id)=>{ this.setState({activeId:id, openMenuId:null}); this._ensureMessages(id); };
+  newSession=async()=>{
+    const fallbackId='s'+Date.now();
+    if(!this.userId){
+      this.setState(st=>({ sessions:[{id:fallbackId,pinned:false,title:'New session',messages:[]},...st.sessions], activeId:fallbackId, input:'' }));
+      return;
+    }
+    try {
+      const s=await createSession(this.userId,'New session');
+      const realId = s?.id || fallbackId;
+      const sessObj = (s && s.id) ? {...s, messages:[]} : {id:fallbackId, pinned:false, title:'New session', messages:[]};
+      this.setState(st=>({ sessions:[sessObj,...st.sessions], activeId:realId, input:'' }));
+    } catch(e) {
+      this.setState(st=>({ sessions:[{id:fallbackId,pinned:false,title:'New session',messages:[]},...st.sessions], activeId:fallbackId, input:'' }));
+    }
+  };
   openMenu=(id)=>(e)=>{ e.stopPropagation(); this.setState(st=>({openMenuId:st.openMenuId===id?null:id})); };
   closeMenu=(id)=>()=>{ this.setState(st=>st.openMenuId===id?{openMenuId:null}:{}); };
   startRename=(id,title)=>(e)=>{ e.stopPropagation(); this.setState({renamingId:id,renameVal:title,openMenuId:null}); };
   onRename=(e)=>this.setState({renameVal:e.target.value});
-  commitRename=()=>{ const {renamingId,renameVal}=this.state; if(!renamingId)return; this.setState(st=>({ sessions:st.sessions.map(s=>s.id===renamingId?{...s,title:renameVal.trim()||s.title}:s), renamingId:null })); };
+  commitRename=async()=>{
+    const {renamingId,renameVal}=this.state; if(!renamingId)return;
+    const sess=this.state.sessions.find(s=>s.id===renamingId);
+    const title=renameVal.trim() || (sess?sess.title:'');
+    this.setState(st=>({ sessions:st.sessions.map(s=>s.id===renamingId?{...s,title}:s), renamingId:null }));
+    if(this.userId){ try{ await updateSession(this.userId, renamingId, {title}); }catch(e){} }
+  };
   renameKey=(e)=>{ if(e.key==='Enter'){ e.preventDefault(); this.commitRename(); } if(e.key==='Escape'){ this.setState({renamingId:null}); } };
-  share=(id)=>(e)=>{ e.stopPropagation(); try{navigator.clipboard.writeText('aethermind://session/'+id);}catch(_){}; this.setState({openMenuId:null}); this.flash('Share link copied to clipboard'); };
-  togglePin=(id)=>(e)=>{ e.stopPropagation(); this.setState(st=>({ sessions:st.sessions.map(s=>s.id===id?{...s,pinned:!s.pinned}:s), openMenuId:null })); };
-  del=(id)=>(e)=>{ e.stopPropagation(); this.setState(st=>{ const sessions=st.sessions.filter(s=>s.id!==id); const activeId=st.activeId===id?(sessions[0]&&sessions[0].id):st.activeId; return {sessions,activeId,openMenuId:null}; }); };
+  // Self-contained, expiring, read-only share link: the session's messages
+  // are embedded directly in the URL fragment (base64) and rendered by the
+  // standalone shared.html viewer — no backend lookup, consistent with this
+  // app's "never phones home" design, and works even for the local-only
+  // (no-Supabase) fallback since it doesn't depend on RLS-gated reads.
+  share=(id)=>async(e)=>{
+    e.stopPropagation();
+    this.setState({openMenuId:null});
+    const sess=this.state.sessions.find(s=>s.id===id);
+    if(!sess){ this.flash('Session not found'); return; }
+    let rows;
+    try{ rows=await loadMessages(id); }catch(err){ rows=null; }
+    if(!rows || !rows.length){ this.flash('Nothing to share yet'); return; }
+    const payload={
+      v:1,
+      title:sess.title||'Shared session',
+      messages:rows.map(r=>({role:r.role,content:r.content})),
+      exp:Date.now()+7*86400000, // 7-day expiry
+    };
+    let token;
+    try{ token=btoa(unescape(encodeURIComponent(JSON.stringify(payload)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+    catch(err){ this.flash('Could not build share link'); return; }
+    const base=location.href.split(/[?#]/)[0].replace(/index\.html$/,'');
+    const url=base+'shared.html#'+token;
+    try{ await navigator.clipboard.writeText(url); }catch(_){}
+    this.flash('Read-only share link copied — expires in 7 days');
+  };
+  togglePin=(id)=>async(e)=>{
+    e.stopPropagation();
+    const sess=this.state.sessions.find(s=>s.id===id);
+    const next=sess? !sess.pinned : true;
+    this.setState(st=>({ sessions:st.sessions.map(s=>s.id===id?{...s,pinned:next}:s), openMenuId:null }));
+    if(this.userId){ try{ await updateSession(this.userId, id, {pinned:next}); }catch(e){} }
+  };
+  del=(id)=>async(e)=>{
+    e.stopPropagation();
+    this.setState(st=>{ const sessions=st.sessions.filter(s=>s.id!==id); const activeId=st.activeId===id?(sessions[0]&&sessions[0].id):st.activeId; return {sessions,activeId,openMenuId:null}; });
+    if(this.userId){ try{ await deleteSession(this.userId, id); }catch(e){} }
+  };
 
-  ocrUpload=()=>{ this.flash('Reading equation from image (OCR)…'); setTimeout(()=>this.setState({input:'Solve the quadratic 3x² − 5x − 2 = 0 from my screenshot'}),650); };
-  copy=(key,code)=>{ try{navigator.clipboard.writeText(code);}catch(e){} this.setState({copiedKey:key}); clearTimeout(this._c); this._c=setTimeout(()=>this.setState({copiedKey:null}),1500); };
+  // ── OCR (EX-2/3): real Tesseract.js flow with upload validation ──────────
+  ocrUpload=()=>{ const el=document.getElementById('ocrFileInput'); if(el){ el.value=''; el.click(); } };
+  onOcrFile=(e)=>{ const file=e.target.files && e.target.files[0]; if(file) this._runOcr(file); };
+  _runOcr=async(file)=>{
+    const MAX_BYTES=10*1024*1024;
+    if(file.size>MAX_BYTES){ this.flash('File too large — max 10MB'); return; }
+    if(!file.type.startsWith('image/')){ this.flash('Unsupported file type — please upload an image'); return; }
+    if(typeof Tesseract==='undefined'){ this.flash('OCR library failed to load — check your connection'); return; }
+    this.flash('Reading equation from image (OCR)…');
+    try{
+      const { data:{ text } }=await Tesseract.recognize(file,'eng');
+      const extracted=(text||'').trim();
+      if(!extracted){ this.flash('No text detected in image'); return; }
+      this.setState(st=>({ input: st.input ? st.input+'\n'+extracted : extracted }));
+      this.flash('Text extracted from image ✓');
+    }catch(e){
+      this.flash('OCR failed — could not read the image');
+    }
+  };
+  copy=(key,code)=>{
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = code;
+        ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+    }catch(e){}
+    this.setState({copiedKey:key});
+    clearTimeout(this._c);
+    this._c=setTimeout(()=>this.setState({copiedKey:null}),1500);
+  };
 
   _isGradio=(url)=>url.includes('gradio.live')||url.includes('hf.space')||url.includes('gradio.app');
 
-  _checkConn=async()=>{
-    this.setState({conn:'checking'});
-    const url=(this.state.backendUrl||'http://localhost:8000').replace(/\/+$/,'');
-    try{
-      if(this._isGradio(url)){
-        // For Gradio just ping the root page — fast, no inference needed
-        const r=await fetch(url,{signal:AbortSignal.timeout(10000)});
-        this.setState({conn:r.ok?'ok':'ollama'});
-      }else{
-        const r=await fetch(url+'/health',{signal:AbortSignal.timeout(5000)});
-        this.setState({conn:r.ok?'ok':'ollama'});
-      }
-    }catch(e){ this.setState({conn:'ollama'}); }
+  // Always read the live value — this.state.backendUrl is only a snapshot taken
+  // at mount, so if the user updates it on the Settings page in another tab (or
+  // this tab lost the update on a stale render) calls here would silently keep
+  // hitting the old URL. Reading localStorage fresh on every call fixes that.
+  _backendUrl=()=>{
+    let v=null;
+    try{ v=localStorage.getItem('aethermind_backend_url') || localStorage.getItem('aether-backend-url'); }catch(e){}
+    return (v||this.state.backendUrl||'http://localhost:11434').replace(/\/+$/,'');
   };
 
-  // ── Gradio 4.x+ two-step API (POST /call → event_id → GET SSE) ─────────
-  _pollGradioResult=(url,event_id)=>new Promise((resolve,reject)=>{
-    const es=new EventSource(url+'/call/api_chat/'+event_id);
-    const timer=setTimeout(()=>{ es.close(); reject(new Error('Gradio response timeout')); },180000);
+  _checkConn=async()=>{
+    this.setState({conn:'checking'});
+    const url=this._backendUrl();
+    try{
+      if(this._isGradio(url)){
+        // Fetch /config — it exists on all Gradio versions and tells us the api_prefix
+        const r=await fetch(url+'/config',{signal:AbortSignal.timeout(12000)});
+        if(r.ok){
+          const cfg=await r.json();
+          const pfx=cfg.api_prefix||'';
+          console.log('[AetherMind] Connected to Gradio', cfg.version, 'api_prefix:', pfx);
+          // Cache config for _callGradioApi
+          this._gradioConfig={apiPrefix:pfx, version:cfg.version||'?'};
+          this.setState({conn:'ok', connError:''});
+        } else {
+          this.setState({conn:'ollama', connError:'Gradio /config returned HTTP '+r.status});
+        }
+      }else{
+        const r=await fetch(url+'/health',{signal:AbortSignal.timeout(5000)});
+        this.setState({conn:r.ok?'ok':'ollama', connError: r.ok?'':'HTTP status ' + r.status});
+      }
+    }catch(e){ this.setState({conn:'ollama', connError: e.message}); }
+  };
+
+  // ── Gradio SSE poller ────────────────────────────────────────────────────
+  _pollGradioResult=(url, event_id, endpoint)=>new Promise((resolve,reject)=>{
+    const es=new EventSource(url+'/call/'+endpoint+'/'+event_id);
+    const timer=setTimeout(()=>{ es.close(); reject(new Error('Gradio response timeout (3 min) — Colab may be busy')); },180000);
     const done=(text)=>{ clearTimeout(timer); es.close(); resolve(text); };
     const fail=(e)=>{ clearTimeout(timer); es.close(); reject(e); };
+    // Extract clean string from any Gradio response shape
+    const extract=(raw)=>{
+      if(typeof raw==='string') return raw;
+      if(raw?.response) return String(raw.response);
+      if(raw?.output)   return String(raw.output);
+      if(raw?.text)     return String(raw.text);
+      return JSON.stringify(raw);
+    };
     es.addEventListener('complete',(e)=>{
       try{
         const data=JSON.parse(e.data);
-        const raw=data[0];
-        done(typeof raw==='string'?raw:(raw?.response||JSON.stringify(raw)));
+        done(extract(Array.isArray(data)?data[0]:data));
       }catch(err){ fail(err); }
     });
-    es.onerror=()=>fail(new Error('Gradio stream closed unexpectedly'));
+    es.addEventListener('generating',(e)=>{ /* streaming chunks — ignore, use complete */ });
+    es.addEventListener('error',(e)=>{
+      let msg='Gradio inference error';
+      try{ const d=JSON.parse(e.data); msg=Array.isArray(d)?d.join(' '):String(d); }catch(_){}
+      fail(new Error(msg));
+    });
+    es.onerror=()=>fail(new Error('Gradio SSE connection dropped — the tunnel may have closed'));
   });
 
-  _callGradioApi=async(url,message,maxTokens,temp)=>{
-    // Try Gradio 4.x+ queue-based API first (/call/)
+  // ── Auto-discover Gradio api_prefix and endpoints from /config ─────────────
+  _gradioConfig=null;
+  _discoverConfig=async(url)=>{
+    if(this._gradioConfig) return this._gradioConfig;
     try{
-      const r1=await fetch(url+'/call/api_chat',{
-        method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({data:[message,maxTokens||512,temp||0.7]}),
-        signal:AbortSignal.timeout(15000)
-      });
-      if(r1.ok){
-        const {event_id}=await r1.json();
-        return await this._pollGradioResult(url,event_id);
+      const r=await fetch(url+'/config',{signal:AbortSignal.timeout(8000)});
+      if(r.ok){
+        const cfg=await r.json();
+        this._gradioConfig={
+          apiPrefix: cfg.api_prefix || '',   // e.g. '/gradio_api'
+          version:   cfg.version   || '3.0',
+        };
+        // Now discover named endpoints using the prefix
+        try{
+          const r2=await fetch(url+(this._gradioConfig.apiPrefix||'')+'/info',{signal:AbortSignal.timeout(5000)});
+          if(r2.ok){
+            const info=await r2.json();
+            this._gradioConfig.endpoints=[
+              ...Object.keys(info?.named_endpoints||{}),
+              ...Object.keys(info?.unnamed_endpoints||{})
+            ];
+          }
+        }catch(_){}
+        return this._gradioConfig;
       }
     }catch(_){}
-    // Fall back to Gradio 3.x direct API (/run/)
-    const r2=await fetch(url+'/run/api_chat',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({data:[message,maxTokens||512,temp||0.7]})
-    });
-    if(!r2.ok) throw new Error('Gradio API returned '+r2.status);
-    const json=await r2.json();
-    const raw=json.data?.[0];
-    return typeof raw==='string'?raw:(raw?.response||JSON.stringify(raw));
+    return { apiPrefix: '', version: '3.0', endpoints: [] };
+  };
+
+  _callGradioApi=async(url,message,maxTokens,temp)=>{
+    const mt=maxTokens||512, t=temp||0.7;
+    const hash='s'+Math.random().toString(36).slice(2,12);
+
+    // Step 1: Discover the api_prefix from /config
+    const cfg=await this._discoverConfig(url);
+    const pfx=cfg.apiPrefix||'';  // e.g. '/gradio_api' or ''
+    console.log('[AetherMind] Gradio config:', cfg);
+
+    // Extract text from any Gradio response shape
+    const extract=(raw)=>{
+      if(typeof raw==='string') return raw;
+      if(Array.isArray(raw)){
+        if(raw.length && Array.isArray(raw[raw.length-1])) return raw[raw.length-1][1]||'';
+        return raw[0]||'';
+      }
+      if(raw?.response) return String(raw.response);
+      if(raw?.output) return String(raw.output);
+      return JSON.stringify(raw);
+    };
+
+    // Strategy A: POST <pfx>/api/<endpoint_name> (Gradio 5.x/6.x direct REST)
+    const tryApi=async(name,data)=>{
+      const r=await fetch(url+pfx+'/api/'+name,{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({data, session_hash:hash}),
+        signal:AbortSignal.timeout(90000)
+      });
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      const json=await r.json();
+      const raw=json.data?.[0];
+      if(raw===undefined||raw===null) throw new Error('empty');
+      return extract(raw);
+    };
+
+    // Strategy B: <pfx>/queue/join + <pfx>/queue/data (queue-based)
+    const tryQueue=async(fnIndex,data)=>{
+      const r=await fetch(url+pfx+'/queue/join',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({data, fn_index:fnIndex, session_hash:hash}),
+        signal:AbortSignal.timeout(10000)
+      });
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return await new Promise((resolve,reject)=>{
+        const es=new EventSource(url+pfx+'/queue/data?session_hash='+hash);
+        const timer=setTimeout(()=>{es.close();reject(new Error('Queue timeout'));},180000);
+        es.onmessage=(e)=>{
+          try{
+            const msg=JSON.parse(e.data);
+            if(msg.msg==='process_completed'){
+              clearTimeout(timer); es.close();
+              const raw=msg.output?.data?.[0];
+              if(raw===undefined||raw===null){reject(new Error('empty queue result'));return;}
+              resolve(extract(raw));
+            } else if(msg.msg==='queue_full'||msg.msg==='error'){
+              clearTimeout(timer); es.close();
+              reject(new Error(msg.msg));
+            }
+          }catch(err){ clearTimeout(timer); es.close(); reject(err); }
+        };
+        es.onerror=()=>{clearTimeout(timer);es.close();reject(new Error('Queue SSE dropped'));};
+      });
+    };
+
+    // Strategy C: <pfx>/call/<name> + SSE poll
+    const tryCall=async(name,data)=>{
+      const r=await fetch(url+pfx+'/call/'+name,{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({data}),
+        signal:AbortSignal.timeout(10000)
+      });
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      const body=await r.json();
+      if(!body?.event_id) throw new Error('no event_id');
+      // Poll SSE at <pfx>/call/<name>/<event_id>
+      return await new Promise((resolve,reject)=>{
+        const es=new EventSource(url+pfx+'/call/'+name+'/'+body.event_id);
+        const timer=setTimeout(()=>{es.close();reject(new Error('timeout'));},180000);
+        const done=(text)=>{clearTimeout(timer);es.close();resolve(text);};
+        const fail=(e)=>{clearTimeout(timer);es.close();reject(e);};
+        es.addEventListener('complete',(e)=>{
+          try{const d=JSON.parse(e.data);done(extract(Array.isArray(d)?d[0]:d));}catch(err){fail(err);}
+        });
+        es.addEventListener('error',(e)=>{
+          let msg='Gradio error';
+          try{const d=JSON.parse(e.data);msg=Array.isArray(d)?d.join(' '):String(d);}catch(_){}
+          fail(new Error(msg));
+        });
+        es.onerror=()=>fail(new Error('SSE dropped'));
+      });
+    };
+
+    // ════════════════════════════════════════════════════════════════════════
+    // TRY STRATEGIES — ordered by likelihood for Gradio 5.x/6.x
+    // ════════════════════════════════════════════════════════════════════════
+
+    // 1. Direct REST: POST <pfx>/api/<name>
+    console.log('[AetherMind] Trying POST', pfx+'/api/api_chat');
+    try{ return await tryApi('api_chat',[message,mt,t]); }catch(e){ console.log('[AetherMind] api_chat failed:', e.message); }
+    try{ return await tryApi('chat',[message,null]); }catch(e){ console.log('[AetherMind] chat failed:', e.message); }
+    try{ return await tryApi('predict',[message]); }catch(e){ console.log('[AetherMind] predict failed:', e.message); }
+
+    // 2. Queue-based: <pfx>/queue/join + <pfx>/queue/data
+    console.log('[AetherMind] Trying queue...');
+    try{ return await tryQueue(1,[message,mt,t]); }catch(e){ console.log('[AetherMind] queue fn1 failed:', e.message); }
+    try{ return await tryQueue(0,[message,null]); }catch(e){ console.log('[AetherMind] queue fn0 failed:', e.message); }
+
+    // 3. /call/<name> pattern
+    try{ return await tryCall('api_chat',[message,mt,t]); }catch(e){ console.log('[AetherMind] call api_chat failed:', e.message); }
+    try{ return await tryCall('chat',[message,null]); }catch(_){}
+
+    throw new Error('No working Gradio endpoint found (api_prefix: "'+pfx+'"). Make sure Colab is still running and the URL is current.');
   };
 
   _parseText(text,segs){
     const mathRx=/(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\])/g;
     let last=0,m;
+    const processBlocks=(str)=>{
+      const blocks=str.split(/\n\s*\n/);
+      blocks.forEach(blk=>{
+        const trimmed=blk.trim();
+        if(!trimmed) return;
+        const lines=trimmed.split('\n');
+        let currentList=null;
+
+        lines.forEach(line=>{
+          const l=line.trim();
+          if(!l) return;
+
+          // Header (# ## ###) or bold line header
+          if(/^#{1,3}\s+/.test(l)){
+            segs.push({t:'h',text:l.replace(/^#{1,3}\s+/,'')});
+          }
+          // Numbered item (1. 2. Step 1:)
+          else if(/^(\d+[\.\)]|Step\s+\d+:?)/i.test(l)){
+            segs.push({t:'li',num:true,text:l});
+          }
+          // Bullet item (- * •)
+          else if(/^[\-\*\•]\s+/.test(l)){
+            segs.push({t:'li',num:false,text:l.replace(/^[\-\*\•]\s+/,'')});
+          }
+          // Regular paragraph line
+          else {
+            segs.push({t:'p',text:l});
+          }
+        });
+      });
+    };
+
     while((m=mathRx.exec(text))!==null){
       const before=text.slice(last,m.index);
-      if(before.trim()) segs.push({t:'p',text:before.trim()});
+      if(before.trim()) processBlocks(before);
       const raw=m[0];
       const inner=raw.startsWith('$$')?raw.slice(2,-2):raw.slice(2,-2);
       segs.push({t:'math',tex:inner.trim()});
       last=m.index+m[0].length;
     }
     const tail=text.slice(last);
-    if(tail.trim()) segs.push({t:'p',text:tail.trim()});
+    if(tail.trim()) processBlocks(tail);
   }
 
   parseResponse(text){
@@ -354,47 +723,110 @@ class Component extends DCLogic {
     return segs.length?segs:[{t:'p',text:text}];
   }
 
+  // ── Proof verifier (Task 5): "/verify" slash command → POST /verify-proof ──
+  _verifyProof=async(text,id)=>{
+    const lines=text.split('\n');
+    const first=lines[0].replace(/^\/verify\b\s*/i,'').trim();
+    const steps=[first,...lines.slice(1)].map(l=>l.trim()).filter(Boolean);
+    if(!steps.length){ this.flash('Usage: /verify <step 1> then one step per line'); return; }
+
+    this.setState(st=>({
+      sessions:st.sessions.map(s=>s.id===id?{...s,messages:[...(s.messages||[]),{role:'user',text}]}:s),
+      input:'',thinking:true
+    }));
+    if(this.userId) appendMessage(this.userId,id,'user',text,{}).catch(()=>{});
+
+    const url=this._backendUrl();
+    try{
+      const resp=await fetch(url+'/verify-proof',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({steps})
+      });
+      if(!resp.ok) throw new Error('status '+resp.status);
+      const data=await resp.json();
+      const result=data.result || data.error || 'No result returned.';
+      const segs=this.parseResponse(result);
+      this.setState(st=>({
+        thinking:false,
+        sessions:st.sessions.map(s=>s.id===id?{...s,messages:[...(s.messages||[]),{role:'ai',segs}]}:s)
+      }));
+      if(this.userId) appendMessage(this.userId,id,'assistant',result,{}).catch(()=>{});
+    }catch(e){
+      this.setState(st=>({
+        thinking:false,
+        sessions:st.sessions.map(s=>s.id===id?{...s,messages:[...(s.messages||[]),{role:'err',text:'Proof verification failed: '+e.message}]}:s)
+      }));
+    }
+  };
+
   send=async()=>{
-    const text=this.state.input.trim(); if(!text) return;
-    const id=this.state.activeId;
-    const sess=this.state.sessions.find(s=>s.id===id);
+    const ta = document.getElementById('chatInput');
+    const text = ((ta ? ta.value : '') || this.state.input || '').trim();
+    if(!text) return;
+    
+    // Reset both DOM element and state immediately
+    if (ta) { ta.value = ''; ta.style.height = 'auto'; ta.focus(); }
+
+    let id=this.state.activeId;
+    if(!id) {
+      const ss = this.state.sessions.filter(Boolean);
+      if (!ss.length) {
+        id = 's' + Date.now();
+        this.setState({ sessions: [{ id, title: text.slice(0, 30), messages: [] }], activeId: id });
+      } else {
+        id = ss[0].id;
+      }
+    }
+
+    if(/^\/verify\b/i.test(text)) return this._verifyProof(text,id);
+
+    const sess=(this.state.sessions.filter(Boolean)).find(s=>s.id===id);
     const history=(sess?sess.messages:[])
       .filter(m=>m.role==='user'||m.role==='ai')
       .map(m=>({role:m.role==='ai'?'assistant':'user',content:m.role==='ai'?(m.segs||[]).map(s=>s.text||s.code||s.tex||'').join(' '):m.text}));
 
     this.setState(st=>({
-      sessions:st.sessions.map(s=>s.id===id?{...s,messages:[...s.messages,{role:'user',text}]}:s),
-      input:'',thinking:true
+      input:'',
+      thinking:true,
+      sessions:st.sessions.filter(Boolean).map(s=>s.id===id?{...s,messages:[...(s.messages||[]),{role:'user',text}]}:s)
     }));
+    if(this.userId) appendMessage(this.userId,id,'user',text,{}).catch(()=>{});
 
     const sid='stream-'+Date.now();
-    const url=(this.state.backendUrl||'http://localhost:8000').replace(/\/+$/,'');
+    const url=this._backendUrl();
 
-    // ── Gradio path (Colab URL — supports 3.x /run/ and 4.x+ /call/) ───────
+    // ── Gradio path (Colab URL) ──────────────────────────────────────────
     if(this._isGradio(url)){
       try{
         const responseText=await this._callGradioApi(url,text,512,0.7);
         const segs=this.parseResponse(responseText);
         const autoTitle=text.length>50?text.slice(0,47)+'…':text;
         this.setState(st=>({
-          thinking:false,conn:'ok',
-          sessions:st.sessions.map(s=>s.id===id?{
+          thinking:false,conn:'ok',input:'',
+          sessions:st.sessions.filter(Boolean).map(s=>s.id===id?{
             ...s,
             title:s.title==='New session'?autoTitle:s.title,
-            messages:[...s.messages,{role:'ai',segs}]
+            messages:[...(s.messages||[]),{role:'ai',segs}]
           }:s)
         }));
+        if (ta) ta.focus();
+        if(this.userId){
+          appendMessage(this.userId,id,'assistant',responseText,{}).catch(()=>{});
+          if(sess && sess.title==='New session') updateSession(this.userId,id,{title:autoTitle}).catch(()=>{});
+        }
       }catch(e){
         this.setState(st=>({
-          thinking:false,conn:'ollama',
-          sessions:st.sessions.map(s=>s.id===id?{...s,messages:[...s.messages,{role:'err',text:'Colab GPU unreachable ('+e.message+'). Paste a fresh Gradio link in Settings.'}]}:s)
+          thinking:false,conn:'ollama',input:'',
+          sessions:st.sessions.filter(Boolean).map(s=>s.id===id?{...s,messages:[...(s.messages||[]),{role:'err',text:'Colab GPU unreachable ('+e.message+'). Paste a fresh Gradio link in Settings.'}]}:s)
         }));
+        if (ta) ta.focus();
       }
       return;
     }
 
     // ── Local FastAPI SSE path ────────────────────────────────────────────
     let buf='';
+    let meta={}; // { domain, is_verified, tokens_used } — filled in from SSE events below
 
     try{
       const resp=await fetch(url+'/chat',{
@@ -406,7 +838,7 @@ class Component extends DCLogic {
 
       this.setState(st=>({
         thinking:false,
-        sessions:st.sessions.map(s=>s.id===id?{...s,messages:[...s.messages,{role:'streaming',sid,text:''}]}:s)
+        sessions:st.sessions.map(s=>s.id===id?{...s,messages:[...(s.messages||[]),{role:'streaming',sid,text:''}]}:s)
       }));
 
       const reader=resp.body.getReader();
@@ -426,23 +858,31 @@ class Component extends DCLogic {
           try{
             const d=JSON.parse(raw);
             if(d.error){
-              this.setState(st=>({conn:'ollama',sessions:st.sessions.map(s=>s.id===id?{...s,messages:s.messages.filter(m=>m.sid!==sid).concat([{role:'err',text:d.error}])}:s)}));
+              this.setState(st=>({conn:'ollama',sessions:st.sessions.map(s=>s.id===id?{...s,messages:(s.messages||[]).filter(m=>m.sid!==sid).concat([{role:'err',text:d.error}])}:s)}));
               return;
             }
+            // First event carries metadata: domain, has_compute (symbolic verification flag)
+            if(d.domain && !d.done){ meta.domain=d.domain; if('has_compute' in d) meta.is_verified=!!d.has_compute; }
             if(d.token){
               buf+=d.token;
-              this.setState(st=>({sessions:st.sessions.map(s=>s.id===id?{...s,messages:s.messages.map(m=>m.sid===sid?{...m,text:buf}:m)}:s)}));
+              this.setState(st=>({sessions:st.sessions.map(s=>s.id===id?{...s,messages:(s.messages||[]).map(m=>m.sid===sid?{...m,text:buf}:m)}:s)}));
             }
             if(d.done){
+              meta.domain=d.domain||meta.domain||null;
+              meta.tokens_used=d.tokens||0;
               const segs=this.parseResponse(buf);
               const autoTitle=text.length>50?text.slice(0,47)+'…':text;
               this.setState(st=>({
                 sessions:st.sessions.map(s=>s.id===id?{
                   ...s,
                   title:s.title==='New session'?autoTitle:s.title,
-                  messages:s.messages.map(m=>m.sid===sid?{role:'ai',segs}:m)
+                  messages:(s.messages||[]).map(m=>m.sid===sid?{role:'ai',segs}:m)
                 }:s)
               }));
+              if(this.userId){
+                appendMessage(this.userId,id,'assistant',buf,meta).catch(()=>{});
+                if(sess && sess.title==='New session') updateSession(this.userId,id,{title:autoTitle}).catch(()=>{});
+              }
             }
           }catch(e){}
         }
@@ -450,9 +890,60 @@ class Component extends DCLogic {
     }catch(e){
       this.setState(st=>({
         thinking:false,conn:'ollama',
-        sessions:st.sessions.map(s=>s.id===id?{...s,messages:s.messages.filter(m=>m.sid!==sid).concat([{role:'err',text:'Cannot reach backend at '+(this.state.backendUrl||'localhost:8000')+'. Check Settings → Model Configuration and ensure the URL is correct.'}])}:s)
+        sessions:st.sessions.map(s=>s.id===id?{...s,messages:(s.messages||[]).filter(m=>m.sid!==sid).concat([{role:'err',text:'Cannot reach backend at '+this._backendUrl()+'. Check Settings → Model Configuration and ensure the URL is correct.'}])}:s)
       }));
     }
+  };
+
+  // ── Chat export (PDF / Word / Markdown) — ported from the orphaned script.js ──
+  toggleExportMenu=()=>this.setState(st=>({exportMenuOpen:!st.exportMenuOpen}));
+  _msgText(m){
+    if(m.role==='user'||m.role==='err') return m.text||'';
+    return (m.segs||[]).map(s=> s.t==='math' ? '$$'+s.tex+'$$' : s.t==='code' ? '```'+s.lang+'\n'+s.code+'\n```' : (s.text||'')).join('\n\n');
+  }
+  _escHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+  exportMarkdown=()=>{
+    const act=this.active();
+    if(!act.messages.length){ this.flash('No messages to export'); this.setState({exportMenuOpen:false}); return; }
+    const md=`# AetherMind — ${act.title}\n_${new Date().toLocaleString()}_\n\n---\n\n`+
+      act.messages.filter(m=>m.role!=='streaming').map(m=>`**${m.role==='user'?'You':'AetherMind'}**\n\n${this._msgText(m)}\n\n---\n`).join('\n');
+    const blob=new Blob([md],{type:'text/markdown'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download=`AetherMind_${act.title.replace(/[^a-z0-9]/gi,'_').slice(0,25)}.md`;
+    a.click();
+    this.flash('Markdown exported');
+    this.setState({exportMenuOpen:false});
+  };
+  exportWord=()=>{
+    const act=this.active();
+    if(!act.messages.length){ this.flash('No messages to export'); this.setState({exportMenuOpen:false}); return; }
+    const esc=this._escHtml;
+    const html=`<html xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>body{font-family:Calibri,sans-serif;line-height:1.7;color:#111}h1{color:#7c5cff}code{background:#f3f4f6;padding:1px 4px;font-family:monospace}</style></head><body><h1>AetherMind — ${esc(act.title)}</h1><hr>`+
+      act.messages.filter(m=>m.role!=='streaming').map(m=>`<p style="font-weight:bold;color:${m.role==='user'?'#4f7ef7':'#7c5cff'}">${m.role==='user'?'You':'AetherMind'}</p><div style="padding-left:12px;border-left:2px solid #e5e7eb;white-space:pre-wrap">${esc(this._msgText(m))}</div><br>`).join('')+
+      `<hr><p style="font-size:10px;color:#9ca3af;text-align:center">AetherMind · ${new Date().toLocaleString()}</p></body></html>`;
+    const blob=new Blob(['﻿',html],{type:'application/msword'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download=`AetherMind_${act.title.replace(/[^a-z0-9]/gi,'_').slice(0,25)}.doc`;
+    a.click();
+    this.flash('Word document exported');
+    this.setState({exportMenuOpen:false});
+  };
+  exportPdf=()=>{
+    const act=this.active();
+    if(!act.messages.length){ this.flash('No messages to export'); this.setState({exportMenuOpen:false}); return; }
+    if(typeof html2pdf==='undefined'){ this.flash('PDF export library failed to load'); return; }
+    const esc=this._escHtml;
+    const div=document.createElement('div');
+    div.style.cssText='padding:32px;font-family:Inter,Hanken Grotesk,sans-serif;color:#111;max-width:720px;background:#fff;';
+    div.innerHTML=`<div style="text-align:center;border-bottom:2px solid #7c5cff;padding-bottom:14px;margin-bottom:24px;"><h1 style="color:#7c5cff;font-size:22px;margin-bottom:4px;">AetherMind</h1><p style="color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:1px;">${esc(act.title)} · ${new Date().toLocaleDateString()}</p></div>`+
+      act.messages.filter(m=>m.role!=='streaming').map(m=>`<div style="margin-bottom:16px;padding:14px 16px;border-radius:8px;background:${m.role==='user'?'#f3f4f6':'#faf5ff'};border-left:3px solid ${m.role==='user'?'#4f7ef7':'#7c5cff'}"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:${m.role==='user'?'#4f7ef7':'#7c5cff'};margin-bottom:6px;">${m.role==='user'?'You':'AetherMind'}</div><div style="font-size:13px;line-height:1.7;white-space:pre-wrap;">${esc(this._msgText(m))}</div></div>`).join('')+
+      `<div style="text-align:center;margin-top:24px;font-size:10px;color:#9ca3af;">AetherMind · ${new Date().toLocaleString()}</div>`;
+    html2pdf().set({
+      margin:0.5, filename:`AetherMind_${act.title.replace(/[^a-z0-9]/gi,'_').slice(0,22)}.pdf`,
+      html2canvas:{scale:2}, jsPDF:{unit:'in',format:'a4'},
+    }).from(div).save();
+    this.flash('PDF exported');
+    this.setState({exportMenuOpen:false});
   };
 
   mathNode(tex){
@@ -464,15 +955,37 @@ class Component extends DCLogic {
     let html=seg.code;
     try{ if(window.hljs) html=window.hljs.highlight(seg.code,{language:seg.lang}).value; else html=seg.code.replace(/&/g,'&amp;').replace(/</g,'&lt;'); }catch(e){ html=seg.code.replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
     const copied=this.state.copiedKey===key;
+    const isPython = (seg.lang==='python' || seg.lang==='py');
+    const runOut = this.state.runOutputs[key];
     return React.createElement('div',{key,style:{margin:'10px 0',borderRadius:'12px',overflow:'hidden',border:'1px solid rgba(255,255,255,.1)',background:'#1a1b26'}},
       React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 13px',borderBottom:'1px solid rgba(255,255,255,.08)'}},
         React.createElement('span',{style:{fontFamily:'JetBrains Mono',fontSize:'11.5px',color:'#9aa0b4'}},seg.lang),
-        React.createElement('button',{onClick:()=>this.copy(key,seg.code),style:{border:'none',background:'transparent',color:copied?'#5eead4':'#9aa0b4',cursor:'pointer',fontSize:'12px',fontWeight:600,fontFamily:'Hanken Grotesk'}},copied?'Copied ✓':'Copy')
+        React.createElement('div', {style:{display:'flex',gap:'10px'}},
+          isPython && this.state.pyodideReady ? React.createElement('button',{onClick:this.runCode(key,seg.code,seg.lang),style:{border:'none',background:'transparent',color:'#5eead4',cursor:'pointer',fontSize:'12px',fontWeight:600,fontFamily:'Hanken Grotesk'}},'▶ Run') : null,
+          React.createElement('button',{onClick:()=>this.copy(key,seg.code),style:{border:'none',background:'transparent',color:copied?'#5eead4':'#9aa0b4',cursor:'pointer',fontSize:'12px',fontWeight:600,fontFamily:'Hanken Grotesk'}},copied?'Copied ✓':'Copy')
+        )
       ),
       React.createElement('pre',{style:{margin:0,padding:'13px 15px',overflowX:'auto'}},
         React.createElement('code',{className:'hljs',style:{fontFamily:'JetBrains Mono',fontSize:'12.8px',lineHeight:1.6,background:'transparent'},dangerouslySetInnerHTML:{__html:html}})
-      )
+      ),
+      runOut ? React.createElement('div', {style:{padding:'10px 15px',borderTop:'1px solid rgba(255,255,255,.08)',background:'#100e18',color:'#5eead4',fontFamily:'JetBrains Mono',fontSize:'11.5px',whiteSpace:'pre-wrap'}}, '> ' + runOut) : null
     );
+  }
+  renderMarkdownText(text) {
+    const regex = /(\*\*.*?\*\*|\*.*?\*|`.*?`)/g;
+    const parts = text.split(regex);
+    return parts.map((part, idx) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return React.createElement('strong', { key: idx, style: { fontWeight: 700 } }, part.slice(2, -2));
+      }
+      if (part.startsWith('*') && part.endsWith('*')) {
+        return React.createElement('em', { key: idx, style: { fontStyle: 'italic' } }, part.slice(1, -1));
+      }
+      if (part.startsWith('`') && part.endsWith('`')) {
+        return React.createElement('code', { key: idx, style: { fontFamily: 'JetBrains Mono', background: 'var(--surface-3)', padding: '2px 5px', borderRadius: '4px', fontSize: '13px' } }, part.slice(1, -1));
+      }
+      return part;
+    });
   }
   streamingBody(text){
     return React.createElement('div',{},
@@ -485,13 +998,28 @@ class Component extends DCLogic {
   }
   aiBody(segs){
     return React.createElement('div',{},
-      React.createElement('div',{key:'h',style:{display:'flex',alignItems:'center',gap:'8px',marginBottom:'10px'}},
+      React.createElement('div',{key:'h',style:{display:'flex',alignItems:'center',gap:'8px',marginBottom:'12px'}},
         React.createElement('span',{style:{fontFamily:'Space Grotesk',fontWeight:600,fontSize:'12.5px',color:'var(--violet-2)'}},'AetherMind'),
         React.createElement('span',{style:{fontFamily:'JetBrains Mono',fontSize:'10.5px',color:'var(--aether)',border:'1px solid color-mix(in srgb,var(--aether) 35%,transparent)',borderRadius:'999px',padding:'1px 8px'}},'✓ verified')
       ),
-      segs.map((s,i)=> s.t==='p' ? React.createElement('p',{key:i,style:{fontSize:'14.5px',lineHeight:1.65,color:'var(--text)',margin:'4px 0'}},s.text)
-        : s.t==='math' ? this.mathNode(s.tex)
-        : this.codeNode(s,'c'+i+'-'+s.code.length) )
+      segs.map((s,i)=>{
+        if(s.t==='h'){
+          return React.createElement('h3',{key:i,style:{fontFamily:'Space Grotesk',fontSize:'15.5px',fontWeight:700,color:'var(--text)',marginTop:'14px',marginBottom:'6px'}},this.renderMarkdownText(s.text));
+        }
+        if(s.t==='li'){
+          return React.createElement('div',{key:i,style:{fontSize:'14.5px',lineHeight:1.6,color:'var(--text)',marginLeft:'12px',marginBottom:'6px',display:'flex',gap:'8px'}},
+            React.createElement('span',{style:{color:'var(--violet-2)',fontWeight:700,flexShrink:0}},s.num ? '•' : '•'),
+            React.createElement('div',{},this.renderMarkdownText(s.text))
+          );
+        }
+        if(s.t==='p'){
+          return React.createElement('p',{key:i,style:{fontSize:'14.5px',lineHeight:1.65,color:'var(--text)',marginTop:'6px',marginBottom:'8px'}},this.renderMarkdownText(s.text));
+        }
+        if(s.t==='math'){
+          return this.mathNode(s.tex);
+        }
+        return this.codeNode(s,'c'+i+'-'+s.code.length);
+      })
     );
   }
 
@@ -525,8 +1053,9 @@ class Component extends DCLogic {
     };
 
     const conn = st.conn;
-    let cm = { dot: 'var(--aether)', label: 'Connected' };
-    if (conn === 'ollama') cm = { dot: 'var(--danger)', label: 'Ollama Offline' };
+    const isGradioBe = this._isGradio(this._backendUrl());
+    let cm = { dot: 'var(--aether)', label: isGradioBe ? 'Gradio GPU · Connected' : 'Local API · Connected' };
+    if (conn === 'ollama') cm = { dot: 'var(--danger)', label: 'Backend Offline' };
     if (conn === 'supabase') cm = { dot: 'var(--amber)', label: 'Offline Mode' };
     if (conn === 'checking') cm = { dot: 'var(--text-faint)', label: 'Connecting…' };
 
@@ -541,18 +1070,18 @@ class Component extends DCLogic {
 
     return {
       activeTitle: act.title,
-      modelLine: conn==='ollama' ? 'Model offline' : (st.modelId==='precise' ? 'Llama 3 8B · Precise' : 'Gemma 3 4B · Fast'),
+      modelLine: conn==='ollama' ? 'Model offline' : (isGradioBe ? 'Llama 3 8B · Gradio GPU' : (st.modelId==='precise' ? 'Llama 3 8B · Precise' : 'Gemma 3 4B · Fast')),
       toggleTheme: this.toggleTheme,
       themeIcon: st.theme === 'dark' ? '☾' : '☀',
       cycleConn: this.cycleConn,
       retryConn: this.retryConn,
       connLabel: cm.label,
-      connDotStyle:{width:'7px',height:'7px',borderRadius:'50%',background:cm.dot,boxShadow:'0 0 8px '+cm.dot,display:'inline-block',marginRight:'8px'},
-      connPillStyle:{display:'inline-flex',alignItems:'center',padding:'8px 13px',borderRadius:'999px',border:'1px solid var(--border)',background:'var(--surface)',color:'var(--text-dim)',cursor:'pointer',fontSize:'12.5px',fontWeight:500,fontFamily:'Hanken Grotesk'},
+      connDotStyle:{width:'8px',height:'8px',borderRadius:'50%',background:cm.dot,boxShadow:'0 0 10px '+cm.dot,display:'inline-block',marginRight:'8px'},
+      connPillStyle:{display:'inline-flex',alignItems:'center',padding:'8px 14px',borderRadius:'999px',border:'1px solid var(--border)',background:'var(--surface)',color:'var(--text)',cursor:'pointer',fontSize:'12.5px',fontWeight:600,fontFamily:'Hanken Grotesk'},
       showBanner:conn==='ollama'||conn==='supabase',
       bannerRetry:conn==='ollama',
       bannerIcon:conn==='ollama'?'⚠':'☁',
-      bannerText:conn===’ollama’?’Cannot reach backend at ‘+(st.backendUrl||’localhost:8000’)+’. Check Settings → paste your Gradio URL or start the local backend.’:’Supabase is unreachable — you’re in offline mode. Changes will sync automatically when the connection returns.’,
+       bannerText:conn==='ollama'?'Cannot reach backend at '+this._backendUrl()+(this.state.connError?' (Error: '+this.state.connError+')':'')+'. Check Settings → paste your Gradio URL or start the local backend.':'Supabase is unreachable — you\'re in offline mode. Changes will sync automatically when the connection returns.',
       bannerStyle:{display:'flex',alignItems:'center',gap:'12px',padding:'11px 22px',background:conn==='ollama'?'var(--danger-soft)':'var(--amber-soft)',borderBottom:'1px solid '+(conn==='ollama'?'color-mix(in srgb,var(--danger) 35%,transparent)':'color-mix(in srgb,var(--amber) 35%,transparent)'),color:conn==='ollama'?'var(--danger)':'var(--amber)'},
       isEmpty: act.messages.length===0,
       greeting: formatTime(),
@@ -578,6 +1107,7 @@ class Component extends DCLogic {
       }),
       thinking: st.thinking,
       toast: st.toast,
+      mistakeWarning: st.mistakeWarning,
       input: st.input,
       onSearch: this.onSearch,
       search: st.search,
@@ -588,12 +1118,54 @@ class Component extends DCLogic {
       onInput: this.onInput,
       onKey: this.onKey,
       ocrUpload: this.ocrUpload,
+      onOcrFile: this.onOcrFile,
+      exportMenuOpen: st.exportMenuOpen,
+      toggleExportMenu: this.toggleExportMenu,
+      exportPdf: this.exportPdf,
+      exportWord: this.exportWord,
+      exportMarkdown: this.exportMarkdown,
       send: this.send,
-      sendDisabled: st.input.trim().length===0,
-      sendStyle:{flex:'none',width:'38px',height:'38px',borderRadius:'11px',border:'none',cursor:st.input.trim()?'pointer':'not-allowed',fontSize:'17px',fontWeight:700,color:'#fff',background:st.input.trim()?'linear-gradient(140deg,var(--violet),var(--violet-2))':'var(--surface-2)',opacity:st.input.trim()?1:.5,boxShadow:st.input.trim()?'0 8px 20px -8px var(--glow-1)':'none'},
+      sendDisabled: false, // Always allow clicking send button when user clicks or types
+      sendStyle:{flex:'none',width:'38px',height:'38px',borderRadius:'11px',border:'none',cursor:'pointer',fontSize:'17px',fontWeight:700,color:'#fff',background:'linear-gradient(140deg,var(--violet),var(--violet-2))',boxShadow:'0 8px 20px -8px var(--glow-1)'},
     };
   }
 }
 </script>
 </body>
+
+<!-- ── Native patches applied after DC renders ─────────────────────────────── -->
+<script>
+(function patchChat(){
+  function attach(){
+    const ta = document.getElementById('chatInput');
+    if(!ta) return;
+    ta.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' && !e.shiftKey){
+        e.preventDefault();
+        const instance = window.__dcInstance;
+        if (instance && typeof instance.send === 'function') {
+          instance.send();
+        }
+      }
+    });
+    ta.addEventListener('input', function(){
+      this.style.height='auto';
+      this.style.height=Math.min(this.scrollHeight,140)+'px';
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',attach);
+  else attach();
+
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const be = params.get('backend');
+    if(be && (be.includes('gradio.live') || be.includes('hf.space') || be.startsWith('http'))) {
+      localStorage.setItem('aethermind_backend_url', be.replace(/\/+$/,''));
+      localStorage.setItem('aether-backend-url', be.replace(/\/+$/,''));
+      const clean = window.location.pathname;
+      window.history.replaceState({}, '', clean);
+    }
+  } catch(e) {}
+})();
+</script>
 </html>

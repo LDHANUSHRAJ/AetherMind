@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>AetherMind · Set Backend</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0b0a11;font-family:'Segoe UI',sans-serif;color:#ece9f5;display:flex;align-items:center;justify-content:center;min-height:100vh}
+  .card{background:#15121f;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:40px;max-width:480px;width:90%;text-align:center}
+  .logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(140deg,#7c5cff,#a78bfa);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:22px}
+  h1{font-size:22px;font-weight:700;margin-bottom:8px}
+  p{color:#a39fb5;font-size:14px;margin-bottom:24px;line-height:1.5}
+  input{width:100%;background:#1c1828;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 16px;color:#ece9f5;font-size:14px;margin-bottom:16px;outline:none}
+  input:focus{border-color:#7c5cff}
+  .btn{width:100%;background:linear-gradient(135deg,#7c5cff,#a78bfa);border:none;border-radius:10px;padding:13px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .2s}
+  .btn:hover{opacity:.9}
+  .status{margin-top:16px;font-size:13px;padding:10px 16px;border-radius:8px;display:none}
+  .ok{background:rgba(74,222,128,.12);color:#4ade80;border:1px solid rgba(74,222,128,.25)}
+  .err{background:rgba(255,107,107,.12);color:#ff6b6b;border:1px solid rgba(255,107,107,.25)}
+  .current{margin-bottom:20px;background:#1c1828;border-radius:10px;padding:12px;font-size:12px;color:#a39fb5;word-break:break-all}
+  .current span{color:#7c5cff;font-weight:600}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">🧠</div>
+  <h1>Set Gradio Backend URL</h1>
+  <p>Paste your new Gradio link from Colab below and click Save — no console needed!</p>
+
+  <div class="current" id="currentUrl">
+    Current: <span id="currentVal">Loading…</span>
+  </div>
+
+  <input type="url" id="urlInput" placeholder="https://xxxxxxxxxxxxxxxx.gradio.live" />
+  <button class="btn" onclick="saveUrl()">✅ Save & Go to Chat</button>
+
+  <div class="status" id="status"></div>
+</div>
+
+<script>
+  // Show current saved URL
+  const current = localStorage.getItem('aethermind_backend_url') || localStorage.getItem('aether-backend-url') || 'Not set';
+  document.getElementById('currentVal').textContent = current;
+
+  // Pre-fill with URL param if provided: set-backend.html?url=https://...
+  const params = new URLSearchParams(location.search);
+  const prefill = params.get('url') || params.get('backend');
+  if (prefill) {
+    document.getElementById('urlInput').value = prefill;
+  }
+
+  function saveUrl() {
+    const val = document.getElementById('urlInput').value.trim().replace(/\/+$/, '');
+    const statusEl = document.getElementById('status');
+
+    if (!val) {
+      statusEl.className = 'status err';
+      statusEl.style.display = 'block';
+      statusEl.textContent = '⚠ Please paste a Gradio URL first';
+      return;
+    }
+
+    if (!val.startsWith('http')) {
+      statusEl.className = 'status err';
+      statusEl.style.display = 'block';
+      statusEl.textContent = '⚠ URL must start with https://';
+      return;
+    }
+
+    localStorage.setItem('aethermind_backend_url', val);
+    localStorage.setItem('aether-backend-url', val);
+
+    statusEl.className = 'status ok';
+    statusEl.style.display = 'block';
+    statusEl.textContent = '✓ Saved! Redirecting to chat…';
+
+    document.getElementById('currentVal').textContent = val;
+
+    setTimeout(() => {
+      window.location.href = 'index.html';
+    }, 1200);
+  }
+
+  // Allow Enter key
+  document.getElementById('urlInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') saveUrl();
+  });
+</script>
+</body>
+</html>

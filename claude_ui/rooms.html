@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Profile — AetherMind</title>
+<title>Study Rooms — AetherMind</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -88,7 +88,7 @@ body{display:flex;background:var(--bg);color:var(--text);font-family:'Hanken Gro
 .content::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:3px}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.container{max-width:800px;margin:0 auto;animation:fadeUp .3s ease}
+.container{max-width:900px;margin:0 auto;animation:fadeUp .3s ease}
 
 /* CARDS */
 .card{
@@ -102,8 +102,11 @@ body{display:flex;background:var(--bg);color:var(--text);font-family:'Hanken Gro
 .card-title{font-family:'Space Grotesk';font-size:16px;font-weight:700;margin-bottom:4px}
 .card-desc{font-size:13px;color:var(--text-faint);margin-bottom:18px;line-height:1.5}
 
-input[type=text],input[type=password]{width:100%;background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:10px 12px;font-family:'Hanken Grotesk';font-size:14px;outline:none}
-input[type=text]:focus,input[type=password]:focus{border-color:var(--violet)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){.grid2{grid-template-columns:1fr}}
+
+input[type=text]{width:100%;background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:10px 12px;font-family:'Hanken Grotesk';font-size:14px;outline:none}
+input[type=text]:focus{border-color:var(--violet)}
 
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
@@ -113,15 +116,17 @@ input[type=text]:focus,input[type=password]:focus{border-color:var(--violet)}
 .btn-primary{background:linear-gradient(140deg,var(--violet),var(--violet-2));color:#fff;box-shadow:0 6px 20px -6px var(--violet-glow)}
 .btn-primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 10px 24px -6px var(--violet-glow)}
 .btn-ghost{background:var(--surface-2);color:var(--text);border:1px solid var(--border)}
-.btn-danger{background:var(--danger-soft);color:var(--danger);border:1px solid color-mix(in srgb,var(--danger) 30%,transparent)}
 
-.avatar-large{
-  width:72px;height:72px;border-radius:50%;
-  background:linear-gradient(140deg,var(--violet),var(--violet-2));
-  color:#fff;display:flex;align-items:center;justify-content:center;
-  font-family:'Space Grotesk';font-size:28px;font-weight:700;flex-shrink:0;
-  box-shadow:0 0 24px var(--violet-glow);
-}
+.room-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.room-code{font-family:'JetBrains Mono',monospace;background:var(--violet-soft);color:var(--violet-2);padding:4px 10px;border-radius:8px;font-size:13px}
+.msgs{height:360px;overflow-y:auto;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:80%;padding:10px 14px;border-radius:12px;font-size:13.5px;line-height:1.5}
+.msg.user{align-self:flex-end;background:linear-gradient(140deg,var(--violet),var(--violet-2));color:#fff}
+.msg.ai{align-self:flex-start;background:var(--surface);border:1px solid var(--border);color:var(--text)}
+.msg.system{align-self:center;color:var(--text-faint);font-size:12px;background:none;font-family:'JetBrains Mono'}
+.msg .who{font-size:10.5px;font-weight:700;color:var(--violet-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;font-family:'JetBrains Mono'}
+.input-row{display:flex;gap:8px}
+.input-row input{flex:1}
 </style>
 </head>
 <body>
@@ -140,12 +145,12 @@ input[type=text]:focus,input[type=password]:focus{border-color:var(--violet)}
     <a href="practice.html" class="sb-link"><span class="ico">🧠</span> Practice</a>
     <a href="flashcards.html" class="sb-link"><span class="ico">🃏</span> Flashcards</a>
     <a href="tools.html" class="sb-link"><span class="ico">🔧</span> Tools</a>
-    <a href="rooms.html" class="sb-link"><span class="ico">👥</span> Study Rooms</a>
+    <a href="rooms.html" class="sb-link active"><span class="ico">👥</span> Study Rooms</a>
     <a href="planner.html" class="sb-link"><span class="ico">📅</span> Planner</a>
     <a href="concept-map.html" class="sb-link"><span class="ico">🕸</span> Concept Map</a>
     <div class="sb-label">Account</div>
     <a href="settings.html" class="sb-link"><span class="ico">⚙️</span> Settings</a>
-    <a href="profile.html" class="sb-link active"><span class="ico">👤</span> Profile</a>
+    <a href="profile.html" class="sb-link"><span class="ico">👤</span> Profile</a>
     <button class="sb-link" onclick="signOut&&signOut()"><span class="ico">🚪</span> Logout</button>
   </nav>
   <div class="sb-bottom">
@@ -165,8 +170,8 @@ input[type=text]:focus,input[type=password]:focus{border-color:var(--violet)}
   <!-- Topbar -->
   <div class="topbar">
     <div>
-      <div class="topbar-title">👤 User Profile</div>
-      <div class="topbar-sub">Manage your account identity and security settings</div>
+      <div class="topbar-title">👥 Collaborative Study Rooms</div>
+      <div class="topbar-sub">Real-time peer chat with AI assistant integration</div>
     </div>
     <div class="topbar-right">
       <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">☾</button>
@@ -176,34 +181,40 @@ input[type=text]:focus,input[type=password]:focus{border-color:var(--violet)}
   <div class="content">
     <div class="container">
 
-      <!-- Identity Card -->
-      <div class="card">
-        <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
-          <div class="avatar-large" id="profAvatar">?</div>
-          <div style="flex:1">
-            <div style="font-family:'Space Grotesk';font-size:22px;font-weight:700" id="profName">Loading…</div>
-            <div style="color:var(--text-faint);font-size:13px;font-family:'JetBrains Mono';margin-top:2px" id="profEmail">…</div>
+      <!-- Create / Join View -->
+      <div id="lobby-view" class="grid2">
+        <div class="card">
+          <div class="card-title">➕ Create a Room</div>
+          <div class="card-desc">Start a private peer study session. Shared with anyone who has the code.</div>
+          <input type="text" id="create-name" placeholder="Room name (e.g. Calculus Study Group)">
+          <button class="btn btn-primary" onclick="doCreateRoom()" style="margin-top:12px">Create Room</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🔑 Join a Room</div>
+          <div class="card-desc">Enter a 6-character room code to join an active session.</div>
+          <input type="text" id="join-code" placeholder="e.g. AB12CD" style="text-transform:uppercase">
+          <button class="btn btn-primary" onclick="doJoinRoom()" style="margin-top:12px">Join Room</button>
+        </div>
+      </div>
+
+      <!-- Active Room View -->
+      <div id="room-view" style="display:none">
+        <div class="card">
+          <div class="room-header">
+            <div>
+              <span id="active-room-name" style="font-family:'Space Grotesk';font-weight:700;font-size:18px"></span>
+              <span class="room-code" id="active-room-code" style="margin-left:10px"></span>
+            </div>
+            <button class="btn btn-ghost" onclick="leaveRoom()">Leave Room</button>
           </div>
-        </div>
-      </div>
 
-      <!-- Account Details -->
-      <div class="card">
-        <div class="card-title">✏ Edit Profile</div>
-        <div class="card-desc">Update your display name.</div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap">
-          <input type="text" id="nameInp" placeholder="Full Name" style="flex:1">
-          <button class="btn btn-primary" onclick="saveName()">Save Name</button>
-        </div>
-      </div>
+          <div class="msgs" id="msgList"></div>
 
-      <!-- Security -->
-      <div class="card">
-        <div class="card-title">🔒 Change Password</div>
-        <div class="card-desc">Set a new password for your account.</div>
-        <div style="display:flex;flex-direction:column;gap:12px;max-width:400px">
-          <input type="password" id="newPw" placeholder="New Password (min 6 chars)">
-          <button class="btn btn-ghost" onclick="doChangePw()" style="width:fit-content">Update Password</button>
+          <div class="input-row">
+            <input type="text" id="msgInput" placeholder="Type a message... (@ai for AI answer)" onkeydown="if(event.key==='Enter')sendRoomMsg()">
+            <button class="btn btn-primary" onclick="sendRoomMsg()">Send</button>
+          </div>
         </div>
       </div>
 
@@ -223,53 +234,116 @@ function toggleTheme(){
   try{if(localStorage.getItem('aether-theme')==='light')document.getElementById('themeBtn').textContent='🌙';}catch(e){}
 })();
 
-let currentUser = null;
+let currentUser = null, activeRoom = null, channel = null;
 
 (async function init(){
-  const session = await requireAuth();
-  if (!session) return;
-  currentUser = session.user;
+  const session = await getSession();
+  currentUser = session ? session.user : { id: 'local-user', email: 'user@local.domain' };
 
-  const email = currentUser.email || 'local@user';
-  let name = email.split('@')[0];
-
-  if(typeof loadProfile === 'function') {
+  if(typeof loadProfile === 'function' && session) {
     const p = await loadProfile(currentUser.id).catch(()=>null);
-    if(p && p.full_name) name = p.full_name;
+    if(p) {
+      const name = p.full_name || currentUser.email || 'User';
+      document.getElementById('sbName').textContent = name;
+      document.getElementById('sbEmail').textContent = currentUser.email || '';
+      document.getElementById('sbAvatar').textContent = name[0].toUpperCase();
+    }
+  } else {
+    document.getElementById('sbName').textContent = 'Aether Member';
+    document.getElementById('sbEmail').textContent = 'Local Session';
+    document.getElementById('sbAvatar').textContent = 'A';
   }
-
-  document.getElementById('profName').textContent = name;
-  document.getElementById('profEmail').textContent = email;
-  document.getElementById('profAvatar').textContent = name[0].toUpperCase();
-  document.getElementById('nameInp').value = name;
-
-  document.getElementById('sbName').textContent = name;
-  document.getElementById('sbEmail').textContent = email;
-  document.getElementById('sbAvatar').textContent = name[0].toUpperCase();
 })();
 
-async function saveName(){
-  const name = document.getElementById('nameInp').value.trim();
-  if (!name) return;
-  await updateProfile(currentUser.id, { full_name: name });
-  document.getElementById('profName').textContent = name;
-  document.getElementById('sbName').textContent = name;
-  document.getElementById('profAvatar').textContent = name[0].toUpperCase();
-  document.getElementById('sbAvatar').textContent = name[0].toUpperCase();
-  alert('Profile updated successfully ✓');
+async function doCreateRoom(){
+  if (!currentUser) currentUser = { id: 'local-user', email: 'user@local.domain' };
+  const name = document.getElementById('create-name').value.trim() || 'Study Session';
+  let room = null;
+  if (typeof createRoom === 'function' && currentUser.id !== 'local-user') {
+    room = await createRoom(currentUser.id, name).catch(()=>null);
+  }
+  if (!room) {
+    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    room = { id: 'rm-' + Date.now(), name, code, created_by: currentUser.id };
+  }
+  enterRoom(room);
 }
 
-async function doChangePw(){
-  const pw = document.getElementById('newPw').value;
-  if (!pw || pw.length < 6) { alert('Password must be at least 6 characters.'); return; }
+async function doJoinRoom(){
+  if (!currentUser) currentUser = { id: 'local-user', email: 'user@local.domain' };
+  const code = document.getElementById('join-code').value.trim().toUpperCase();
+  if (!code) return;
+  let room = null;
+  if (typeof joinRoomByCode === 'function' && currentUser.id !== 'local-user') {
+    room = await joinRoomByCode(code).catch(()=>null);
+  }
+  if (!room) {
+    room = { id: 'rm-' + Date.now(), name: 'Study Room (' + code + ')', code };
+  }
+  enterRoom(room);
+}
+
+function enterRoom(room){
+  activeRoom = room;
+  document.getElementById('lobby-view').style.display = 'none';
+  document.getElementById('room-view').style.display = 'block';
+  document.getElementById('active-room-name').textContent = room.name;
+  document.getElementById('active-room-code').textContent = 'CODE: ' + room.code;
+
+  // Supabase Realtime channel setup
   try {
-    await updatePassword(pw);
-    alert('Password updated successfully ✓');
-    document.getElementById('newPw').value = '';
-  } catch(e) {
-    alert('Failed to update password: ' + e.message);
+    const sb = typeof getSB === 'function' ? getSB() : null;
+    if (sb) {
+      channel = sb.channel(`room:${room.id}`)
+        .on('broadcast', { event: 'msg' }, payload => renderMsg(payload.payload))
+        .subscribe();
+    }
+  } catch(e) {}
+
+  renderMsg({ who: 'System', text: `Joined room ${room.name}. Type @ai to ask AetherMind!`, sys: true });
+}
+
+function leaveRoom(){
+  if (channel && typeof channel.unsubscribe === 'function') channel.unsubscribe();
+  activeRoom = null;
+  document.getElementById('lobby-view').style.display = 'grid';
+  document.getElementById('room-view').style.display = 'none';
+  document.getElementById('msgList').innerHTML = '';
+}
+
+function sendRoomMsg(){
+  if (!currentUser) currentUser = { id: 'local-user', email: 'user@local.domain' };
+  const inp = document.getElementById('msgInput');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+
+  const msg = { who: currentUser.email.split('@')[0], text, isUser: true };
+  renderMsg(msg);
+
+  if (channel && typeof channel.send === 'function') {
+    channel.send({ type: 'broadcast', event: 'msg', payload: msg });
+  }
+
+  if (text.toLowerCase().includes('@ai')) {
+    setTimeout(() => {
+      const aiMsg = { who: 'AetherMind AI', text: `Analyzing "${text.replace(/@ai/gi, '').trim()}"... (AI Study Assistant Response)`, isAi: true };
+      renderMsg(aiMsg);
+      if (channel) channel.send({ type: 'broadcast', event: 'msg', payload: aiMsg });
+    }, 1000);
   }
 }
+
+function renderMsg(m){
+  const list = document.getElementById('msgList');
+  const div = document.createElement('div');
+  div.className = `msg ${m.sys ? 'system' : m.isUser ? 'user' : 'ai'}`;
+  div.innerHTML = `${m.sys ? '' : `<div class="who">${escapeHtml(m.who)}</div>`}<div>${escapeHtml(m.text)}</div>`;
+  list.appendChild(div);
+  list.scrollTop = list.scrollHeight;
+}
+
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 </script>
 </body>
 </html>

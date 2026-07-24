@@ -199,3 +199,40 @@ def get_related(filepath: str, max_results: int = 5) -> list[dict]:
 
     related.sort(key=lambda r: r["overlap"], reverse=True)
     return related[:max_results]
+
+
+# ─── Concept graph (Phase 4.4) ────────────────────────────────────────────────
+
+def get_graph() -> dict:
+    """Build a {nodes, edges} graph for the concept-map visualizer: one node
+    per indexed OKF file, prerequisite edges + tag-overlap 'related' edges."""
+    nodes = []
+    edges = []
+    stem_to_path = {Path(p).stem: p for p in _index}
+
+    for filepath, entry in _index.items():
+        meta = entry["meta"]
+        node_id = Path(filepath).stem
+        nodes.append({
+            "id": node_id,
+            "title": meta.get("title", node_id),
+            "domain": meta.get("domain", "unknown"),
+            "difficulty": meta.get("difficulty", "beginner"),
+            "tags": meta.get("tags") or [],
+        })
+        for prereq in (meta.get("prerequisites") or []):
+            if prereq in stem_to_path:
+                edges.append({"from": prereq, "to": node_id, "type": "prerequisite"})
+
+    seen_pairs = set()
+    for filepath, entry in _index.items():
+        node_id = Path(filepath).stem
+        for rel in get_related(filepath, max_results=3):
+            other_id = Path(rel["path"]).stem
+            pair = tuple(sorted((node_id, other_id)))
+            if pair in seen_pairs:
+                continue
+            seen_pairs.add(pair)
+            edges.append({"from": node_id, "to": other_id, "type": "related"})
+
+    return {"nodes": nodes, "edges": edges}

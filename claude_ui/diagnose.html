@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>AetherMind — Gradio Endpoint Diagnostics</title>
+<style>
+  body { background:#0a0a12; color:#e0e0e0; font-family:'Segoe UI',sans-serif; padding:40px; }
+  h1 { color:#7c5cff; }
+  input { width:500px; padding:10px; border-radius:8px; border:1px solid #333; background:#14131f; color:#fff; font-size:15px; }
+  button { padding:10px 24px; border-radius:8px; border:none; background:linear-gradient(140deg,#7c5cff,#a855f7); color:#fff; font-weight:700; cursor:pointer; font-size:15px; margin-left:10px; }
+  #results { margin-top:30px; font-family:'Consolas',monospace; font-size:13px; }
+  .ok { color:#22c55e; }
+  .fail { color:#ef4444; }
+  .info { color:#60a5fa; }
+  .warn { color:#f59e0b; }
+  .row { padding:4px 0; }
+</style>
+</head>
+<body>
+<h1>🔍 Gradio Endpoint Diagnostics</h1>
+<p>Paste your Gradio URL and click Run. This probes every possible API path to find which one works.</p>
+<div>
+  <input id="url" placeholder="https://1264eedc1cbd0c308a.gradio.live">
+  <button onclick="run()">Run Diagnostics</button>
+</div>
+<div id="results"></div>
+
+<script>
+// Pre-fill from localStorage
+const saved = localStorage.getItem('aethermind_backend_url') || localStorage.getItem('aether-backend-url') || '';
+if (saved) document.getElementById('url').value = saved;
+
+async function run() {
+  const url = document.getElementById('url').value.trim().replace(/\/+$/, '');
+  const out = document.getElementById('results');
+  out.innerHTML = '';
+  const log = (cls, text) => { const d = document.createElement('div'); d.className = 'row ' + cls; d.textContent = text; out.appendChild(d); };
+
+  if (!url) { log('fail', 'Please enter a URL'); return; }
+  log('info', '═══ Testing ' + url + ' ═══');
+  log('info', '');
+
+  // Phase 1: Basic reachability
+  log('info', '── Phase 1: Reachability ──');
+  try {
+    const r = await fetch(url, { signal: AbortSignal.timeout(10000) });
+    log('ok', '✓ Root page: HTTP ' + r.status + ' (Content-Type: ' + (r.headers.get('content-type')||'?') + ')');
+  } catch (e) {
+    try {
+      await fetch(url, { mode: 'no-cors', signal: AbortSignal.timeout(10000) });
+      log('warn', '⚠ Root page: reachable (no-cors) but CORS blocks reading');
+    } catch (e2) {
+      log('fail', '✗ Root page: UNREACHABLE — ' + e2.message);
+    }
+  }
+
+  // Phase 2: Probe known Gradio JSON endpoints
+  log('info', '');
+  log('info', '── Phase 2: Gradio metadata endpoints (GET) ──');
+  const getEndpoints = ['/config', '/info', '/api/', '/api'];
+  for (const ep of getEndpoints) {
+    try {
+      const r = await fetch(url + ep, { signal: AbortSignal.timeout(5000) });
+      const ct = r.headers.get('content-type') || '';
+      if (r.ok) {
+        const text = await r.text();
+        const preview = text.slice(0, 200);
+        log('ok', '✓ GET ' + ep + ': HTTP ' + r.status + ' — ' + preview);
+      } else {
+        log('fail', '✗ GET ' + ep + ': HTTP ' + r.status);
+      }
+    } catch (e) {
+      log('fail', '✗ GET ' + ep + ': ' + e.message);
+    }
+  }
+
+  // Phase 3: Probe POST API endpoints
+  log('info', '');
+  log('info', '── Phase 3: POST API endpoints ──');
+  const hash = 'diag' + Math.random().toString(36).slice(2, 8);
+  const postEndpoints = [
+    { path: '/api/api_chat', body: { data: ['test', 512, 0.7], session_hash: hash } },
+    { path: '/api/chat',     body: { data: ['test', null], session_hash: hash } },
+    { path: '/api/chat_fn',  body: { data: ['test', null], session_hash: hash } },
+    { path: '/api/predict',  body: { data: ['test'], session_hash: hash } },
+    { path: '/queue/join',   body: { data: ['test', 512, 0.7], fn_index: 1, session_hash: hash } },
+    { path: '/queue/join',   body: { data: ['test', null], fn_index: 0, session_hash: hash + '2' } },
+    { path: '/call/api_chat',body: { data: ['test', 512, 0.7] } },
+    { path: '/call/chat',    body: { data: ['test', null] } },
+    { path: '/call/chat_fn', body: { data: ['test', null] } },
+    { path: '/call/predict', body: { data: ['test'] } },
+    { path: '/run/api_chat', body: { data: ['test', 512, 0.7] } },
+    { path: '/run/chat_fn',  body: { data: ['test', null] } },
+    { path: '/run/predict',  body: { data: ['test'] } },
+    { path: '/api/predict',  body: { data: ['test', 512, 0.7], api_name: 'api_chat' } },
+    { path: '/api/predict',  body: { data: ['test', null], fn_index: 0 } },
+  ];
+
+  for (const ep of postEndpoints) {
+    try {
+      const r = await fetch(url + ep.path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(ep.body),
+        signal: AbortSignal.timeout(8000)
+      });
+      if (r.ok) {
+        const text = await r.text();
+        const preview = text.slice(0, 300);
+        log('ok', '✓ POST ' + ep.path + ' ' + JSON.stringify(ep.body).slice(0, 60) + '… → HTTP ' + r.status + ' — ' + preview);
+      } else {
+        log('fail', '✗ POST ' + ep.path + ' → HTTP ' + r.status);
+      }
+    } catch (e) {
+      log('fail', '✗ POST ' + ep.path + ' → ' + e.message);
+    }
+  }
+
+  log('info', '');
+  log('info', '═══ Diagnostics complete ═══');
+  log('info', 'Copy everything above and paste it back so we can fix the connection.');
+}
+</script>
+</body>
+</html>

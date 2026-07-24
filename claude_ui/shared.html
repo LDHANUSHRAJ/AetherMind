@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shared session — AetherMind</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0a11; --surface:#15121f; --surface-2:#1c1828;
+  --border:rgba(255,255,255,.08); --text:#ece9f5; --text-dim:#a39fb5; --text-faint:#6f6b80;
+  --violet:#7c5cff; --violet-2:#a78bfa; --user-bg:rgba(124,92,255,.12);
+}
+@media (prefers-color-scheme: light){
+  :root{ --bg:#f4f2fb; --surface:#ffffff; --surface-2:#f6f4fc; --border:rgba(24,18,48,.10);
+         --text:#191427; --text-dim:#5b5570; --text-faint:#8b8699; --user-bg:rgba(109,75,240,.08); }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Hanken Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:720px;margin:0 auto;padding:40px 20px 80px}
+.badge{display:inline-flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--text-faint);background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:6px 12px;margin-bottom:18px}
+h1{font-family:'Space Grotesk',sans-serif;font-size:24px;margin:0 0 6px}
+.meta{font-size:12.5px;color:var(--text-faint);margin-bottom:28px}
+.msg{padding:14px 16px;border-radius:12px;margin-bottom:14px;border:1px solid var(--border);white-space:pre-wrap;line-height:1.65;font-size:14.5px}
+.msg.user{background:var(--user-bg)}
+.msg.assistant{background:var(--surface)}
+.role{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);margin-bottom:6px}
+.back{display:inline-block;margin-top:20px;color:var(--violet-2);text-decoration:none;font-weight:600;font-size:14px}
+.center{text-align:center;padding:80px 20px;color:var(--text-dim)}
+code{background:var(--surface-2);padding:1px 5px;border-radius:4px;font-size:.9em}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div class="center">Loading shared session…</div>
+</div>
+
+<script>
+(function(){
+  function esc(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function b64urlDecode(token){
+    const b64 = token.replace(/-/g,'+').replace(/_/g,'/');
+    return decodeURIComponent(escape(atob(b64)));
+  }
+  function render(html){ document.getElementById('app').innerHTML = html; }
+
+  const token = location.hash.replace(/^#/, '');
+  if (!token) {
+    render('<div class="center">No shared session in this link.<br><a class="back" href="index.html">← Go to AetherMind</a></div>');
+    return;
+  }
+
+  let payload;
+  try {
+    payload = JSON.parse(b64urlDecode(token));
+  } catch (e) {
+    render('<div class="center">This share link is invalid or corrupted.<br><a class="back" href="index.html">← Go to AetherMind</a></div>');
+    return;
+  }
+
+  if (payload.exp && Date.now() > payload.exp) {
+    render('<div class="center">This shared link has expired.<br><a class="back" href="index.html">← Go to AetherMind</a></div>');
+    return;
+  }
+
+  const messages = Array.isArray(payload.messages) ? payload.messages : [];
+  const html = [
+    '<div class="badge">🔒 Read-only shared view</div>',
+    '<h1>' + esc(payload.title || 'Shared session') + '</h1>',
+    '<div class="meta">Expires ' + new Date(payload.exp).toLocaleString() + '</div>',
+    messages.map(function(m){
+      const role = m.role === 'user' ? 'user' : 'assistant';
+      return '<div class="msg ' + role + '"><div class="role">' + (role === 'user' ? 'You' : 'AetherMind') + '</div>' +
+             esc(m.content || '') + '</div>';
+    }).join(''),
+    '<a class="back" href="index.html">← Go to AetherMind</a>',
+  ].join('');
+  render(html);
+})();
+</script>
+</body>
+</html>

@@ -131,3 +131,24 @@ create index if not exists idx_chat_sessions_user on chat_sessions(user_id, upda
 create index if not exists idx_messages_session on messages(session_id, created_at asc);
 create index if not exists idx_query_logs_user_date on query_logs(user_id, created_at desc);
 create index if not exists idx_study_topics_user on study_topics(user_id, status, order_index);
+
+-- ═══════════════════════════════════════════════
+-- Storage — profile photos
+-- ═══════════════════════════════════════════════
+insert into storage.buckets (id, name, public)
+values ('avatars', 'avatars', true)
+on conflict (id) do nothing;
+
+-- Anyone can view avatars (bucket is public); a user may only write/replace/
+-- delete objects under a path prefixed with their own uid, e.g. "<uid>/photo.jpg".
+create policy "avatars_public_read" on storage.objects
+  for select using (bucket_id = 'avatars');
+
+create policy "avatars_own_write" on storage.objects
+  for insert with check (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+
+create policy "avatars_own_update" on storage.objects
+  for update using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+
+create policy "avatars_own_delete" on storage.objects
+  for delete using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);

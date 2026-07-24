@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tools — AetherMind</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script>try{var t=localStorage.getItem('aether-theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="env-config.js"></script>
+<script src="supabase_client.js"></script>
+<style>
+:root{
+  --bg:#0b0a11;--bg-2:#100e18;--surface:#15121f;--surface-2:#1c1828;--surface-3:#221e30;
+  --border:rgba(255,255,255,.07);--border-strong:rgba(255,255,255,.13);
+  --text:#ece9f5;--text-dim:#a39fb5;--text-faint:#6f6b80;--text-muted:#4a4660;
+  --violet:#7c5cff;--violet-2:#a78bfa;--violet-soft:rgba(124,92,255,.14);--violet-glow:rgba(124,92,255,.5);
+  --aether:#5eead4;--aether-soft:rgba(94,234,212,.12);
+  --amber:#f5b942;--amber-soft:rgba(245,185,66,.12);
+  --danger:#ff6b6b;--danger-soft:rgba(255,107,107,.12);
+  --success:#34d399;--success-soft:rgba(52,211,153,.12);
+  --glow:rgba(124,92,255,.22);
+  --sidebar-w:240px;
+}
+:root[data-theme="light"]{
+  --bg:#f4f2fb;--bg-2:#ebe8f6;--surface:#fff;--surface-2:#f6f4fc;--surface-3:#edeaf8;
+  --border:rgba(24,18,48,.09);--border-strong:rgba(24,18,48,.17);
+  --text:#191427;--text-dim:#5b5570;--text-faint:#8b8699;--text-muted:#c4bdd9;
+  --violet:#6d4bf0;--violet-2:#7c5cff;--violet-soft:rgba(109,75,240,.10);--violet-glow:rgba(109,75,240,.35);
+  --aether:#0fb89a;--aether-soft:rgba(15,184,154,.12);
+  --amber:#d97706;--amber-soft:rgba(217,119,6,.10);
+  --danger:#d63a3a;--danger-soft:rgba(214,58,58,.10);
+  --success:#059669;--success-soft:rgba(5,150,105,.10);
+  --glow:rgba(109,75,240,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{display:flex;background:var(--bg);color:var(--text);font-family:'Hanken Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+::selection{background:var(--violet);color:#fff}
+
+/* ── SIDEBAR ─────────────────────────────────────────────────────────────── */
+.sidebar{
+  width:var(--sidebar-w);flex-shrink:0;
+  display:flex;flex-direction:column;height:100vh;
+  background:var(--bg-2);border-right:1px solid var(--border);
+  overflow:hidden;position:relative;z-index:10;
+}
+.sidebar::before{
+  content:'';position:absolute;top:-60px;left:-60px;width:200px;height:200px;
+  background:radial-gradient(circle,var(--violet-soft),transparent 70%);
+  filter:blur(30px);pointer-events:none;
+}
+.sb-brand{display:flex;align-items:center;gap:10px;padding:20px 16px 14px;text-decoration:none;color:var(--text)}
+.sb-logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(140deg,var(--violet),var(--violet-2));display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 18px var(--glow)}
+.sb-logo-dot{width:11px;height:11px;border-radius:50%;background:#fff}
+.sb-name{font-family:'Space Grotesk';font-weight:700;font-size:15.5px;letter-spacing:.05em}
+.sb-nav{flex:1;overflow-y:auto;padding:4px 8px 8px;display:flex;flex-direction:column;gap:2px}
+.sb-nav::-webkit-scrollbar{display:none}
+.sb-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);padding:12px 10px 6px;font-family:'JetBrains Mono'}
+.sb-link{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;text-decoration:none;color:var(--text-dim);font-size:13.5px;font-weight:500;transition:all .18s;cursor:pointer;border:none;background:none;width:100%;text-align:left}
+.sb-link:hover{background:var(--surface);color:var(--text)}
+.sb-link.active{background:var(--violet-soft);color:var(--violet-2);font-weight:600}
+.sb-link .ico{font-size:16px;flex-shrink:0;opacity:.9}
+.sb-bottom{padding:10px 8px;border-top:1px solid var(--border)}
+.sb-user{display:flex;align-items:center;gap:10px;padding:10px 10px;border-radius:10px;text-decoration:none;transition:background .18s}
+.sb-user:hover{background:var(--surface)}
+.sb-avatar{width:30px;height:30px;border-radius:8px;background:linear-gradient(140deg,var(--violet),var(--violet-2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;flex-shrink:0}
+.sb-uname{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb-uemail{font-size:11px;color:var(--text-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── MAIN ───────────────────────────────────────────────────────────────── */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;height:100vh;overflow:hidden}
+
+/* Topbar */
+.topbar{
+  display:flex;align-items:center;gap:16px;
+  padding:14px 28px;border-bottom:1px solid var(--border);
+  background:color-mix(in srgb,var(--bg) 80%,transparent);
+  backdrop-filter:blur(12px);flex-shrink:0;
+}
+.topbar-title{font-family:'Space Grotesk';font-weight:700;font-size:18px;letter-spacing:-.01em}
+.topbar-sub{font-size:12px;color:var(--text-faint);font-family:'JetBrains Mono';margin-top:2px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.icon-btn{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .18s}
+.icon-btn:hover{border-color:var(--border-strong);background:var(--surface-2)}
+
+/* Tab bar */
+.tabbar{
+  display:flex;align-items:center;gap:4px;
+  padding:12px 28px 0;border-bottom:1px solid var(--border);
+  flex-shrink:0;overflow-x:auto;
+}
+.tabbar::-webkit-scrollbar{display:none}
+.tb-tab{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 18px 12px;border-radius:0;border:none;background:none;
+  font-family:'Hanken Grotesk';font-size:13.5px;font-weight:600;color:var(--text-faint);
+  cursor:pointer;position:relative;white-space:nowrap;transition:color .18s;
+}
+.tb-tab::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;border-radius:2px 2px 0 0;background:var(--violet);transform:scaleX(0);transition:transform .22s}
+.tb-tab.active{color:var(--violet-2)}
+.tb-tab.active::after{transform:scaleX(1)}
+.tb-tab:hover:not(.active){color:var(--text-dim)}
+.tb-tab-icon{font-size:16px}
+.tb-badge{font-size:10px;font-weight:700;background:var(--violet-soft);color:var(--violet-2);padding:2px 7px;border-radius:99px;font-family:'JetBrains Mono'}
+
+/* Content area */
+.content{flex:1;overflow-y:auto;padding:28px;background:var(--bg)}
+.content::-webkit-scrollbar{width:6px}
+.content::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:3px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+.panel{display:none;animation:fadeUp .3s ease}
+.panel.active{display:block}
+
+/* ── CARDS ───────────────────────────────────────────────────────────────── */
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:18px;
+  padding:24px;margin-bottom:20px;position:relative;overflow:hidden;
+}
+.card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--border-strong),transparent);
+}
+.card-title{font-family:'Space Grotesk';font-size:16px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.card-desc{font-size:13px;color:var(--text-faint);margin-bottom:20px;line-height:1.5}
+.section-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-faint);margin-bottom:8px;display:block;font-family:'JetBrains Mono'}
+
+/* ── INPUTS ─────────────────────────────────────────────────────────────── */
+textarea,input[type=text],select{
+  width:100%;background:var(--surface-2);border:1px solid var(--border);color:var(--text);
+  border-radius:12px;padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:13px;
+  line-height:1.6;resize:vertical;outline:none;transition:border-color .2s,box-shadow .2s;
+  -webkit-font-smoothing:antialiased;
+}
+textarea:focus,input[type=text]:focus{border-color:var(--violet);box-shadow:0 0 0 3px var(--violet-soft)}
+select{resize:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236f6b80' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+
+/* ── BUTTONS ─────────────────────────────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:10px 20px;border-radius:11px;font-family:'Hanken Grotesk';font-size:13.5px;font-weight:600;
+  cursor:pointer;border:none;transition:all .18s;white-space:nowrap;
+}
+.btn-primary{background:linear-gradient(140deg,var(--violet),var(--violet-2));color:#fff;box-shadow:0 6px 20px -6px var(--violet-glow)}
+.btn-primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 10px 24px -6px var(--violet-glow)}
+.btn-ghost{background:var(--surface-2);color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover:not(:disabled){border-color:var(--border-strong);background:var(--surface-3)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none !important}
+.btn-sm{padding:7px 14px;font-size:12.5px;border-radius:9px}
+.btn-icon{width:36px;height:36px;padding:0;border-radius:9px}
+
+/* ── LATEX SECTION ───────────────────────────────────────────────────────── */
+.symbol-palette{
+  display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;
+  padding:14px;background:var(--surface-2);border-radius:12px;border:1px solid var(--border);
+}
+.sym-group{display:contents}
+.sym-btn{
+  background:var(--surface-3);border:1px solid var(--border);color:var(--text);
+  border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px;
+  font-family:'JetBrains Mono';transition:all .15s;white-space:nowrap;
+  display:flex;align-items:center;gap:4px;
+}
+.sym-btn:hover{border-color:var(--violet);background:var(--violet-soft);color:var(--violet-2)}
+.sym-btn .sym-label{font-size:10px;color:var(--text-faint)}
+.latex-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:800px){.latex-grid{grid-template-columns:1fr}}
+#latex-preview{
+  min-height:80px;padding:20px 24px;
+  background:var(--surface-2);border:1px solid var(--border);border-radius:12px;
+  overflow-x:auto;display:flex;align-items:center;justify-content:center;
+  font-size:20px;color:var(--text);
+}
+.preview-placeholder{color:var(--text-muted);font-size:14px;font-family:'JetBrains Mono'}
+.sym-cat-label{font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase;width:100%;font-family:'JetBrains Mono';margin-top:4px;margin-bottom:2px}
+
+/* ── SANDBOX SECTION ─────────────────────────────────────────────────────── */
+.sandbox-wrap{display:grid;grid-template-columns:1fr 1fr;gap:0;border-radius:16px;overflow:hidden;border:1px solid var(--border);background:var(--surface)}
+@media(max-width:900px){.sandbox-wrap{grid-template-columns:1fr}}
+.sandbox-pane{display:flex;flex-direction:column;min-height:380px}
+.sandbox-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--border);
+  gap:10px;flex-shrink:0;
+}
+.sandbox-header-left{display:flex;align-items:center;gap:10px}
+.sandbox-input-pane{border-right:1px solid var(--border)}
+#sandbox-code{
+  flex:1;border:none;border-radius:0;resize:none;
+  background:var(--bg);font-size:13px;line-height:1.7;padding:16px;
+  min-height:320px;box-shadow:none;
+}
+#sandbox-code:focus{box-shadow:none;border-color:transparent}
+.output-pane{display:flex;flex-direction:column}
+.output-pane .sandbox-header{background:color-mix(in srgb,var(--surface-2) 60%,var(--bg-2))}
+#sandbox-output{
+  flex:1;padding:16px;font-family:'JetBrains Mono',monospace;font-size:12.5px;
+  line-height:1.7;white-space:pre-wrap;overflow-y:auto;background:var(--bg);
+  color:var(--aether);min-height:320px;
+}
+#sandbox-output.error{color:var(--danger)}
+#sandbox-output.empty{color:var(--text-muted)}
+.pyodide-badge{font-family:'JetBrains Mono';font-size:10.5px;padding:3px 8px;border-radius:6px;background:var(--aether-soft);color:var(--aether);border:1px solid rgba(94,234,212,.2)}
+.lang-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-python{background:#3b82f6}
+.dot-js{background:#f5b942}
+
+/* ── TRANSLATOR SECTION ──────────────────────────────────────────────────── */
+.translator-wrap{display:grid;grid-template-columns:1fr auto 1fr;gap:0;border-radius:16px;overflow:hidden;border:1px solid var(--border);background:var(--surface);align-items:stretch}
+@media(max-width:860px){.translator-wrap{grid-template-columns:1fr;grid-template-rows:1fr auto 1fr}}
+.trans-divider{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 4px;background:var(--surface-2);border-left:1px solid var(--border);border-right:1px solid var(--border)}
+@media(max-width:860px){.trans-divider{flex-direction:row;padding:8px;border:none;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}}
+.trans-arrow-btn{
+  width:40px;height:40px;border-radius:50%;background:var(--violet-soft);
+  border:1px solid rgba(124,92,255,.25);color:var(--violet-2);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  font-size:18px;transition:all .18s;
+}
+.trans-arrow-btn:hover{background:var(--violet);color:#fff;transform:scale(1.1)}
+.trans-pane{display:flex;flex-direction:column;min-height:360px}
+.trans-header{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--border);flex-shrink:0}
+.trans-lang-select{background:transparent;border:none;font-family:'Space Grotesk';font-weight:700;font-size:14px;color:var(--text);padding:0;cursor:pointer;flex:1;outline:none}
+.trans-lang-select:focus{box-shadow:none}
+#src-code{flex:1;border:none;border-radius:0;resize:none;background:var(--bg);font-size:13px;line-height:1.7;padding:16px;min-height:300px;box-shadow:none}
+#src-code:focus{box-shadow:none;border-color:transparent}
+#translate-out{flex:1;padding:16px;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;white-space:pre-wrap;overflow-y:auto;background:var(--bg);color:var(--text);min-height:300px}
+.trans-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+
+/* ── FORMULA SEARCH ──────────────────────────────────────────────────────── */
+.formula-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-top:14px}
+.formula-card{
+  background:var(--surface-2);border:1px solid var(--border);border-radius:14px;
+  padding:16px;cursor:pointer;transition:all .18s;
+}
+.formula-card:hover{border-color:var(--violet);transform:translateY(-2px);box-shadow:0 8px 24px -8px var(--violet-glow)}
+.formula-name{font-size:13px;font-weight:600;margin-bottom:6px;color:var(--text)}
+.formula-domain{font-size:11px;color:var(--text-faint);font-family:'JetBrains Mono';margin-bottom:10px}
+.formula-math{font-size:16px;overflow-x:auto}
+
+/* ── TOASTS ─────────────────────────────────────────────────────────────── */
+#toast{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(8px);
+  background:var(--surface);border:1px solid var(--border-strong);
+  padding:10px 20px;border-radius:12px;font-size:13px;font-weight:500;
+  box-shadow:0 8px 32px -8px rgba(0,0,0,.5);
+  opacity:0;pointer-events:none;transition:all .25s;z-index:999;white-space:nowrap;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+.spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+.spinner-dark{border-color:rgba(124,92,255,.3);border-top-color:var(--violet)}
+</style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sidebar">
+  <a href="index.html" class="sb-brand">
+    <div class="sb-logo"><div class="sb-logo-dot"></div></div>
+    <span class="sb-name">AETHERMIND</span>
+  </a>
+  <nav class="sb-nav">
+    <div class="sb-label">Workspace</div>
+    <a href="index.html" class="sb-link"><span class="ico">💬</span> Chat</a>
+    <a href="dashboard.html" class="sb-link"><span class="ico">📊</span> Dashboard</a>
+    <div class="sb-label">Learning</div>
+    <a href="practice.html" class="sb-link"><span class="ico">🧠</span> Practice</a>
+    <a href="flashcards.html" class="sb-link"><span class="ico">🃏</span> Flashcards</a>
+    <a href="tools.html" class="sb-link active"><span class="ico">🔧</span> Tools</a>
+    <a href="rooms.html" class="sb-link"><span class="ico">👥</span> Study Rooms</a>
+    <a href="planner.html" class="sb-link"><span class="ico">📅</span> Planner</a>
+    <a href="concept-map.html" class="sb-link"><span class="ico">🕸</span> Concept Map</a>
+    <div class="sb-label">Account</div>
+    <a href="settings.html" class="sb-link"><span class="ico">⚙️</span> Settings</a>
+    <a href="profile.html" class="sb-link"><span class="ico">👤</span> Profile</a>
+    <button class="sb-link" onclick="signOut&&signOut()"><span class="ico">🚪</span> Logout</button>
+  </nav>
+  <div class="sb-bottom">
+    <a href="profile.html" class="sb-user">
+      <div class="sb-avatar" id="sbAvatar">?</div>
+      <div>
+        <div class="sb-uname" id="sbName">Loading…</div>
+        <div class="sb-uemail" id="sbEmail">…</div>
+      </div>
+    </a>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">🔧 Student Tools</div>
+      <div class="topbar-sub">LaTeX builder · Code sandbox · Translator · Formula library</div>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">☾</button>
+    </div>
+  </div>
+
+  <!-- Tab bar -->
+  <div class="tabbar" id="tabbar">
+    <button class="tb-tab active" data-panel="latex" onclick="switchTab('latex')">
+      <span class="tb-tab-icon">∑</span> LaTeX Builder
+    </button>
+    <button class="tb-tab" data-panel="sandbox" onclick="switchTab('sandbox')">
+      <span class="tb-tab-icon">▶</span> Code Sandbox
+      <span class="tb-badge">in-browser</span>
+    </button>
+    <button class="tb-tab" data-panel="translate" onclick="switchTab('translate')">
+      <span class="tb-tab-icon">⇄</span> Code Translator
+    </button>
+    <button class="tb-tab" data-panel="formulas" onclick="switchTab('formulas')">
+      <span class="tb-tab-icon">📐</span> Formula Library
+    </button>
+  </div>
+
+  <div class="content">
+
+    <!-- ══════════════════════════════════════════════
+         PANEL 1: LaTeX Builder
+    ══════════════════════════════════════════════ -->
+    <div class="panel active" id="panel-latex">
+
+      <!-- Symbol Palette -->
+      <div class="card">
+        <div class="card-title">⌨ Symbol Palette</div>
+        <div class="card-desc">Click any symbol to insert it at your cursor position.</div>
+        <div class="symbol-palette" id="symbol-palette"></div>
+      </div>
+
+      <div class="latex-grid">
+        <!-- Editor -->
+        <div class="card" style="margin-bottom:0">
+          <div class="card-title">✏ LaTeX Source</div>
+          <div class="card-desc">Type your expression below. Supports full KaTeX syntax.</div>
+          <textarea id="latex-input" rows="6" placeholder="e.g. \int_{0}^{1} x^2 \, dx" spellcheck="false">\int_{0}^{\infty} e^{-x^2} \, dx = \frac{\sqrt{\pi}}{2}</textarea>
+          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" onclick="copyLatex()">⎘ Copy LaTeX</button>
+            <button class="btn btn-ghost btn-sm" onclick="copySvg()">⬡ Copy SVG</button>
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('latex-input').value='';renderLatex()">✕ Clear</button>
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="card" style="margin-bottom:0">
+          <div class="card-title">👁 Live Preview</div>
+          <div class="card-desc">Rendered output updates as you type.</div>
+          <div id="latex-preview">
+            <div class="preview-placeholder">Preview will appear here…</div>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="setDisplayMode(true)" id="btn-display">Display mode</button>
+            <button class="btn btn-ghost btn-sm" onclick="setDisplayMode(false)" id="btn-inline">Inline mode</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PANEL 2: Code Sandbox
+    ══════════════════════════════════════════════ -->
+    <div class="panel" id="panel-sandbox">
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="sandbox-wrap">
+
+          <!-- Input pane -->
+          <div class="sandbox-pane sandbox-input-pane">
+            <div class="sandbox-header">
+              <div class="sandbox-header-left">
+                <div class="lang-dot dot-python" id="langDot"></div>
+                <select id="sandbox-lang" onchange="onLangChange()" style="background:transparent;border:none;font-family:'Space Grotesk';font-weight:700;font-size:14px;color:var(--text);padding:0;cursor:pointer;width:auto;outline:none">
+                  <option value="python">Python</option>
+                  <option value="javascript">JavaScript</option>
+                  <option value="java">Java</option>
+                  <option value="cpp">C++</option>
+                </select>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span class="pyodide-badge" id="pyodide-status">Click Run to load</span>
+                <button class="btn btn-primary btn-sm" id="run-btn" onclick="runSandbox()">▶ Run</button>
+              </div>
+            </div>
+            <textarea id="sandbox-code" spellcheck="false">print("Hello from AetherMind! 🔮")
+
+# Fibonacci sequence
+def fib(n):
+    a, b = 0, 1
+    for _ in range(n):
+        print(a, end=' ')
+        a, b = b, a + b
+
+fib(10)
+print()
+print("Sum 1..100 =", sum(range(101)))</textarea>
+          </div>
+
+          <!-- Output pane -->
+          <div class="sandbox-pane output-pane">
+            <div class="sandbox-header">
+              <div class="sandbox-header-left">
+                <span style="font-family:'JetBrains Mono';font-size:13px;font-weight:600;color:var(--text-dim)">Output</span>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-ghost btn-sm" onclick="clearOutput()">✕ Clear</button>
+                <button class="btn btn-ghost btn-sm" onclick="copyOutput()">⎘ Copy</button>
+              </div>
+            </div>
+            <div id="sandbox-output" class="empty">// Run your code to see output here…</div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="padding:16px 20px;display:flex;align-items:center;gap:12px">
+        <span style="font-size:20px">🔒</span>
+        <span style="font-size:13px;color:var(--text-dim)">Runs <strong style="color:var(--text)">100% in your browser</strong> using Pyodide (Python) or sandboxed eval (JS). No code leaves your machine. 10-second execution timeout.</span>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PANEL 3: Code Translator
+    ══════════════════════════════════════════════ -->
+    <div class="panel" id="panel-translate">
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="translator-wrap">
+
+          <!-- Source -->
+          <div class="trans-pane">
+            <div class="trans-header">
+              <select class="trans-lang-select" id="src-lang">
+                <option>Python</option><option>JavaScript</option><option>TypeScript</option>
+                <option>Java</option><option>C++</option><option>Go</option><option>Rust</option>
+              </select>
+              <span style="font-size:11px;color:var(--text-faint);font-family:'JetBrains Mono'">source</span>
+            </div>
+            <textarea id="src-code" spellcheck="false">def binary_search(arr, target):
+    low, high = 0, len(arr) - 1
+    while low <= high:
+        mid = (low + high) // 2
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            low = mid + 1
+        else:
+            high = mid - 1
+    return -1
+
+# Test
+arr = [1, 3, 5, 7, 9, 11, 13]
+print(binary_search(arr, 7))  # → 3</textarea>
+          </div>
+
+          <!-- Swap divider -->
+          <div class="trans-divider">
+            <button class="trans-arrow-btn" onclick="swapLangs()" title="Swap languages">⇄</button>
+          </div>
+
+          <!-- Target -->
+          <div class="trans-pane">
+            <div class="trans-header">
+              <select class="trans-lang-select" id="tgt-lang">
+                <option>JavaScript</option><option>TypeScript</option><option>Python</option>
+                <option>Java</option><option>C++</option><option>Go</option><option>Rust</option>
+              </select>
+              <span style="font-size:11px;color:var(--text-faint);font-family:'JetBrains Mono'">target</span>
+            </div>
+            <div id="translate-out" style="color:var(--text-muted);font-size:13px;font-family:'JetBrains Mono'">// Translation will appear here…</div>
+            <div class="trans-footer">
+              <button class="btn btn-primary" id="translate-btn" onclick="translateCode()" style="flex:1">
+                <span id="translate-btn-text">⇄ Translate with AI</span>
+              </button>
+              <button class="btn btn-ghost btn-icon" onclick="copyTranslation()" title="Copy output">⎘</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="padding:14px 18px;background:var(--amber-soft);border-color:rgba(245,185,66,.2)">
+        <span style="font-size:13px;color:var(--amber)">⚠ Requires the AetherMind backend to be running. Paste your Gradio URL in <a href="settings.html" style="color:var(--amber);font-weight:700">Settings → Backend URL</a>.</span>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         PANEL 4: Formula Library
+    ══════════════════════════════════════════════ -->
+    <div class="panel" id="panel-formulas">
+      <div class="card">
+        <div class="card-title">📐 Formula Library</div>
+        <div class="card-desc">Click any formula to copy its LaTeX. Search across all domains.</div>
+        <input type="text" id="formula-search" placeholder="Search formulas — e.g. 'derivative', 'probability'…" oninput="filterFormulas()" style="margin-bottom:0">
+      </div>
+      <div class="formula-grid" id="formula-grid"></div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<div id="toast"></div>
+
+<script>
+// ── Utilities ─────────────────────────────────────────────────────────────────
+let _toastTimer;
+function toast(msg,type=''){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.style.color=type==='error'?'var(--danger)':type==='success'?'var(--success)':'var(--text)';
+  el.style.borderColor=type==='error'?'rgba(255,107,107,.3)':type==='success'?'rgba(52,211,153,.3)':'var(--border-strong)';
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>el.classList.remove('show'),2200);
+}
+function backendUrl(){ return (localStorage.getItem('aether-backend-url')||'http://localhost:8000').replace(/\/+$/,''); }
+
+function toggleTheme(){
+  const isDark=document.documentElement.dataset.theme!=='light';
+  const next=isDark?'light':'dark';
+  document.documentElement.dataset.theme=next;
+  document.getElementById('themeBtn').textContent=isDark?'🌙':'☾';
+  try{localStorage.setItem('aether-theme',next);}catch(e){}
+}
+(function(){
+  try{if(localStorage.getItem('aether-theme')==='light')document.getElementById('themeBtn').textContent='🌙';}catch(e){}
+})();
+
+// ── Sidebar user ──────────────────────────────────────────────────────────────
+(async function(){
+  const session = typeof getSession === 'function' ? await getSession() : null;
+  if(session && typeof loadProfile==='function'){
+    const p=await loadProfile(session.user.id).catch(()=>null);
+    if(p){
+      const name=p.full_name||session.user.email||'User';
+      document.getElementById('sbName').textContent=name;
+      document.getElementById('sbEmail').textContent=session.user.email||'';
+      document.getElementById('sbAvatar').textContent=name[0].toUpperCase();
+      return;
+    }
+  }
+  document.getElementById('sbName').textContent='Aether Member';
+  document.getElementById('sbEmail').textContent='Local Session';
+  document.getElementById('sbAvatar').textContent='A';
+})();
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+function switchTab(id){
+  document.querySelectorAll('.tb-tab').forEach(t=>t.classList.toggle('active',t.dataset.panel===id));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+id));
+  if(id==='formulas') buildFormulaGrid();
+  if(id==='latex') setTimeout(renderLatex,50);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SECTION 1: LaTeX Builder
+// ══════════════════════════════════════════════════════════════════════════════
+
+const SYMBOL_GROUPS = [
+  { label:'Calculus', syms:[
+    ['∫','\\int_{ }^{ }','integral'],['∬','\\iint','double int'],['∮','\\oint','contour'],
+    ['∑','\\sum_{ }^{ }','sum'],['∏','\\prod_{ }^{ }','product'],['√','\\sqrt{ }','sqrt'],
+    ['∂','\\partial','partial'],['∇','\\nabla','nabla'],['lim','\\lim_{ \\to }','limit'],
+  ]},
+  { label:'Fractions & Powers', syms:[
+    ['a/b','\\frac{ }{ }','frac'],['aⁿ','{ }^{ }','power'],['₍ₐ₎','{ }_{ }','subscript'],
+    ['\\binom','\\binom{ }{ }','binomial'],
+  ]},
+  { label:'Greek', syms:[
+    ['α','\\alpha'],['β','\\beta'],['γ','\\gamma'],['δ','\\delta'],['ε','\\epsilon'],
+    ['θ','\\theta'],['λ','\\lambda'],['μ','\\mu'],['π','\\pi'],['σ','\\sigma'],
+    ['τ','\\tau'],['φ','\\phi'],['ω','\\omega'],['Ω','\\Omega'],['Δ','\\Delta'],['Σ','\\Sigma'],
+  ]},
+  { label:'Relations & Logic', syms:[
+    ['≤','\\le'],['≥','\\ge'],['≠','\\neq'],['≈','\\approx'],['≡','\\equiv'],
+    ['∈','\\in'],['∉','\\notin'],['⊂','\\subset'],['∪','\\cup'],['∩','\\cap'],
+    ['∧','\\land'],['∨','\\lor'],['¬','\\lnot'],['∀','\\forall'],['∃','\\exists'],
+    ['→','\\to'],['⟹','\\implies'],['⟺','\\iff'],
+  ]},
+  { label:'Misc', syms:[
+    ['∞','\\infty'],['±','\\pm'],['·','\\cdot'],['×','\\times'],['÷','\\div'],
+    ['|a|','|{ }|','abs'],['‖a‖','\\| { } \\|','norm'],
+    ['matrix','\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}','matrix'],
+    ['cases','\\begin{cases} f & \\text{if } \\\\ g & \\text{otherwise} \\end{cases}','cases'],
+  ]},
+];
+
+let displayMode = true;
+
+(function buildPalette(){
+  const container = document.getElementById('symbol-palette');
+  SYMBOL_GROUPS.forEach(group => {
+    const lbl = document.createElement('div');
+    lbl.className='sym-cat-label'; lbl.textContent=group.label;
+    container.appendChild(lbl);
+    group.syms.forEach(([display, snippet, title]) => {
+      const b = document.createElement('button');
+      b.className='sym-btn';
+      b.title=title||display;
+      b.innerHTML=`<span>${display}</span>`;
+      b.onclick=()=>insertSymbol(snippet);
+      container.appendChild(b);
+    });
+  });
+})();
+
+function insertSymbol(snippet){
+  const ta=document.getElementById('latex-input');
+  const s=ta.selectionStart??ta.value.length;
+  const e=ta.selectionEnd??s;
+  ta.value=ta.value.slice(0,s)+snippet+ta.value.slice(e);
+  ta.focus();
+  const cursor=s+snippet.indexOf('{ }');
+  if(cursor>s){ ta.selectionStart=cursor+1; ta.selectionEnd=cursor+1; }
+  renderLatex();
+}
+
+function setDisplayMode(dm){
+  displayMode=dm;
+  document.getElementById('btn-display').className=`btn btn-sm ${dm?'btn-primary':'btn-ghost'}`;
+  document.getElementById('btn-inline').className=`btn btn-sm ${dm?'btn-ghost':'btn-primary'}`;
+  renderLatex();
+}
+
+function renderLatex(){
+  let src=document.getElementById('latex-input').value.trim();
+  const el=document.getElementById('latex-preview');
+  if(!src){ el.innerHTML='<div class="preview-placeholder">Preview will appear here…</div>'; return; }
+
+  // Detect if user pasted a full LaTeX document wrapper
+  const isFullDocument = src.includes('\\documentclass') || src.includes('\\begin{document}');
+
+  try {
+    if (isFullDocument) {
+      // Strip document preamble & wrappers to extract body content
+      let body = src;
+      if (body.includes('\\begin{document}')) {
+        body = body.split('\\begin{document}')[1].split('\\end{document}')[0];
+      }
+      
+      // Clean up common document commands that aren't KaTeX math
+      let formatted = body
+        .replace(/\\textbf\s*\{([^}]+)\}/g, '<strong>$1</strong>')
+        .replace(/\\Large\b/g, '')
+        .replace(/\\large\b/g, '')
+        .replace(/\\vspace\s*\{[^}]+\}/g, '<br>')
+        .replace(/\\hspace\s*\{[^}]+\}/g, ' ')
+        .replace(/\\hfill/g, '&nbsp;&nbsp;&nbsp;&nbsp;')
+        .replace(/\\noindent/g, '')
+        .replace(/\\underline\s*\{([^}]+)\}/g, '<u>$1</u>')
+        .replace(/\\begin\s*\{center\}/g, '<div style="text-align:center">')
+        .replace(/\\end\s*\{center\}/g, '</div>')
+        .replace(/\\begin\s*\{questions\}/g, '<ol style="padding-left:20px">')
+        .replace(/\\end\s*\{questions\}/g, '</ol>')
+        .replace(/\\question(?:\[(\d+)\])?/g, (m, pts) => `<li style="margin-bottom:12px"><strong>Question ${pts ? '[' + pts + ' pts]' : ''}:</strong> `)
+        .replace(/\\begin\s*\{parts\}/g, '<ol type="a" style="padding-left:20px">')
+        .replace(/\\end\s*\{parts\}/g, '</ol>')
+        .replace(/\\part(?:\[(\d+)\])?/g, (m, pts) => `<li style="margin-top:4px"><strong>(${pts ? pts + ' pts' : ''})</strong> `)
+        .replace(/\\begin\s*\{solution\}/g, '<div style="background:var(--surface-3);border-left:3px solid var(--violet);padding:8px 12px;margin:8px 0;border-radius:6px;font-size:13.5px"><strong>Solution:</strong> ')
+        .replace(/\\end\s*\{solution\}/g, '</div>')
+        .replace(/\\\\/g, '<br>');
+
+      // Parse inline math $...$ and render with KaTeX
+      formatted = formatted.replace(/\$([^$]+)\$/g, (match, math) => {
+        try {
+          return katex.renderToString(math.trim(), { displayMode: false, throwOnError: false });
+        } catch(e) { return match; }
+      });
+
+      // Parse display math $$...$$ or \[...\]
+      formatted = formatted.replace(/\$\$([^$]+)\$\$/g, (match, math) => {
+        try {
+          return katex.renderToString(math.trim(), { displayMode: true, throwOnError: false });
+        } catch(e) { return match; }
+      });
+
+      el.innerHTML = `
+        <div style="width:100%;font-family:'Hanken Grotesk';font-size:14px;line-height:1.6;text-align:left">
+          <div style="font-size:11px;font-family:'JetBrains Mono';color:var(--aether);background:var(--aether-soft);padding:4px 10px;border-radius:6px;margin-bottom:14px;display:inline-block">
+            ℹ Full LaTeX Document Detected — Auto-formatted & Math Rendered
+          </div>
+          ${formatted}
+        </div>
+      `;
+      return;
+    }
+
+    if(window.katex){
+      el.innerHTML=katex.renderToString(src,{displayMode,throwOnError:false,output:'html'});
+    } else {
+      el.textContent=src;
+    }
+  } catch(e){ el.innerHTML=`<span style="color:var(--danger);font-size:13px">⚠ ${e.message}</span>`; }
+}
+
+document.getElementById('latex-input').addEventListener('input',renderLatex);
+renderLatex();
+
+function copyLatex(){
+  navigator.clipboard.writeText(document.getElementById('latex-input').value)
+    .then(()=>toast('LaTeX copied to clipboard ✓','success'))
+    .catch(()=>toast('Copy failed','error'));
+}
+
+function copySvg(){
+  const el=document.getElementById('latex-preview').querySelector('.katex');
+  if(!el){ toast('Nothing to copy','error'); return; }
+  const svg=el.querySelector('svg');
+  if(svg){ navigator.clipboard.writeText(svg.outerHTML).then(()=>toast('SVG copied ✓','success')); }
+  else toast('No SVG available (try display mode)','error');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SECTION 2: Code Sandbox
+// ══════════════════════════════════════════════════════════════════════════════
+
+let _pyodide=null;
+let _pyodideLoading=false;
+
+function onLangChange(){
+  const lang=document.getElementById('sandbox-lang').value;
+  const dot=document.getElementById('langDot');
+  dot.className='lang-dot '+(lang==='python'?'dot-python':'dot-js');
+  document.getElementById('pyodide-status').textContent=lang==='python'?'Click Run to load':'Ready';
+}
+
+async function ensurePyodide(){
+  if(_pyodide) return _pyodide;
+  if(_pyodideLoading) { await new Promise(r=>setTimeout(r,200)); return ensurePyodide(); }
+  _pyodideLoading=true;
+  const badge=document.getElementById('pyodide-status');
+  badge.textContent='Loading Python…';
+  badge.style.background='var(--amber-soft)';
+  badge.style.color='var(--amber)';
+  badge.style.borderColor='rgba(245,185,66,.25)';
+
+  const s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js';
+  document.head.appendChild(s);
+  await new Promise((ok,fail)=>{ s.onload=ok; s.onerror=fail; });
+  _pyodide=await loadPyodide();
+  badge.textContent='Python 3.11 ready';
+  badge.style.background='var(--success-soft)';
+  badge.style.color='var(--success)';
+  badge.style.borderColor='rgba(52,211,153,.25)';
+  _pyodideLoading=false;
+  return _pyodide;
+}
+
+function withTimeout(p,ms){
+  return Promise.race([p,new Promise((_,r)=>setTimeout(()=>r(new Error(`Timed out after ${ms/1000}s`)),ms))]);
+}
+
+async function runSandbox(){
+  let lang=document.getElementById('sandbox-lang').value;
+  let code=document.getElementById('sandbox-code').value;
+  const out=document.getElementById('sandbox-output');
+  const btn=document.getElementById('run-btn');
+
+  // Auto-detect language if user pasted Java / C++ / Python while another language was selected
+  if(code.includes('public class') || code.includes('System.out.print') || code.includes('public static void main')) {
+    lang = 'java';
+    document.getElementById('sandbox-lang').value = 'java';
+    document.getElementById('langDot').className = 'lang-dot dot-js';
+  } else if(code.includes('#include') || code.includes('std::cout')) {
+    lang = 'cpp';
+    document.getElementById('sandbox-lang').value = 'cpp';
+    document.getElementById('langDot').className = 'lang-dot dot-js';
+  }
+
+  out.className='';
+  out.innerHTML='<span style="color:var(--text-faint);font-family:\'JetBrains Mono\'">Running…</span>';
+  btn.disabled=true;
+  btn.innerHTML='<div class="spinner"></div> Running';
+
+  try{
+    if(lang==='python'){
+      const py=await ensurePyodide();
+      await withTimeout((async()=>{
+        py.runPython('import sys,io\nsys.stdout=io.StringIO()\nsys.stderr=sys.stdout');
+        py.runPython(code);
+        const result=py.runPython('sys.stdout.getvalue()');
+        out.textContent=result||'(no output)';
+      })(),12000);
+    } else if(lang==='java') {
+      const logs=[];
+      const fakeConsole={log:(...a)=>logs.push(a.join(' '))};
+      await withTimeout((async()=>{
+        let cleanCode = code.replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+        let jsCode = '';
+        
+        // Find main method and extract its body using brace matching
+        const mainIndex = cleanCode.indexOf('main');
+        if (mainIndex !== -1) {
+          const startBrace = cleanCode.indexOf('{', mainIndex);
+          if (startBrace !== -1) {
+            let count = 1;
+            let endBrace = startBrace + 1;
+            while (count > 0 && endBrace < cleanCode.length) {
+              if (cleanCode[endBrace] === '{') count++;
+              else if (cleanCode[endBrace] === '}') count--;
+              endBrace++;
+            }
+            if (count === 0) {
+              jsCode = cleanCode.slice(startBrace + 1, endBrace - 1);
+            }
+          }
+        }
+        
+        // Fall back to stripping class wrappers
+        if (!jsCode.trim()) {
+          jsCode = cleanCode
+            .replace(/public\s+class\s+\w+\s*\{/g, '')
+            .replace(/class\s+\w+\s*\{/g, '')
+            .replace(/public\s+static\s+void\s+main\s*\([^)]*\)\s*\{/g, '')
+            .replace(/String\[\]\s+\w+/g, '');
+          while(jsCode.endsWith('}')) {
+            jsCode = jsCode.slice(0, -1).trim();
+          }
+        }
+
+        // Transpile System.out.println / print
+        jsCode = jsCode.replace(/System\.out\.println\s*\((.*?)\);/g, 'console.log($1);');
+        jsCode = jsCode.replace(/System\.out\.print\s*\((.*?)\);/g, 'console.log($1);');
+        
+        // Transpile Class/Object variable declarations (e.g. Scanner scanner = ...) to let
+        jsCode = jsCode.replace(/\b([A-Z]\w*)(?:<[^>]+>)?\s+([a-zA-Z_]\w*)\s*=/g, 'let $2 =');
+        // Transpile primitive type declarations (int x = ..., double y = ...) to let
+        jsCode = jsCode.replace(/\b(int|double|float|long|boolean|String|char|var)\s+/g, 'let ');
+
+        // Inject mock Scanner & System objects for in-browser execution
+        const mockEnv = `
+          const System = { in: {}, out: { print: (...a)=>console.log(a.join(' ')), println: (...a)=>console.log(a.join(' ')) } };
+          class Scanner {
+            constructor(src) {}
+            nextLine() { return "Aether User"; }
+            next() { return "Aether"; }
+            nextInt() { return 42; }
+            nextDouble() { return 3.14; }
+            nextBoolean() { return true; }
+            hasNext() { return false; }
+          }
+        `;
+        
+        const fn = new Function('console', mockEnv + '\n' + jsCode);
+        fn(fakeConsole);
+      })(), 8000);
+      out.textContent = logs.join('\n') || '(no output)';
+    } else if(lang==='cpp') {
+      const logs=[];
+      const fakeConsole={log:(...a)=>logs.push(a.join(' '))};
+      await withTimeout((async()=>{
+        let cleanCode = code.replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+        let jsCode = '';
+        
+        // Find main function and extract its body using brace matching
+        const mainIndex = cleanCode.indexOf('main');
+        if (mainIndex !== -1) {
+          const startBrace = cleanCode.indexOf('{', mainIndex);
+          if (startBrace !== -1) {
+            let count = 1;
+            let endBrace = startBrace + 1;
+            while (count > 0 && endBrace < cleanCode.length) {
+              if (cleanCode[endBrace] === '{') count++;
+              else if (cleanCode[endBrace] === '}') count--;
+              endBrace++;
+            }
+            if (count === 0) {
+              jsCode = cleanCode.slice(startBrace + 1, endBrace - 1);
+            }
+          }
+        }
+        
+        // Fall back if main block extractor failed
+        if (!jsCode.trim()) {
+          jsCode = cleanCode
+            .replace(/#include\s*<.*?>/g, '')
+            .replace(/using\s+namespace\s+std;/g, '')
+            .replace(/int\s+main\s*\(\)\s*\{/g, '');
+          while(jsCode.endsWith('}')) {
+            jsCode = jsCode.slice(0, -1).trim();
+          }
+        }
+
+        // Transpile std::cout & printf
+        jsCode = jsCode.replace(/std::cout\s*<<\s*(.*?)(<<\s*std::endl)?;?/g, (m, p1) => {
+          const parts = p1.split('<<').map(x => x.replace(/std::endl/g, '').trim()).filter(Boolean);
+          return `console.log(${parts.join(' + ')});`;
+        });
+        jsCode = jsCode.replace(/printf\s*\((.*?)\);/g, 'console.log($1);');
+        
+        // Transpile type declarations to let
+        jsCode = jsCode.replace(/\b([A-Z]\w*)(?:<[^>]+>)?\s+([a-zA-Z_]\w*)\s*=/g, 'let $2 =');
+        jsCode = jsCode.replace(/\b(int|double|float|long|bool|char|auto)\s+/g, 'let ');
+        
+        const fn = new Function('console', jsCode);
+        fn(fakeConsole);
+      })(), 8000);
+      out.textContent = logs.join('\n') || '(no output)';
+    } else {
+      const logs=[];
+      const fakeConsole={
+        log:(...a)=>logs.push(a.map(x=>typeof x==='object'?JSON.stringify(x,null,2):String(x)).join(' ')),
+        error:(...a)=>logs.push('❌ '+a.map(String).join(' ')),
+        warn:(...a)=>logs.push('⚠ '+a.map(String).join(' ')),
+        info:(...a)=>logs.push('ℹ '+a.map(String).join(' ')),
+      };
+      await withTimeout((async()=>{
+        const fn=new Function('console',code);
+        fn(fakeConsole);
+      })(),10000);
+      out.textContent=logs.join('\n')||'(no output)';
+    }
+  }catch(e){
+    out.className='error';
+    out.textContent='⚠ Error: '+(e.message||e);
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML='▶ Run';
+  }
+}
+
+function clearOutput(){
+  const out=document.getElementById('sandbox-output');
+  out.className='empty';
+  out.textContent='// Run your code to see output here…';
+}
+
+function copyOutput(){
+  const txt=document.getElementById('sandbox-output').textContent;
+  navigator.clipboard.writeText(txt).then(()=>toast('Output copied ✓','success'));
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SECTION 3: Code Translator
+// ══════════════════════════════════════════════════════════════════════════════
+
+function swapLangs(){
+  const sl=document.getElementById('src-lang');
+  const tl=document.getElementById('tgt-lang');
+  const srcVal=sl.value;
+  const tgtVal=tl.value;
+  for(let o of sl.options){ if(o.textContent===tgtVal){ sl.value=o.value||tgtVal; break; } }
+  for(let o of tl.options){ if(o.textContent===srcVal){ tl.value=o.value||srcVal; break; } }
+}
+
+function copyTranslation(){
+  const txt=document.getElementById('translate-out').textContent;
+  if(!txt||txt.startsWith('//')) { toast('Nothing to copy yet','error'); return; }
+  navigator.clipboard.writeText(txt).then(()=>toast('Copied ✓','success'));
+}
+
+let _toolsGradioConfig = null;
+async function _discoverToolsConfig(url) {
+  if (_toolsGradioConfig) return _toolsGradioConfig;
+  try {
+    const r = await fetch(url + '/config', { signal: AbortSignal.timeout(5000) });
+    if (r.ok) {
+      const cfg = await r.json();
+      _toolsGradioConfig = { apiPrefix: cfg.api_prefix || '' };
+      return _toolsGradioConfig;
+    }
+  } catch(e) {}
+  return { apiPrefix: '' };
+}
+
+async function _callGradioApi(url, message){
+  const cfg = await _discoverToolsConfig(url);
+  const pfx = cfg.apiPrefix || '';
+
+  // Strategy A: POST <pfx>/api/api_chat
+  try {
+    const r = await fetch(url + pfx + '/api/api_chat', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: [message, 512, 0.7] }),
+      signal: AbortSignal.timeout(90000)
+    });
+    if (r.ok) {
+      const json = await r.json();
+      const raw = json.data?.[0];
+      if (raw) return typeof raw === 'string' ? raw : (raw?.response || JSON.stringify(raw));
+    }
+  } catch(e) {}
+
+  // Strategy B: POST <pfx>/call/api_chat
+  try{
+    const r1=await fetch(url + pfx + '/call/api_chat',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({data:[message,512,0.7]}),
+      signal:AbortSignal.timeout(15000)
+    });
+    if(r1.ok){
+      const body=await r1.json();
+      if(body && body.event_id) {
+        return await new Promise((resolve,reject)=>{
+          const es=new EventSource(url + pfx + '/call/api_chat/'+body.event_id);
+          const timer=setTimeout(()=>{ es.close(); reject(new Error('Gradio timeout')); },60000);
+          es.addEventListener('complete',(e)=>{
+            clearTimeout(timer); es.close();
+            try{ const data=JSON.parse(e.data); resolve(Array.isArray(data)?data[0]:data); }catch(err){ reject(err); }
+          });
+          es.onerror=()=> { clearTimeout(timer); es.close(); reject(new Error('Gradio stream dropped')); };
+        });
+      }
+    }
+  }catch(_){}
+
+  throw new Error('Could not reach Gradio translation endpoint');
+}
+
+
+
+async function translateCode(){
+  const btn=document.getElementById('translate-btn');
+  const btnTxt=document.getElementById('translate-btn-text');
+  const outEl=document.getElementById('translate-out');
+  const code=document.getElementById('src-code').value.trim();
+  const srcLang=document.getElementById('src-lang').value;
+  const tgtLang=document.getElementById('tgt-lang').value;
+
+  if(!code){ toast('Paste some source code first','error'); return; }
+  if(srcLang===tgtLang){ toast('Source and target language are the same','error'); return; }
+
+  btn.disabled=true;
+  btnTxt.innerHTML='<div class="spinner"></div> Translating…';
+  outEl.style.color='var(--text-muted)';
+  outEl.textContent='// Translating code with AI…';
+
+  try{
+    const url=backendUrl();
+    const prompt = `Translate the following ${srcLang} code to ${tgtLang}:\n\n\`\`\`${srcLang}\n${code}\n\`\`\`\n\nProvide clean ${tgtLang} code:`;
+    
+    let result = '';
+    if(url.includes('gradio.live') || url.includes('hf.space') || url.includes('gradio.app')) {
+      result = await _callGradioApi(url, prompt);
+    } else {
+      const resp=await fetch(url+'/translate',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({code,source_lang:srcLang,target_lang:tgtLang}),
+      }).catch(()=>null);
+
+      if(resp && resp.ok) {
+        const data = await resp.json();
+        result = data.result || data.response || '';
+      } else {
+        // Fallback to chat endpoint on local FastAPI
+        const r2 = await fetch(url+'/chat',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({message: prompt}),
+        });
+        const data = await r2.json();
+        result = data.response || data.result || '';
+      }
+    }
+
+    outEl.style.color='var(--text)';
+    outEl.textContent = result ? result.trim() : '// Translation complete.';
+
+  }catch(e){
+    outEl.style.color='var(--danger)';
+    outEl.textContent='⚠ Translation Error\n\n'+e.message+'\n\nEnsure backend URL is set correctly in Settings.';
+  }finally{
+    btn.disabled=false;
+    btnTxt.textContent='⇄ Translate with AI';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SECTION 4: Formula Library
+// ══════════════════════════════════════════════════════════════════════════════
+
+const FORMULAS=[
+  {name:'Quadratic Formula',domain:'Algebra',tex:'x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}'},
+  {name:'Pythagorean Theorem',domain:'Geometry',tex:'a^2 + b^2 = c^2'},
+  {name:'Euler\'s Identity',domain:'Complex Analysis',tex:'e^{i\\pi} + 1 = 0'},
+  {name:'Derivative (limit def.)',domain:'Calculus',tex:"f'(x) = \\lim_{h\\to 0}\\frac{f(x+h)-f(x)}{h}"},
+  {name:'Chain Rule',domain:'Calculus',tex:'\\frac{d}{dx}[f(g(x))] = f\'(g(x)) \\cdot g\'(x)'},
+  {name:'Integration by Parts',domain:'Calculus',tex:'\\int u\\,dv = uv - \\int v\\,du'},
+  {name:'Taylor Series',domain:'Calculus',tex:'f(x) = \\sum_{n=0}^{\\infty} \\frac{f^{(n)}(a)}{n!}(x-a)^n'},
+  {name:'Fundamental Theorem of Calculus',domain:'Calculus',tex:'\\int_a^b f\'(x)\\,dx = f(b)-f(a)'},
+  {name:'Bayes\' Theorem',domain:'Probability',tex:'P(A|B) = \\frac{P(B|A)\\,P(A)}{P(B)}'},
+  {name:'Normal Distribution PDF',domain:'Statistics',tex:'f(x)=\\frac{1}{\\sigma\\sqrt{2\\pi}}e^{-\\frac{1}{2}\\left(\\frac{x-\\mu}{\\sigma}\\right)^2}'},
+  {name:'Expected Value',domain:'Probability',tex:'E[X] = \\sum_i x_i P(X=x_i)'},
+  {name:'Variance',domain:'Statistics',tex:'\\text{Var}(X) = E[(X-\\mu)^2] = E[X^2] - (E[X])^2'},
+  {name:'Law of Cosines',domain:'Trigonometry',tex:'c^2 = a^2 + b^2 - 2ab\\cos(C)'},
+  {name:'Euler\'s Formula',domain:'Complex Analysis',tex:'e^{ix} = \\cos x + i\\sin x'},
+  {name:"L'Hôpital's Rule",domain:'Calculus',tex:'\\lim_{x\\to a}\\frac{f(x)}{g(x)}=\\lim_{x\\to a}\\frac{f\'(x)}{g\'(x)}'},
+  {name:'Determinant (2×2)',domain:'Linear Algebra',tex:'\\det\\begin{pmatrix}a&b\\\\c&d\\end{pmatrix}=ad-bc'},
+  {name:'Dot Product',domain:'Linear Algebra',tex:'\\mathbf{a}\\cdot\\mathbf{b}=|\\mathbf{a}||\\mathbf{b}|\\cos\\theta'},
+  {name:'Big-O Notation',domain:'CS',tex:'f(n) = O(g(n)) \\iff \\exists c,n_0: f(n) \\le c\\cdot g(n)\\; \\forall n\\ge n_0'},
+  {name:'Stirling\'s Approximation',domain:'Combinatorics',tex:'n! \\approx \\sqrt{2\\pi n}\\left(\\frac{n}{e}\\right)^n'},
+  {name:'Binomial Theorem',domain:'Algebra',tex:'(x+y)^n = \\sum_{k=0}^{n}\\binom{n}{k}x^{n-k}y^k'},
+  {name:'Gauss Divergence Theorem',domain:'Vector Calculus',tex:'\\oint_S \\mathbf{F}\\cdot d\\mathbf{S} = \\iiint_V (\\nabla\\cdot\\mathbf{F})\\,dV'},
+  {name:"Stokes' Theorem",domain:'Vector Calculus',tex:'\\oint_C \\mathbf{F}\\cdot d\\mathbf{r} = \\iint_S (\\nabla\\times\\mathbf{F})\\cdot d\\mathbf{S}'},
+];
+
+let _formulasBuilt=false;
+function buildFormulaGrid(){
+  if(_formulasBuilt) return;
+  _formulasBuilt=true;
+  const grid=document.getElementById('formula-grid');
+  FORMULAS.forEach((f,i)=>{
+    const card=document.createElement('div');
+    card.className='formula-card';
+    card.dataset.search=(f.name+' '+f.domain+' '+f.tex).toLowerCase();
+    card.innerHTML=`
+      <div class="formula-name">${f.name}</div>
+      <div class="formula-domain">${f.domain}</div>
+      <div class="formula-math" id="fml-${i}"></div>`;
+    card.onclick=()=>{
+      navigator.clipboard.writeText(f.tex).then(()=>toast(`Copied: ${f.name} ✓`,'success'));
+    };
+    grid.appendChild(card);
+    // Render with KaTeX
+    try{
+      document.getElementById('fml-'+i).innerHTML=katex.renderToString(f.tex,{displayMode:true,throwOnError:false});
+    }catch(e){
+      document.getElementById('fml-'+i).textContent=f.tex;
+    }
+  });
+}
+
+function filterFormulas(){
+  const q=document.getElementById('formula-search').value.toLowerCase();
+  document.querySelectorAll('.formula-card').forEach(c=>{
+    c.style.display=(!q||c.dataset.search.includes(q))?'':'none';
+  });
+}
+</script>
+</body>
+</html>
